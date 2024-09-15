@@ -1,0 +1,12 @@
+SQL TEMPLATES
+
+create table lego_sets(
+    lego_set_id INTEGER,
+    name TEXT,
+    year INTEGER,
+    weigh FLOAT,
+    dimensions json,
+    ages INTEGER,
+    images JSON,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+)

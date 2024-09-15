@@ -1,0 +1,14 @@
+from datetime import datetime
+from pydantic import BaseModel, Field
+
+
+class LegoSet(BaseModel):
+    set_id: str = Field(default='')
+    images: dict = Field(default={})
+    name: str = Field(default='')
+    year: str = Field(default='')
+    weigh: float = Field(default='')
+    dimensions: dict | None = Field(default={})
+    ages: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.now)
+
