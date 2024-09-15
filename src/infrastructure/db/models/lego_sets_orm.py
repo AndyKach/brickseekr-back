@@ -1,17 +1,19 @@
+from datetime import datetime
+
+from sqlalchemy import Column, String, JSON, INTEGER, Float, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.db.base import Base
-from infrastructure.db.models.orm_template_columns import intpk, created_at
 
 
 class LegoSetsOrm(Base):
     __tablename__ = "lego_sets"
 
-    set_id: str = Mapped[str]
-    images: dict = Mapped[dict]
-    name: str = Mapped[str]
-    year: str = Mapped[str]
-    weigh: float = Mapped[float]
-    dimensions: dict | None = Mapped[dict]
-    ages: int = Mapped[int]
-    created_at: Mapped[created_at]
+    lego_set_id: Mapped[str] = mapped_column(String, primary_key=True)
+    name: Mapped[str] = mapped_column(String)
+    year: Mapped[int] = mapped_column(INTEGER)
+    weigh: Mapped[float] = mapped_column(Float)
+    dimensions: Mapped[dict] = mapped_column(JSON)
+    ages: Mapped[int] = mapped_column(INTEGER)
+    images: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(server_default=text("TIMEZONE('utc', now())"))

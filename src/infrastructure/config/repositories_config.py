@@ -1,0 +1,4 @@
+from infrastructure.repositories_impl.lego_sets_repository_impl import LegoSetsRepositoryImpl
+
+
+lego_sets_repository = LegoSetsRepositoryImpl()
