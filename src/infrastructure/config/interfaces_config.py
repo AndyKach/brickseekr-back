@@ -1,0 +1,3 @@
+from infrastructure.interfaces_impl.lego_parser_interface_impl import LegoParserInterface
+
+lego_parser_interface = LegoParserInterface()

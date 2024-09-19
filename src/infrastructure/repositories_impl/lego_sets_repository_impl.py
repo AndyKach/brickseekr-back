@@ -25,7 +25,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 return "Set is not exist"
 
             return LegoSet(
-                set_id=lego_set.lego_set_id,
+                lego_set_id=lego_set.lego_set_id,
                 images=lego_set.images,
                 name=lego_set.name,
                 year=lego_set.year,
@@ -50,3 +50,23 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             )
             session.add(lego_set_orm)
             await session.commit()
+
+    async def get_all(self) -> [LegoSet]:
+        session = self.get_session()
+        async with session.begin():
+            query = await session.execute(select(LegoSetsOrm))
+            lego_sets_orm = query.scalars().all()
+            lego_sets = []
+            for lego_set in lego_sets_orm:
+                lego_sets.append(LegoSet(
+                    lego_set_id=lego_set.lego_set_id,
+                    images=lego_set.images,
+                    name=lego_set.name,
+                    year=lego_set.year,
+                    weigh=lego_set.weigh,
+                    dimensions=lego_set.dimensions,
+                    ages=lego_set.ages,
+                    created_at=lego_set.created_at,
+                ))
+            return lego_sets
+

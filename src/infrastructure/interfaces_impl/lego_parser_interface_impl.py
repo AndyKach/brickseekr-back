@@ -20,42 +20,36 @@ class LegoParserInterface(ParserInterface):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_item(self, item_id: str):
+        result = None
         try:
             self.response = requests.get(self.url + item_id)
 
-            data = await self.get_item_info()
-            ic(data)
-            # self.driver = await get_selenium_driver()
-            # self.driver.get(self.url)
-            # result = self.get_item_info()
-
+            result = await self.get_item_info()
+            ic(result)
 
         except Exception as e:
             pass
-            print("ошибка при парсинге: ", e)
+            print("Error when parsing: ", e)
 
         # finally:
         #     self.driver.close()
+        return result
 
 
     async def get_item_info(self):
         # response = requests.get(self.url)
         # soup = BeautifulSoup(self.response.content, 'html.parser')
         soup = BeautifulSoup(self.response.content, 'lxml')
-        ic(soup)
+        # ic(soup)
         price_element = soup.find('span',
                                   class_='ds-heading-lg ProductPrice_priceText__ndJDK',
                                   attrs={'data-test': 'product-price'})
-        ic(price_element.get_text(strip=True))
-        # dom = etree.HTML(str(soup))
-        # ic(dom)
-        # paragraphs = dom.xpath('/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/div[2]/div/span')
-        # ic(paragraphs)
-
+        # ic(price_element.get_text(strip=True))
+        return price_element.get_text(strip=True).replace('\xa0', ' ')
 
 if __name__ == '__main__':
     lego_parser = LegoParserInterface()
-    asyncio.run(lego_parser.parse_item(item_id='75389'))
+    asyncio.run(lego_parser.parse_item(item_id='60431'))
 
 
 ""
