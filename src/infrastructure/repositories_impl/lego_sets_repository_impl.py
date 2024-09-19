@@ -34,3 +34,19 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 ages=lego_set.ages,
                 created_at=lego_set.created_at,
             )
+
+    async def set_set(self, lego_set: LegoSet):
+        session = self.get_session()
+        async with session.begin():
+            lego_set_orm = LegoSetsOrm(
+                lego_set_id=lego_set.lego_set_id,
+                images=lego_set.images,
+                name=lego_set.name,
+                year=lego_set.year,
+                weigh=lego_set.weigh,
+                dimensions=lego_set.dimensions,
+                ages=lego_set.ages,
+                created_at=lego_set.created_at,
+            )
+            session.add(lego_set_orm)
+            await session.commit()

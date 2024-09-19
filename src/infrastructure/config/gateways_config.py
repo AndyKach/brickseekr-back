@@ -1,0 +1,3 @@
+from infrastructure.interfaces_impl.bricklick_gateway_impl import BrickLinkGatewayImpl
+
+bricklink_gateway = BrickLinkGatewayImpl()
