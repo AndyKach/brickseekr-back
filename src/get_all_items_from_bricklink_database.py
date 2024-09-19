@@ -12,7 +12,7 @@ async def get_set_items():
     last_datetime = datetime.now()
     log_text = ""
 
-    for i in range(27500, 90000):
+    for i in range(55400, 90000):
         if i % 100 == 0:
             print(log_text[:-1])
             print(datetime.now() - last_datetime)
