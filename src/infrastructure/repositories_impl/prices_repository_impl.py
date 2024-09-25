@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update
 
-from application.repositories.prices_repository import PriceRepository
+from application.repositories.prices_repository import LegoSetsPricesRepository
 from domain.lego_sets_prices import LegoSetsPrices
 from infrastructure.db.base import async_engine
 from infrastructure.db.models.lego_sets_orm import LegoSetsOrm
 from infrastructure.db.models.prices_orm import LegoSetsPricesOrm
 
 
-class PriceRepositoryImpl(PriceRepository):
+class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
     def get_session(self) :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
 
@@ -27,6 +27,7 @@ class PriceRepositoryImpl(PriceRepository):
             )
             res = await session.execute(query)
             prices = res.scalars().first()
+
             prices[website_id] = price
             query = (
                 update(LegoSetsPricesOrm)
@@ -52,12 +53,16 @@ class PriceRepositoryImpl(PriceRepository):
 
     async def add_item(self, lego_sets_prices: LegoSetsPrices):
         session = self.get_session()
+        lego_sets_prices_orm = LegoSetsPricesOrm(
+            lego_set_id=lego_sets_prices.lego_set_id,
+            prices=lego_sets_prices.prices
+        )
         async with session.begin():
-            session.add(lego_sets_prices)
+            session.add(lego_sets_prices_orm)
             await session.commit()
 
 
 if __name__ == '__main__':
-    price_repository = PriceRepositoryImpl()
+    price_repository = LegoSetsPricesRepositoryImpl()
 
 

@@ -24,9 +24,20 @@ async def get_result_json(data: dict):
 async def empty(response: Response, background_tasks: BackgroundTasks):
     return await get_result_json(data={'message': "API is working"})
 
+
+@router.post("/sets/parse")
+@log_api_decorator
+async def parse_sets(response: Response, background_tasks: BackgroundTasks,
+                  lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
+    background_tasks.add_task(lego_sets_service.async_parse_all_sets)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_result_json(data={'status': 'parse start'})
+
+
 @router.get("/sets/{set_id}")
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
     data = await lego_sets_service.get_set_info(set_id=set_id)
     return await get_result_json(data={'set_info': data})
+

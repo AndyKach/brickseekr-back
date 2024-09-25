@@ -6,7 +6,7 @@ from infrastructure.db.models.prices_orm import LegoSetsPricesOrm
 
 lego_sets_service = get_lego_sets_service()
 
-from infrastructure.config.repositories_config import prices_repository
+from infrastructure.config.repositories_config import lego_sets_prices_repository
 
 if __name__ == '__main__':
     # new_item = LegoSetsPricesOrm(
@@ -22,4 +22,4 @@ if __name__ == '__main__':
     new_price = 14341
     website_id = 'website_1'
 
-    asyncio.run(prices_repository.save_price(item_id='LEGO-1234', price=new_price, website_id=website_id))
+    asyncio.run(lego_sets_prices_repository.save_price(item_id='LEGO-1234', price=new_price, website_id=website_id))

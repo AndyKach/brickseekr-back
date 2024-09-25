@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
+from domain.lego_sets_prices import LegoSetsPrices
 
-class PriceRepository(ABC):
+
+class LegoSetsPricesRepository(ABC):
     @abstractmethod
-    async def save_price(self, item_id: str, web_site_id: str, price: str) -> None:
+    async def save_price(self, item_id: str, website_id: str, price: str) -> None:
         pass
 
     @abstractmethod
@@ -13,3 +15,9 @@ class PriceRepository(ABC):
     @abstractmethod
     async def get_item_price(self, item_id: str, web_site_id: str) -> str:
         pass
+
+    @abstractmethod
+    async def add_item(self, lego_sets_prices: LegoSetsPrices):
+        pass
+
+
