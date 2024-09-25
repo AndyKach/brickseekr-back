@@ -3,7 +3,8 @@ from datetime import datetime
 import requests
 import asyncio
 import aiohttp
-
+from aiolimiter import AsyncLimiter
+from aiohttp.client_exceptions import TooManyRedirects
 from bs4 import BeautifulSoup
 from icecream import ic
 
@@ -62,35 +63,40 @@ class LegoParserInterface(ParserInterface):
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_items(self, item_ids: list):
         async with aiohttp.ClientSession() as session:
-            tasks = [await self.get_item_info(session, url=self.url + item_id) for item_id in item_ids]
+            tasks = [self.get_item_info(session, item_id=item_id) for item_id in item_ids]
             # Параллельное выполнение всех задач
             results = await asyncio.gather(*tasks)
             return results
 
 
-    async def get_item_info(self, session, url: str):
+    async def get_item_info(self, session, item_id: str):
 
         last_datetime = datetime.now()
+        url = self.url + item_id
         page = await self.fetch_page(session=session, url=url)
-        system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
+        if page:
+            system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
-        soup = BeautifulSoup(page, 'lxml')
+            soup = BeautifulSoup(page, 'lxml')
 
-        price_element = soup.find('span',
-                                  class_='ds-heading-lg ProductPrice_priceText__ndJDK',
-                                  attrs={'data-test': 'product-price'})
+            price_element = soup.find('span',
+                                      class_='ds-heading-lg ProductPrice_priceText__ndJDK',
+                                      attrs={'data-test': 'product-price'})
 
-        if price_element:
-            price = price_element.get_text(strip=True)
-            system_logger.info(f'Lego set {url[url.rfind("/")+1:]} exists, price: {price}')
-            system_logger.info(f"Price found: {price}")
-            return price_element.get_text(strip=True).replace('\xa0', ' ')
+            if price_element:
+                price = price_element.get_text(strip=True)
+                system_logger.info(f'Lego set {url[url.rfind("/")+1:]} exists, price: {price}')
+                # system_logger.info(f"Price found: {price}")
+                return {"lego_set_id": item_id,
+                        "price": price_element.get_text(strip=True).replace('\xa0', ' ')}
 
-        else:
-            system_logger.info(f'Lego set {url[url.rfind("/")+1:]} not found')
-            system_logger.info("Price element not found")
-            return None
-        # ic(price_element.get_text(strip=True))
+            else:
+                system_logger.info(f'Lego set {url[url.rfind("/")+1:]} not found')
+                # system_logger.info("Price element not found")
+                return None
+
+        return None
+            # ic(price_element.get_text(strip=True))
 
     async def get_all_info_about_item(self, item_id: str):
         self.response = requests.get(self.url + item_id)
@@ -110,9 +116,14 @@ class LegoParserInterface(ParserInterface):
                                         'class': 'ProductAttributesstyles__ValueWrapper-sc-1sfk910-5 jNaXJo'})
             ic(element)
 
-    async def fetch_page(self, session, url):
-        async with session.get(url, headers=self.headers) as response:
-            return await response.text()
+    async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
+        rate_limiter = AsyncLimiter(limiter_max_rate, limiter_time_period)
+        try:
+            async with rate_limiter:
+                async with session.get(url, headers=self.headers) as response:
+                    return await response.text()
+        except TooManyRedirects as e:
+            print(e)
 
 
 if __name__ == '__main__':
