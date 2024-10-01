@@ -1,11 +1,12 @@
 import requests
 from requests import Request
 from application.interfaces.bricklink_gateway import BrickLinkGateway
+from application.interfaces.website_interface import WebsiteInterface
 from infrastructure.config.api_config.bricklink_api_config import bricklink_auth
 
 from icecream import ic
 
-class BrickLinkGatewayImpl(BrickLinkGateway):
+class WebsiteBricklinkInterface(WebsiteInterface):
     def __init__(self):
         self.url = "https://api.bricklink.com/api/store/v1"
 
@@ -14,11 +15,21 @@ class BrickLinkGatewayImpl(BrickLinkGateway):
             'Accept-Language': 'de-DE,de;q=0.9'
         }
 
-    async def get_item(self, item_type: str, item_id: str):
-        url = self.url + f"/items/{item_type}/{item_id}-1"
+    async def parse_item(self, item_id: str):
+        url = self.url + f"/items/set/{item_id}-1"
         response = requests.get(auth=bricklink_auth, url=url)
         # ic(response.json())
         return response.json()
+
+    async def parse_items(self, item_ids: list):
+        results = []
+        for item_id in item_ids:
+            url = self.url + f"/items/set/{item_id}-1"
+            response = requests.get(auth=bricklink_auth, url=url)
+            # ic(response.json())
+            results.append(response.json())
+
+        return results
 
 
     async def get_categories_list(self):
@@ -35,10 +46,11 @@ class BrickLinkGatewayImpl(BrickLinkGateway):
         url = self.url + f"/items/{item_type}/{item_id}-1"
         headers = self.headers.copy()
         headers['Authorization'] = create_oauth_headers(url, bricklink_auth)
+
         try:
             async with session.get(url, headers=headers) as response:
                 result = await response.json()
-                # print(result)
+                print(result)
                 return result
         except Exception as e:
             print(e)

@@ -52,16 +52,29 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
     return await get_success_json_response(data={'message': "API is working"})
 
 
-@app.post("/sets/parse")
+@app.post("/sets/parseKnownSets")
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
         response_model=ResponseModel,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
-    background_tasks.add_task(lego_sets_service.async_parse_all_sets)
+    background_tasks.add_task(lego_sets_service.async_parse_all_known_sets)
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
+
+
+@app.post("/sets/parseUnknownSets")
+@log_api_decorator
+async def parse_sets(
+        response: Response, background_tasks: BackgroundTasks,
+        response_model=ResponseModel,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
+
 
 
 @app.get("/sets/{set_id}")

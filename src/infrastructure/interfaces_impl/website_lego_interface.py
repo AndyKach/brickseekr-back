@@ -9,12 +9,13 @@ from bs4 import BeautifulSoup
 from icecream import ic
 
 from application.interfaces.parser_interface import ParserInterface
+from application.interfaces.website_interface import WebsiteInterface
 from infrastructure.config.logs_config import log_decorator, system_logger
 from infrastructure.config.selenium_config import get_selenium_driver
 from infrastructure.db.base import session_factory
 
 
-class LegoParserInterface(ParserInterface):
+class WebsiteLegoInterface(WebsiteInterface):
     def __init__(self):
         self.driver = None
         self.waiting_time = 2
@@ -30,34 +31,8 @@ class LegoParserInterface(ParserInterface):
         result = None
         url = self.url + item_id
         async with aiohttp.ClientSession() as session:
-            result = await self.get_item_info(session=session, url=url)
-        # try:
+            result = await self.get_item_info(session=session, item_id=item_id)
 
-        # last_datetime = datetime.now()
-        # system_logger.info('get page request')
-        #
-        # async with aiohttp.ClientSession() as session:
-        #     tasks = [self.fetch_page(session=session, url=self.url + item_id)]
-        #     page = await asyncio.gather(*tasks)
-
-        # self.response = requests.get(self.url + item_id, headers=self.headers)
-
-        # system_logger.info(datetime.now() - last_datetime)
-        # last_datetime = datetime.now()
-        #
-        # result = await self.get_item_info(page=page)
-        # system_logger.info(datetime.now() - last_datetime)
-        # last_datetime = datetime.now()
-
-        # system_logger.info(result)
-
-
-        # except Exception as e:
-        #     pass
-        #     print("Error when parsing: ", e)
-
-        # finally:
-        #     self.driver.close()
         return result
 
     @log_decorator(print_args=False, print_kwargs=False)
@@ -70,11 +45,11 @@ class LegoParserInterface(ParserInterface):
 
 
     async def get_item_info(self, session, item_id: str):
-
         last_datetime = datetime.now()
         url = self.url + item_id
         page = await self.fetch_page(session=session, url=url)
         if page:
+            system_logger.info('-------------------------------------')
             system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
             soup = BeautifulSoup(page, 'lxml')

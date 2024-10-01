@@ -1,3 +1,5 @@
-from infrastructure.interfaces_impl.lego_parser_interface_impl import LegoParserInterface
+from infrastructure.interfaces_impl.website_bricklick_interface import WebsiteBricklinkInterface
+from infrastructure.interfaces_impl.website_lego_interface import WebsiteLegoInterface
 
-lego_parser_interface = LegoParserInterface()
+website_lego_interface = WebsiteLegoInterface()
+website_bricklink_interface = WebsiteBricklinkInterface()
