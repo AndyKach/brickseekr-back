@@ -63,6 +63,6 @@ class LegoSetsService:
         }
         return result
 
-
-
+    async def tmp_function(self):
+        print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
