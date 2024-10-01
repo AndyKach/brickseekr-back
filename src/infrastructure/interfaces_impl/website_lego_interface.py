@@ -31,20 +31,20 @@ class WebsiteLegoInterface(WebsiteInterface):
         result = None
         url = self.url + item_id
         async with aiohttp.ClientSession() as session:
-            result = await self.get_item_info(session=session, item_id=item_id)
+            result = await self.__get_item_info(session=session, item_id=item_id)
 
         return result
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_items(self, item_ids: list):
         async with aiohttp.ClientSession() as session:
-            tasks = [self.get_item_info(session, item_id=item_id) for item_id in item_ids]
+            tasks = [self.__get_item_info(session, item_id=item_id) for item_id in item_ids]
             # Параллельное выполнение всех задач
             results = await asyncio.gather(*tasks)
             return results
 
 
-    async def get_item_info(self, session, item_id: str):
+    async def __get_item_info(self, session, item_id: str):
         last_datetime = datetime.now()
         url = self.url + item_id
         page = await self.fetch_page(session=session, url=url)
@@ -102,7 +102,7 @@ class WebsiteLegoInterface(WebsiteInterface):
 
 
 if __name__ == '__main__':
-    lego_parser = LegoParserInterface()
+    lego_parser = WebsiteLegoInterface()
     # asyncio.run(lego_parser.parse_item(item_id='60431'))
     asyncio.run(lego_parser.get_all_info_about_item(item_id='60431'))
     asyncio.run(lego_parser.get_all_info_about_item(item_id='61505'))

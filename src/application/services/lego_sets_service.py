@@ -36,27 +36,8 @@ class LegoSetsService:
     async def get_set_info(self, set_id: str):
         return await self.lego_sets_repository.get_set(set_id=set_id)
 
-    # async def parse_all_sets(self):
-    #     lego_sets = await self.lego_sets_repository.get_all()
-    #     ic('Start parsing lego sets')
-    #     for lego_set in lego_sets[-10:]:
-    #         ic(lego_set)
-    #         item_price = await self.lego_parser_interface.parse_item(item_id=lego_set.lego_set_id)
-    #         if item_price:
-    #             # system_logger.info(f'Lego set {lego_set.lego_set_id} exists, price: {item_price}')
-    #             lego_sets_prices = LegoSetsPrices(
-    #                 lego_set_id=lego_set.lego_set_id,
-    #                 prices={'1': item_price}
-    #             )
-    #             try:
-    #                 await self.lego_sets_prices_repository.add_item(
-    #                     lego_sets_prices=lego_sets_prices
-    #                 )
-    #             except Exception as e:
-    #                 ic(e)
-    #         else:
-    #             pass
-    #             system_logger.info(f'Lego set {lego_set.lego_set_id} not exists')
+    async def async_parse_set(self, set_id: str):
+        await self.website_lego_parser_use_case.parse_set(lego_set_id=set_id)
 
     async def async_parse_all_known_sets(self):
         await self.website_lego_parser_use_case.parse_known_sets()

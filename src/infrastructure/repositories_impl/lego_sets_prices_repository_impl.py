@@ -55,7 +55,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             res = await session.execute(query)
             if res:
                 lego_set_price = res.scalars().first()
-                print(lego_set_price)
+                # print(lego_set_price)
                 return lego_set_price.get(website_id)
 
     async def get_all_items(self):

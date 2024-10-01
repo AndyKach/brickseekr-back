@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class WebsiteInterface(ABC):
     @abstractmethod
-    async def parse_item(self, set_id: str):
+    async def parse_item(self, item_id: str):
         pass
 
     @abstractmethod

@@ -68,7 +68,7 @@ async def parse_sets(
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
-        response_model=ResponseModel,
+        response_model: BaseModel = ResponseModel,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
     background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
@@ -111,5 +111,18 @@ async def get_sets_prices_from_website(
     ):
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
     return await get_success_json_response(data=data)
+
+@app.post("/sets/{set_id}/parse")
+@log_api_decorator
+async def parse_sets(
+        set_id: str,
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.async_parse_set, set_id)
+
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
+
 
 
