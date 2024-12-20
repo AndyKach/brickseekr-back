@@ -68,7 +68,6 @@ async def parse_sets(
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
-        response_model: BaseModel = ResponseModel,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
     background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)

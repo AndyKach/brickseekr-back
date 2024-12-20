@@ -41,10 +41,9 @@ class LegoSetsService:
 
     async def async_parse_all_known_sets(self):
         await self.website_lego_parser_use_case.parse_known_sets()
-        # lego_sets = await self.lego_sets_prices_repository.get_all_items()
 
     async def async_parse_all_unknown_sets(self):
-        await self.website_lego_parser_use_case.parse_known_sets()
+        await self.website_lego_parser_use_case.parse_all_sets()
 
     async def get_sets_prices(self, set_id: str):
         lego_sets_prices = await self.lego_sets_prices_repository.get_item_all_prices(item_id=set_id)

@@ -7,6 +7,7 @@ from aiolimiter import AsyncLimiter
 from aiohttp.client_exceptions import TooManyRedirects
 from bs4 import BeautifulSoup
 from icecream import ic
+from pygments.lexer import words
 
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_interface import WebsiteInterface
@@ -38,22 +39,36 @@ class WebsiteLegoInterface(WebsiteInterface):
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_items(self, item_ids: list):
         async with aiohttp.ClientSession() as session:
-            tasks = [self.__get_item_info(session, item_id=item_id) for item_id in item_ids]
-            # Параллельное выполнение всех задач
-            results = await asyncio.gather(*tasks)
-            return results
+            rate_limiter = AsyncLimiter(60, 60)
+            try:
+                async with rate_limiter:
+                    tasks = [self.__get_item_info(session, item_id=item_id) for item_id in item_ids]
+                    # Параллельное выполнение всех задач
+                    results = await asyncio.gather(*tasks)
+                    return results
+
+            except TooManyRedirects as e:
+                print(e)
+
+            return None
 
 
     async def __get_item_info(self, session, item_id: str):
         last_datetime = datetime.now()
         url = self.url + item_id
         page = await self.fetch_page(session=session, url=url)
+        with open('test1.txt', 'w') as f:
+            f.write(str(page))
+
+        # ic(page)
         if page:
             system_logger.info('-------------------------------------')
             system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
             soup = BeautifulSoup(page, 'lxml')
-
+            with open('test2.txt', 'w') as f:
+                f.write(str(page))
+            # ic(soup)
             price_element = soup.find('span',
                                       class_='ds-heading-lg ProductPrice_priceText__ndJDK',
                                       attrs={'data-test': 'product-price'})
@@ -92,13 +107,16 @@ class WebsiteLegoInterface(WebsiteInterface):
             ic(element)
 
     async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
-        rate_limiter = AsyncLimiter(limiter_max_rate, limiter_time_period)
-        try:
-            async with rate_limiter:
-                async with session.get(url, headers=self.headers) as response:
-                    return await response.text()
-        except TooManyRedirects as e:
-            print(e)
+        async with session.get(url, headers=self.headers) as response:
+            return await response.text()
+
+        # rate_limiter = AsyncLimiter(limiter_max_rate, limiter_time_period)
+        # try:
+        #     async with rate_limiter:
+        #         async with session.get(url, headers=self.headers) as response:
+        #             return await response.text()
+        # except TooManyRedirects as e:
+        #     print(e)
 
 
 if __name__ == '__main__':
