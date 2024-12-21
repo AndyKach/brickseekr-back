@@ -13,7 +13,7 @@ async def get_set_items():
     last_datetime = datetime.now()
     log_text = ""
 
-    for i in range(10000, 20000, 500):
+    for i in range(40000, 50000, 500):
 
         async with aiohttp.ClientSession() as session:
             tasks = [bricklink_gateway.get_item_async(session, 'set', k) for k in range(i, i+500)]
