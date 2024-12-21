@@ -1,9 +1,12 @@
 import asyncio
+import time
+
 import aiohttp
 from datetime import datetime
 
 from oauthlib.common import always_safe
 from icecream import ic
+from sqlalchemy.exc import IntegrityError
 
 from infrastructure.config.gateways_config import bricklink_gateway
 from infrastructure.config.repositories_config import lego_sets_repository
@@ -12,8 +15,8 @@ from domain.lego_set import LegoSet
 async def get_set_items():
     last_datetime = datetime.now()
     log_text = ""
-
-    for i in range(40000, 50000, 500):
+    for i in range(51500, 100000, 500):
+        time.sleep(2)
 
         async with aiohttp.ClientSession() as session:
             tasks = [bricklink_gateway.get_item_async(session, 'set', k) for k in range(i, i+500)]
@@ -22,7 +25,7 @@ async def get_set_items():
             # return results
         for index, result in enumerate(results):
             if index % 50 == 0:
-                print(log_text[:-1])
+                print(f"log_text: {log_text[:-1]}")
                 print(datetime.now() - last_datetime)
                 print()
                 last_datetime = datetime.now()
@@ -31,6 +34,7 @@ async def get_set_items():
             # result = await bricklink_gateway.get_item('set', i)
             # ic(result)
             if result:
+                # print(f"Result: {result}")
                 if result.get('meta').get('code') == 200:
                     lego_set_json_info = result.get('data')
                     year_released = lego_set_json_info.get('year_released')
@@ -40,6 +44,7 @@ async def get_set_items():
                             # images=lego_set_json_info.get(''),
                             images={'1': lego_set_json_info.get('image_url')},
                             name=lego_set_json_info.get('name'),
+                            url_name='-',
                             year=lego_set_json_info.get('year_released'),
                             weigh=lego_set_json_info.get('weight'),
                             dimensions={
@@ -48,11 +53,13 @@ async def get_set_items():
                                 'dim_z': lego_set_json_info.get('dim_z'),
                             },
                             ages=3,
+
                         )
+
                         try:
                             await lego_sets_repository.set_set(lego_set=lego_set)
-                        except Exception as e:
-                            print(e)
+                        except IntegrityError as e:
+                            print(f"ERROR: {str(e)[str(e).find('\n')+1:str(e).find('\n', str(e).find('\n')+1)]}")
                         log_text += str(lego_set) + '\n'
                     else:
                         # ic(f"Set {i} is to old")
@@ -76,7 +83,11 @@ async def get_categories():
     result = await bricklink_gateway.get_category(category_id="1306")
     ic(result)
 
+start_datetime = datetime.now()
+
 asyncio.run(get_set_items())
+
+print(f"Time taken: {datetime.now() - start_datetime}")
 # asyncio.run(get_minifig_items())
 # asyncio.run(get_categories_list())
 # asyncio.run(get_categories())
