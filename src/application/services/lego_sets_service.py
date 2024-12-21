@@ -36,6 +36,8 @@ class LegoSetsService:
     async def get_set_info(self, set_id: str):
         return await self.lego_sets_repository.get_set(set_id=set_id)
 
+    async def async_parse_sets(self, store: str):
+        self.__get_website_use_case()
     async def async_parse_set(self, set_id: str):
         await self.website_lego_parser_use_case.parse_set(lego_set_id=set_id)
 
@@ -65,3 +67,10 @@ class LegoSetsService:
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
+
+    async def __get_website_use_case(self, store: str):
+        match store:
+            case "lego":
+                return WebsiteLegoParserUseCase
+            case "capi-Cap":
+                return WebsiteCapiCapParserUseCase
