@@ -7,9 +7,10 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
+from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.lego_sets_prices import LegoSetsPrices
-from infrastructure.config.logs_config import system_logger
 
 
 class LegoSetsService:
@@ -28,16 +29,27 @@ class LegoSetsService:
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_lego_interface=self.website_lego_interface
         )
+        self.website_capi_cap_parser_use_case = WebsiteCapiCapParserUseCase(
+            lego_sets_repository=lego_sets_repository,
+            lego_sets_prices_repository=lego_sets_prices_repository,
+            website_interface=self.website_capi_cap_interface
+        )
 
     @property
     def website_lego_interface(self) -> WebsiteInterface:
         return self.websites_interfaces_provider.get_website_lego_interface()
 
+    @property
+    def website_capi_cap_interface(self) -> WebsiteInterface:
+        return self.websites_interfaces_provider.get_website_capi_cap_interface()
+
     async def get_set_info(self, set_id: str):
         return await self.lego_sets_repository.get_set(set_id=set_id)
 
     async def async_parse_sets(self, store: str):
-        self.__get_website_use_case()
+        website_use_case = await self.__get_website_use_case(store=store)
+        await website_use_case.parse_items()
+
     async def async_parse_set(self, set_id: str):
         await self.website_lego_parser_use_case.parse_set(lego_set_id=set_id)
 
@@ -68,9 +80,9 @@ class LegoSetsService:
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
 
-    async def __get_website_use_case(self, store: str):
+    async def __get_website_use_case(self, store: str) -> WebsiteParserUseCase:
         match store:
             case "lego":
-                return WebsiteLegoParserUseCase
-            case "capi-Cap":
-                return WebsiteCapiCapParserUseCase
+                return self.website_lego_parser_use_case
+            case "capi-cap":
+                return self.website_capi_cap_parser_use_case

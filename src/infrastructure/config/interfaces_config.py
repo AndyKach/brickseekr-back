@@ -1,8 +1,10 @@
 from infrastructure.interfaces_impl.scheduler_interface_impl import SchedulerInterfaceImpl
 from infrastructure.interfaces_impl.website_bricklick_interface import WebsiteBricklinkInterface
+from infrastructure.interfaces_impl.website_capi_cap_interface import WebsiteCapiCapInterface
 from infrastructure.interfaces_impl.website_lego_interface import WebsiteLegoInterface
 
 website_lego_interface = WebsiteLegoInterface()
 website_bricklink_interface = WebsiteBricklinkInterface()
+website_capi_cap_interface = WebsiteCapiCapInterface()
 
 scheduler_interface = SchedulerInterfaceImpl()

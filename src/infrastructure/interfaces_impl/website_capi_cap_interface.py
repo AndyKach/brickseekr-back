@@ -36,6 +36,9 @@ class WebsiteCapiCapInterface(WebsiteInterface):
 
         return result
 
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_items(self, item_id: str):
+        pass
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def __get_item_info(self, session, item_url: str):
