@@ -5,6 +5,7 @@ from application.repositories.prices_repository import LegoSetsPricesRepository
 
 
 class WebsiteCapiCapController(WebsiteController):
+
     def __init__(self,
                  lego_sets_repository: LegoSetsRepository,
                  lego_sets_prices_repository: LegoSetsPricesRepository,
@@ -14,5 +15,9 @@ class WebsiteCapiCapController(WebsiteController):
         self.lego_sets_prices_repository = lego_sets_prices_repository,
         self.website_interface = website_interface
 
-    def parse_lego_sets(self):
+    def parse_lego_sets_prices(self):
+        pass
+
+
+    async def parse_lego_sets_price(self, lego_set_id: str):
         pass

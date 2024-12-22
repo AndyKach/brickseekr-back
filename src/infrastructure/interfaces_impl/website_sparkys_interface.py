@@ -28,7 +28,7 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
         self.response = None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_item(self, item_id: str):
+    async def parse_lego_sets_price(self, lego_set: str):
         pass
         # result = None
         # url = self.url + item_id
@@ -38,7 +38,7 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
         # return result
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_items(self, lego_sets: list[LegoSet]):
+    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
         pass
         # async with aiohttp.ClientSession() as session:
         #     rate_limiter = AsyncLimiter(60, 60)

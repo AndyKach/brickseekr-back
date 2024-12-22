@@ -6,6 +6,7 @@ from application.use_cases.website_museum_of_bricks_parser_use_case import Websi
 
 
 class WebsiteMuseumOfBricksController(WebsiteController):
+
     def __init__(self,
                  lego_sets_repository: LegoSetsRepository,
                  lego_sets_prices_repository: LegoSetsPricesRepository,
@@ -21,8 +22,11 @@ class WebsiteMuseumOfBricksController(WebsiteController):
         )
 
         
-    async def parse_lego_sets(self):
-        pass
+    async def parse_lego_sets_prices(self):
+        await self.website_parser_use_case.parse_lego_sets_prices()
+
+    async def parse_lego_sets_price(self, lego_set_id: str):
+        return await self.website_parser_use_case.parse_lego_sets_price(lego_set_id=lego_set_id)
 
     async def parse_lego_sets_url(self):
         await self.website_parser_use_case.parse_lego_sets_url()

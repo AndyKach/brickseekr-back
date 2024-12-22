@@ -9,6 +9,9 @@ import asyncio
 import aiohttp
 from aiolimiter import AsyncLimiter
 from aiohttp.client_exceptions import TooManyRedirects
+from bs4 import BeautifulSoup
+from icecream import ic
+
 
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -18,6 +21,7 @@ system_logger = logging.getLogger('system_logger')
 class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
     def __init__(self):
+        super().__init__()
         self.driver = None
         self.waiting_time = 0
         self.url = 'https://eshop.museumofbricks.cz'
@@ -28,24 +32,11 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         self.response = None
 
 
-    async def parse_lego_sets_urls_async(self, lego_sets):
-        drivers = [await get_selenium_driver() for _ in range(4)]
-        tasks = [
-            self.parse_lego_sets_urls(driver=drivers[0], lego_sets=lego_sets[:5]),
-            self.parse_lego_sets_urls(driver=drivers[1], lego_sets=lego_sets[5:10]),
-            self.parse_lego_sets_urls(driver=drivers[2], lego_sets=lego_sets[10:15]),
-            self.parse_lego_sets_urls(driver=drivers[3], lego_sets=lego_sets[15:20])
-        ]
-        # tasks += [self.parse_lego_sets_urls(driver=drivers[2], lego_set_id=lego_set.lego_set_id) for lego_set in lego_sets[10:15]]
-        # tasks += [self.parse_lego_sets_urls(driver=drivers[3], lego_set_id=lego_set.lego_set_id) for lego_set in lego_sets[15:20]]
-        # print(tasks)
-        return await asyncio.gather(*tasks)
-
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_urls(self, lego_sets: list[LegoSet]):
         result = []
         start_time_all = datetime.now()
-
+        driver = None
         try:
             driver = await get_selenium_driver()
             driver.get(self.url)
@@ -72,7 +63,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         return result
 
     @log_decorator(print_args=False, print_kwargs=True)
-    async def parse_lego_sets_url(self, lego_set_id: int | str = "75257"):
+    async def parse_lego_sets_url(self, lego_set_id: str):
         result = {}
         start_time = datetime.now()
         driver = None
@@ -93,10 +84,8 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
         return result
 
-
-
     @log_decorator(print_args=False, print_kwargs=False)
-    async def open_website(self, lego_set_id: int | str, driver):
+    async def open_website(self, lego_set_id: str, driver):
         system_logger.info("Start searching for lego sets")
         search_element = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/input[2]")
         search_element.clear()
@@ -123,9 +112,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
                 "url": "no_url"
             }
 
-
-
-
+    @log_decorator(print_args=False, print_kwargs=False)
     async def close_cookies(self, driver):
         try:
             cookies_button = driver.find_element(
@@ -136,10 +123,58 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         except Exception as e:
             print(e)
 
+    async def format_lego_set_url(self, lego_set: LegoSet):
+        return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
+
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_lego_sets_price(self, lego_set: LegoSet):
+
+        url = await self.format_lego_set_url(lego_set=lego_set)
+        async with aiohttp.ClientSession() as session:
+            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
+
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
+        async with aiohttp.ClientSession() as session:
+            rate_limiter = AsyncLimiter(60, 60)
+            try:
+                async with rate_limiter:
+                    tasks = [
+                        self.__get_lego_sets_price(
+                            session,
+                            url=await self.format_lego_set_url(lego_set=lego_set),
+                            item_id=lego_set.lego_set_id
+                        ) for lego_set in lego_sets
+                    ]
+                    # Параллельное выполнение всех задач
+                    results = await asyncio.gather(*tasks)
+                    return results
+
+            except TooManyRedirects as e:
+                print(e)
+
+            return None
 
 
-    async def parse_item(self, item_id: str):
-        pass
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, url: str, item_id: str):
+        start_time = datetime.now()
+        page = await self.fetch_page(session=session, url=url)
 
-    async def parse_items(self, item_ids: list):
-        pass
+        if page:
+            system_logger.info('-------------------------------------')
+            system_logger.info('Get page: ' + str(datetime.now() - start_time))
+
+            soup = BeautifulSoup(page, 'lxml')
+
+            price_element = soup.find('span', class_="price-final-holder")
+
+            if price_element:
+                price = price_element.get_text(strip=True)
+                system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
+                return {
+                    "lego_set_id": item_id,
+                    "price": price.replace('\xa0', ' ')
+                }
+            else:
+                system_logger.info(f'Lego set price not found')

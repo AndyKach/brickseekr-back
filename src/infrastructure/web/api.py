@@ -111,28 +111,39 @@ async def get_sets_prices_from_website(
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
     return await get_success_json_response(data=data)
 
-@app.post("/sets/{set_id}/parse")
-@log_api_decorator
-async def parse_sets(
-        set_id: str,
+# @app.post("/sets/{set_id}/parse")
+# @log_api_decorator
+# async def parse_sets(
+#         set_id: str,
+#         response: Response, background_tasks: BackgroundTasks,
+#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+# ):
+#     background_tasks.add_task(lego_sets_service.async_parse_set, set_id)
+#
+#     # data = await lego_sets_service.parse_all_sets()
+#     return await get_success_json_response(data={'status': 'parse start'})
+#
+# @app.get("/{store}/sets/parseSets")
+# @log_api_decorator
+# async def parse_sets(
+#         store: str,
+#         response: Response, background_tasks: BackgroundTasks,
+#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+# ):
+#     background_tasks.add_task(lego_sets_service.async_parse_sets, store=store)
+#     # data = await lego_sets_service.parse_all_sets()
+#     return await get_success_json_response(data={'status': 'parse start'})
+
+@app.post("/set-{set_id}/store-{store_id}/parseSet")
+async def parse_set_in_store(
+        set_id: str, store_id: str,
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
-    background_tasks.add_task(lego_sets_service.async_parse_set, set_id)
+    result = await lego_sets_service.parse_set_in_store(set_id=set_id, store_id=store_id)
+    return await get_success_json_response(data={'lego_set_id': set_id, 'price': result})
 
-    # data = await lego_sets_service.parse_all_sets()
-    return await get_success_json_response(data={'status': 'parse start'})
 
-@app.get("/{store}/sets/parseSets")
-@log_api_decorator
-async def parse_sets(
-        store: str,
-        response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-):
-    background_tasks.add_task(lego_sets_service.async_parse_sets, store=store)
-    # data = await lego_sets_service.parse_all_sets()
-    return await get_success_json_response(data={'status': 'parse start'})
 
 @app.get("/sets/parseSetsUrls")
 @log_api_decorator

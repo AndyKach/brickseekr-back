@@ -71,7 +71,7 @@ class LegoSetsService:
     async def async_parse_sets(self, store: str):
         website_controller = await self.__get_website_use_case(store=store)
         print(website_controller)
-        await website_controller.parse_lego_sets()
+        await website_controller.parse_lego_sets_prices()
 
     async def parse_lego_sets_url(self):
         await self.website_museum_of_bricks_controller.parse_lego_sets_url()
@@ -82,6 +82,14 @@ class LegoSetsService:
 
     async def async_parse_set(self, set_id: str):
         await self.website_lego_controller.parse_set(lego_set_id=set_id)
+
+    async def parse_set_in_store(self, set_id: str, store_id: str):
+        website_controller = await self.__get_website_use_case(store_id=store_id)
+        return await website_controller.parse_lego_sets_price(lego_set_id=set_id)
+
+    async def parse_all_sets_in_store(self, store_id: str):
+        website_controller = await self.__get_website_use_case(store_id=store_id)
+        await website_controller.parse_lego_sets_prices()
 
     async def async_parse_all_known_sets(self):
         await self.website_lego_controller.parse_known_sets()
@@ -110,11 +118,11 @@ class LegoSetsService:
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
 
-    async def __get_website_use_case(self, store: str) -> WebsiteController:
-        match store:
-            case "lego":
+    async def __get_website_use_case(self, store_id: str) -> WebsiteController:
+        match store_id:
+            case "1":
                 return self.website_lego_controller
-            case "capi-cap":
+            case "2":
                 return self.website_capi_cap_controller
-            case "museum-of-bricks":
+            case "4":
                 return self.website_museum_of_bricks_controller

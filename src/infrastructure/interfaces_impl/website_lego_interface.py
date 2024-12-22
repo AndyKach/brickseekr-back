@@ -20,6 +20,7 @@ from infrastructure.db.base import session_factory
 
 class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
     def __init__(self):
+        super().__init__()
         self.driver = None
         self.waiting_time = 2
         self.url = 'https://www.lego.com/de-de/product/{artikel}'
@@ -30,16 +31,16 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
         self.response = None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_item(self, item_id: str):
+    async def parse_lego_sets_price(self, lego_set: str):
         result = None
-        url = self.url + item_id
+        url = self.url + lego_set
         async with aiohttp.ClientSession() as session:
-            result = await self.__get_item_info(session=session, item_id=item_id)
+            result = await self.__get_item_info(session=session, item_id=lego_set)
 
         return result
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_items(self, lego_sets: list[LegoSet]):
+    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:

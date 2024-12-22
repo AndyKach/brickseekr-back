@@ -61,7 +61,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
     async def _parse_item(self, lego_set_id: str):
         time_start = datetime.now()
 
-        item_info = await self.website_lego_interface.parse_item(item_id=lego_set_id)
+        item_info = await self.website_lego_interface.parse_lego_sets_price(lego_set=lego_set_id)
         if item_info is not None:
             lego_sets_prices = LegoSetsPrices(
                 lego_set_id=item_info.get('lego_set_id'),

@@ -1,3 +1,5 @@
+import logging
+
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
@@ -6,6 +8,7 @@ import asyncio
 from aiolimiter import AsyncLimiter
 from aiohttp.client_exceptions import TooManyRedirects
 
+system_logger = logging.getLogger('system_logger')
 
 class WebsiteMuseumOfBricksParserUseCase:
     def __init__(self,
@@ -16,6 +19,8 @@ class WebsiteMuseumOfBricksParserUseCase:
         self.lego_sets_repository = lego_sets_repository
         self.lego_sets_prices_repository = lego_sets_prices_repository
         self.website_interface = website_interface
+
+        self.website_id = "4"
 
     async def parse_lego_sets_url(self, lego_set_id: str = "75257"):
         lego_set_url = await self.website_interface.parse_lego_sets_url()
@@ -30,3 +35,19 @@ class WebsiteMuseumOfBricksParserUseCase:
                 await self.lego_sets_repository.update_url_name(
                     lego_set_id=lego_set["id"], url_name=lego_set['url']
                 )
+
+    async def parse_lego_sets_price(self, lego_set_id: str):
+        lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
+        result = await self.website_interface.parse_lego_sets_price(lego_set=lego_set)
+        system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
+        await self.lego_sets_prices_repository.save_price(
+            item_id=lego_set.lego_set_id, price=result.get('price'), website_id=self.website_id
+        )
+        return result
+
+    async def parse_lego_sets_prices(self):
+        lego_sets = await self.lego_sets_repository.get_all()
+        result = await self.website_interface.parse_lego_sets_prices(lego_sets=lego_sets[:10])
+        system_logger.info(f"Result: {result}")
+
+

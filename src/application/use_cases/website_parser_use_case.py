@@ -30,7 +30,7 @@ class WebsiteParserUseCase(ABC):
         for i in range(0, len(lego_sets), 75):
             system_logger.info(f'Start parse sets from {i} bis {i+75}')
             # item_ids = [lego_set.lego_set_id for lego_set in lego_sets[i:i+75]]
-            items_infos = await website_interface.parse_items(lego_sets=lego_sets[i:i+75])
+            items_infos = await website_interface.parse_lego_sets_prices(lego_sets=lego_sets[i:i + 75])
             if items_infos is not None:
             # ic(results)
                 for item_info in items_infos:

@@ -2,5 +2,10 @@ from abc import ABC, abstractmethod
 
 class WebsiteController(ABC):
     @abstractmethod
-    def parse_lego_sets(self):
+    async def parse_lego_sets_prices(self):
         pass
+
+    @abstractmethod
+    async def parse_lego_sets_price(self, lego_set_id: str):
+        pass
+
