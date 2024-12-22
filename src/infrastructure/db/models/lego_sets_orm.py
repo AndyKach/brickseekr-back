@@ -12,6 +12,7 @@ class LegoSetsOrm(Base):
     lego_set_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, default="-")
     category_name: Mapped[str] = mapped_column(String, default="0")
+    url_name: Mapped[str] = mapped_column(String, default="-")
     year: Mapped[int] = mapped_column(INTEGER, default=0)
     weigh: Mapped[float] = mapped_column(Float, default=0.0)
     dimensions: Mapped[dict] = mapped_column(JSON, default={})

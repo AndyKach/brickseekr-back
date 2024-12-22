@@ -2,7 +2,7 @@ from infrastructure.db.models.lego_sets_orm import LegoSetsOrm
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from domain.lego_set import LegoSet
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, text
+from sqlalchemy import select, delete, text, update
 
 from infrastructure.db.base import async_engine
 
@@ -29,6 +29,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 images=lego_set.images,
                 name=lego_set.name,
                 category_name=lego_set.category_name,
+                url_name=lego_set.url_name,
                 year=lego_set.year,
                 weigh=lego_set.weigh,
                 dimensions=lego_set.dimensions,
@@ -44,6 +45,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 images=lego_set.images,
                 name=lego_set.name,
                 category_name=lego_set.category_name,
+                url_name=lego_set.url_name,
                 year=lego_set.year,
                 weigh=lego_set.weigh,
                 dimensions=lego_set.dimensions,
@@ -65,6 +67,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                     images=lego_set.images,
                     name=lego_set.name,
                     category_name=lego_set.category_name,
+                    url_name=lego_set.url_name,
                     year=lego_set.year,
                     weigh=lego_set.weigh,
                     dimensions=lego_set.dimensions,
@@ -81,5 +84,15 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
+    async def update_url_name(self, lego_set_id: str, url_name: str):
+        session = self.get_session()
+        async with session.begin():
+            # row = select(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id)
+            # print("Befor", row)
+            # row.url_name = url_name
+            # print("After", row)
+            query = update(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id).values(url_name=url_name)
+            await session.execute(query)
+            await session.commit()
 
 

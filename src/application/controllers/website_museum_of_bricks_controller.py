@@ -26,3 +26,6 @@ class WebsiteMuseumOfBricksController(WebsiteController):
 
     async def parse_lego_sets_url(self):
         await self.website_parser_use_case.parse_lego_sets_url()
+
+    async def parse_lego_sets_urls(self):
+        await self.website_parser_use_case.parse_lego_sets_urls()

@@ -76,6 +76,9 @@ class LegoSetsService:
     async def parse_lego_sets_url(self):
         await self.website_museum_of_bricks_controller.parse_lego_sets_url()
 
+    async def parse_lego_sets_urls(self):
+        await self.website_museum_of_bricks_controller.parse_lego_sets_urls()
+
 
     async def async_parse_set(self, set_id: str):
         await self.website_lego_controller.parse_set(lego_set_id=set_id)

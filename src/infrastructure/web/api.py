@@ -140,7 +140,7 @@ async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
-    background_tasks.add_task(lego_sets_service.parse_lego_sets_url)
+    background_tasks.add_task(lego_sets_service.parse_lego_sets_urls)
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
 

@@ -9,10 +9,13 @@ from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 from infrastructure.config.logs_config import log_decorator
 
+# Было добавлено только что
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 @log_decorator(print_args=False, print_kwargs=False)
 async def get_selenium_driver():
     FF_OPTIONS = [
+        '--headless',         # удалить чтобы появилась картинка
         '--no-sandbox',
         '--accept-cookies'
         '--disable-xss-auditor',
@@ -27,8 +30,14 @@ async def get_selenium_driver():
         'permissions.default.desktop-notification': 1,
         'dom.webnotifications.enabled': 1,
         'dom.push.enabled': 1,
-        'intl.accept_languages': 'en-US'
+        'intl.accept_languages': 'en-US',
+        "permissions.default.image": 2,  # Отключение загрузки изображений
+        "dom.disable_open_during_load": True, # Было добавлено только что
+        "browser.helperApps.neverAsk.saveToDisk": "application/pdf", # Было добавлено только что
     }
+    # Было добавлено только что
+    caps = DesiredCapabilities().FIREFOX
+    caps["pageLoadStrategy"] = "eager"  # Ждать только загрузки DOM, не ресурсов
 
     options = FirefoxOptions()
     if os.getenv("DEVICE") == "Ubuntu":
@@ -44,7 +53,11 @@ async def get_selenium_driver():
 
     [options.add_argument(opt) for opt in FF_OPTIONS]
     [options.set_preference(key, value) for key, value in SET_PREF.items()]
-    driver = webdriver.Firefox(service=Service(geckodriver_path), options=options)
+
+    driver = webdriver.Firefox(
+        service=Service(geckodriver_path),
+        options=options
+    )
     return driver
 
 if __name__ == '__main__':
