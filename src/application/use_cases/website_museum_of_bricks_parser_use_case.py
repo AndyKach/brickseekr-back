@@ -8,6 +8,8 @@ import asyncio
 from aiolimiter import AsyncLimiter
 from aiohttp.client_exceptions import TooManyRedirects
 
+from domain.lego_sets_prices import LegoSetsPrices
+
 system_logger = logging.getLogger('system_logger')
 
 class WebsiteMuseumOfBricksParserUseCase:
@@ -47,7 +49,28 @@ class WebsiteMuseumOfBricksParserUseCase:
 
     async def parse_lego_sets_prices(self):
         lego_sets = await self.lego_sets_repository.get_all()
-        result = await self.website_interface.parse_lego_sets_prices(lego_sets=lego_sets[:10])
-        system_logger.info(f"Result: {result}")
+        for i in range(1, len(lego_sets), 100):
+            results = await self.website_interface.parse_lego_sets_prices(lego_sets=lego_sets[i:i+100])
+            system_logger.info(f"Result: {results}")
+
+            for result in results:
+                if result is not None:
+                    if await self.lego_sets_prices_repository.get_item(
+                            item_id=result.get('lego_set_id'),
+                    ) is not None:
+                        await self.lego_sets_prices_repository.save_price(
+                            item_id=result.get('lego_set_id'),
+                            price=result.get('price'),
+                            website_id=self.website_id
+                        )
+                    else:
+                        await self.lego_sets_prices_repository.add_item(
+                            LegoSetsPrices(
+                                lego_set_id=result.get('lego_set_id'),
+                                prices={self.website_id: result.get('price')}
+                            )
+                        )
+
+
 
 

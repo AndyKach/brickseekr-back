@@ -156,5 +156,15 @@ async def parse_sets(
     return await get_success_json_response(data={'status': 'parse start'})
 
 
+@app.post("/store-{store_id}/parseAllSets")
+@log_api_decorator
+async def parse_sets(
+        store_id: str,
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.parse_all_sets_in_store, store_id=store_id)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
 
 
