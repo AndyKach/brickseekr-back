@@ -76,7 +76,7 @@ async def parse_sets(
 
 
 
-@app.get("/sets/{set_id}")
+@app.get("/sets/{set_id}/getData")
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
@@ -91,7 +91,7 @@ async def get_set(set_id: str, response: Response, background_tasks: BackgroundT
         return await get_success_json_response(data=data)
 
 
-@app.get("/sets/{set_id}/prices")
+@app.get("/sets/{set_id}/getPrices")
 @log_api_decorator
 async def get_sets_prices(
         set_id: str, response: Response, background_tasks: BackgroundTasks,
@@ -133,5 +133,17 @@ async def parse_sets(
     background_tasks.add_task(lego_sets_service.async_parse_sets, store=store)
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
+
+@app.get("/sets/parseSetsUrls")
+@log_api_decorator
+async def parse_sets(
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.parse_lego_sets_url)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
+
+
 
 

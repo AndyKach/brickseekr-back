@@ -12,10 +12,17 @@ from infrastructure.config.gateways_config import bricklink_gateway
 from infrastructure.config.repositories_config import lego_sets_repository
 from domain.lego_set import LegoSet
 
+async def get_category_name(category_id: int):
+    try:
+        result = await bricklink_gateway.get_category(category_id=category_id)
+        return result.get('data').get('category_name').replace(' ', '-').lower()
+    except:
+        return "error_category"
+
 async def get_set_items():
     last_datetime = datetime.now()
     log_text = ""
-    for i in range(51500, 100000, 500):
+    for i in range(12000, 100000, 500):
         time.sleep(2)
 
         async with aiohttp.ClientSession() as session:
@@ -44,7 +51,7 @@ async def get_set_items():
                             # images=lego_set_json_info.get(''),
                             images={'1': lego_set_json_info.get('image_url')},
                             name=lego_set_json_info.get('name'),
-                            url_name='-',
+                            category_name=await get_category_name(lego_set_json_info.get('category_id')),
                             year=lego_set_json_info.get('year_released'),
                             weigh=lego_set_json_info.get('weight'),
                             dimensions={
@@ -53,12 +60,18 @@ async def get_set_items():
                                 'dim_z': lego_set_json_info.get('dim_z'),
                             },
                             ages=3,
-
                         )
-
+                        # print('!!!!!!!!!')
+                        # print(lego_set)
+                        # print('!!!!!!!!!')
                         try:
-                            await lego_sets_repository.set_set(lego_set=lego_set)
-                        except IntegrityError as e:
+                            if await lego_sets_repository.get_set(set_id=lego_set.lego_set_id) is None:
+                                await lego_sets_repository.set_set(lego_set=lego_set)
+                            else:
+                                await lego_sets_repository.delete_set(lego_set_id=lego_set.lego_set_id)
+                                await lego_sets_repository.set_set(lego_set=lego_set)
+                        # except IntegrityError as e:
+                        except Exception as e:
                             print(f"ERROR: {str(e)[str(e).find('\n')+1:str(e).find('\n', str(e).find('\n')+1)]}")
                         log_text += str(lego_set) + '\n'
                     else:
@@ -80,15 +93,20 @@ async def get_categories_list():
     ic(result)
 
 async def get_categories():
-    result = await bricklink_gateway.get_category(category_id="1306")
+    result = await bricklink_gateway.get_category(category_id="65")
     ic(result)
 
-start_datetime = datetime.now()
 
-asyncio.run(get_set_items())
 
-print(f"Time taken: {datetime.now() - start_datetime}")
-# asyncio.run(get_minifig_items())
-# asyncio.run(get_categories_list())
-# asyncio.run(get_categories())
 
+
+if __name__ == '__main__':
+    start_datetime = datetime.now()
+
+    asyncio.run(get_set_items())
+
+    # asyncio.run(get_minifig_items())
+    # asyncio.run(get_categories_list())
+    # asyncio.run(get_categories())
+
+    print(f"Time taken: {datetime.now() - start_datetime}")

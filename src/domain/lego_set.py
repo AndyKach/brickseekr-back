@@ -6,7 +6,7 @@ class LegoSet(BaseModel):
     lego_set_id: str = Field(default='')
     images: dict = Field(default={})
     name: str = Field(default='')
-    url_name: str = Field(default='-')
+    category_name: str = Field(default='-')
     year: int = Field(default='')
     weigh: float = Field(default='')
     dimensions: dict | None = Field(default={})

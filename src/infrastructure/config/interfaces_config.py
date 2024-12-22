@@ -1,10 +1,17 @@
 from infrastructure.interfaces_impl.scheduler_interface_impl import SchedulerInterfaceImpl
 from infrastructure.interfaces_impl.website_bricklick_interface import WebsiteBricklinkInterface
 from infrastructure.interfaces_impl.website_capi_cap_interface import WebsiteCapiCapInterface
+from infrastructure.interfaces_impl.website_kostickyshop_interface import WebsiteKostickyshopInterface
 from infrastructure.interfaces_impl.website_lego_interface import WebsiteLegoInterface
+from infrastructure.interfaces_impl.website_museum_of_bricks_interface import WebsiteMuseumOfBricksInterface
+from infrastructure.interfaces_impl.website_sparkys_interface import WebsiteSparkysInterface
 
 website_lego_interface = WebsiteLegoInterface()
 website_bricklink_interface = WebsiteBricklinkInterface()
 website_capi_cap_interface = WebsiteCapiCapInterface()
+website_museum_of_bricks_interface = WebsiteMuseumOfBricksInterface()
+website_sparkys_interface = WebsiteSparkysInterface()
+website_kostickyshop_interface = WebsiteKostickyshopInterface()
+
 
 scheduler_interface = SchedulerInterfaceImpl()

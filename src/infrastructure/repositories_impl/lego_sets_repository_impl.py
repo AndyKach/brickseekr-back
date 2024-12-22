@@ -28,7 +28,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 lego_set_id=lego_set.lego_set_id,
                 images=lego_set.images,
                 name=lego_set.name,
-                url_name=lego_set.url_name,
+                category_name=lego_set.category_name,
                 year=lego_set.year,
                 weigh=lego_set.weigh,
                 dimensions=lego_set.dimensions,
@@ -43,7 +43,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 lego_set_id=lego_set.lego_set_id,
                 images=lego_set.images,
                 name=lego_set.name,
-                url_name=lego_set.url_name,
+                category_name=lego_set.category_name,
                 year=lego_set.year,
                 weigh=lego_set.weigh,
                 dimensions=lego_set.dimensions,
@@ -64,7 +64,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                     lego_set_id=lego_set.lego_set_id,
                     images=lego_set.images,
                     name=lego_set.name,
-                    url_name=lego_set.url_name,
+                    category_name=lego_set.category_name,
                     year=lego_set.year,
                     weigh=lego_set.weigh,
                     dimensions=lego_set.dimensions,
@@ -72,4 +72,14 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                     created_at=lego_set.created_at,
                 ))
             return lego_sets
+
+    async def delete_set(self, lego_set_id):
+        session = self.get_session()
+        async with session.begin():
+            query = delete(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id)
+
+            await session.execute(query)
+            await session.commit()
+
+
 

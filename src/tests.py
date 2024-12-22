@@ -26,15 +26,19 @@
 #     asyncio.run(lego_sets_prices_repository.save_price(item_id='LEGO-1234', price=new_price, website_id=website_id))
 
 
-print(123, '213', ('eqw', 123), [123, 'das'])
-x = ['dasd', 123]
+# print(123, '213', ('eqw', 123), [123, 'das'])
+# x = ['dasd', 123]
+#
+# len(x)
+#
+# y = "sdfsdfs"
+#
+# print(y.upper())
+# print(y.lower())
+# print(str(x), len(str(x)))
+# print(str({"1": 15, "2":40}), len(str({"1": 15, "2":40})))
+# print(str([1, '3', (2.5, 18)]), len(str([1, '3', (2.5, 18)])))
 
-len(x)
+url = "https://eshop.museumofbricks.cz/lego-star-wars--75257-millennium-falcon/"
 
-y = "sdfsdfs"
-
-print(y.upper())
-print(y.lower())
-print(str(x), len(str(x)))
-print(str({"1": 15, "2":40}), len(str({"1": 15, "2":40})))
-print(str([1, '3', (2.5, 18)]), len(str([1, '3', (2.5, 18)])))
+print(url[url.find('75257')+6:-1])
