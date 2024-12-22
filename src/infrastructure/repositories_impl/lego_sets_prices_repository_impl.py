@@ -63,6 +63,17 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
                 if lego_set_price is not None:
                     return lego_set_price.get(website_id)
 
+    @log_decorator(print_args=False)
+    async def get_item(self, item_id: str) -> LegoSetsPrices:
+        session = self.get_session()
+        async with session.begin():
+            query = select(LegoSetsPricesOrm.prices).where(LegoSetsPricesOrm.lego_set_id == item_id)
+            res = await session.execute(query)
+            if res:
+                lego_set_price = res.scalars().first()
+                return lego_set_price
+
+
     @log_decorator(print_args=False, print_kwargs=False)
     async def get_all_items(self):
         session = self.get_session()
@@ -90,6 +101,8 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
         async with session.begin():
             session.add(lego_sets_prices_orm)
             await session.commit()
+
+
 
 
 if __name__ == '__main__':

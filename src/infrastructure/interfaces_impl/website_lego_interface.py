@@ -11,16 +11,18 @@ from pygments.lexer import words
 
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_interface import WebsiteInterface
+from domain.lego_set import LegoSet
+from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator, system_logger
 from infrastructure.config.selenium_config import get_selenium_driver
 from infrastructure.db.base import session_factory
 
 
-class WebsiteLegoInterface(WebsiteInterface):
+class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
     def __init__(self):
         self.driver = None
         self.waiting_time = 2
-        self.url = 'https://www.lego.com/de-de/product/'
+        self.url = 'https://www.lego.com/de-de/product/{artikel}'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
             'Accept-Language': 'de-DE,de;q=0.9',
@@ -37,12 +39,21 @@ class WebsiteLegoInterface(WebsiteInterface):
         return result
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_items(self, item_ids: list):
+    async def parse_items(self, lego_sets: list[LegoSet]):
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:
                 async with rate_limiter:
-                    tasks = [self.__get_item_info(session, item_id=item_id) for item_id in item_ids]
+                    tasks = [
+                        self.__get_item_info(
+                            session,
+                            url=self.url.format(
+                                name=self.normalize_string(lego_set.name),
+                                artikel=lego_set.lego_set_id
+                            ),
+                            item_id=lego_set.lego_set_id
+                        ) for lego_set in lego_sets
+                    ]
                     # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
                     return results
@@ -53,9 +64,8 @@ class WebsiteLegoInterface(WebsiteInterface):
             return None
 
 
-    async def __get_item_info(self, session, item_id: str):
+    async def __get_item_info(self, session, url: str, item_id: str):
         last_datetime = datetime.now()
-        url = self.url + item_id
         page = await self.fetch_page(session=session, url=url)
         with open('test1.txt', 'w') as f:
             f.write(str(page))
@@ -66,24 +76,28 @@ class WebsiteLegoInterface(WebsiteInterface):
             system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
             soup = BeautifulSoup(page, 'lxml')
-            with open('test2.txt', 'w') as f:
-                f.write(str(page))
+            # with open('test2.txt', 'w') as f:
+            #     f.write(str(page))
             # ic(soup)
-            price_element = soup.find('span',
+            set_price = soup.find('span',
                                       class_='ds-heading-lg ProductPrice_priceText__ndJDK',
                                       attrs={'data-test': 'product-price'})
 
-            if price_element:
-                price = price_element.get_text(strip=True)
-                system_logger.info(f'Lego set {url[url.rfind("/")+1:]} exists, price: {price}')
-                # system_logger.info(f"Price found: {price}")
-                return {"lego_set_id": item_id,
-                        "price": price_element.get_text(strip=True).replace('\xa0', ' ')}
+            set_price_sale = soup.find('span',
+                                      class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
+                                      attrs={'data-test': 'product-price-sale'})
 
-            else:
-                system_logger.info(f'Lego set {url[url.rfind("/")+1:]} not found')
-                # system_logger.info("Price element not found")
-                return None
+            for price_element in [set_price, set_price_sale]:
+                if price_element:
+                    price = price_element.get_text(strip=True)
+                    system_logger.info(f'Lego set {item_id} exists, price: {price}')
+                    return {"lego_set_id": item_id,
+                            "price": price.replace('\xa0', ' ')}
+
+                else:
+                    system_logger.info(f'Lego set {item_id} not found')
+
+
 
         return None
             # ic(price_element.get_text(strip=True))

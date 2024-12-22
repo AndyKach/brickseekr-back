@@ -48,6 +48,7 @@ class LegoSetsService:
 
     async def async_parse_sets(self, store: str):
         website_use_case = await self.__get_website_use_case(store=store)
+        print(website_use_case)
         await website_use_case.parse_items()
 
     async def async_parse_set(self, set_id: str):

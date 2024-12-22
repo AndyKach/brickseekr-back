@@ -11,7 +11,9 @@ from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.lego_set import LegoSet
 from domain.lego_sets_prices import LegoSetsPrices
+import logging
 
+system_logger = logging.getLogger('system_logger')
 
 class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
     def __init__(
@@ -24,10 +26,19 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
         self.lego_sets_prices_repository = lego_sets_prices_repository
         self.website_interface = website_interface
 
+        self.website_id = "2"
+
     async def parse_item(self):
         pass
 
     async def parse_items(self):
         items = await self.lego_sets_repository.get_all()
         # print(await self.lego_sets_prices_repository.get_all_items()[:10])
-        print(items[:10])
+        # print(items[145:195])
+
+        await self._parse_items(lego_sets=items[4255:4700], website_interface=self.website_interface,
+                                lego_sets_prices_repository=self.lego_sets_prices_repository,
+                                website_id=self.website_id)
+
+
+
