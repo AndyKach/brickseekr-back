@@ -23,7 +23,8 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
         super().__init__()
         self.driver = None
         self.waiting_time = 2
-        self.url = 'https://www.lego.com/cz-cz/product'
+        self.url = 'https://www.lego.com/cs-cz/product'
+        self.url = 'https://www.lego.com/cs-cz/product'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
             'Accept-Language': 'de-DE,de;q=0.9',
@@ -47,10 +48,7 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
                     tasks = [
                         self.__get_item_info(
                             session,
-                            url=self.url.format(
-                                name=self.normalize_string(lego_set.name),
-                                artikel=lego_set.lego_set_id
-                            ),
+                            url=f"{self.url}/{lego_set.lego_set_id}",
                             item_id=lego_set.lego_set_id
                         ) for lego_set in lego_sets
                     ]
@@ -66,37 +64,39 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
 
     async def __get_item_info(self, session, url: str, item_id: str):
         last_datetime = datetime.now()
-        page = await self.fetch_page(session=session, url=url)
-        # with open('test1.txt', 'w') as f:
-        #     f.write(str(page))
-
-        # ic(page)
-        if page:
-            system_logger.info('-------------------------------------')
-            system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
-
-            soup = BeautifulSoup(page, 'lxml')
-            # with open('test2.txt', 'w') as f:
+        try:
+            page = await self.fetch_page(session=session, url=url)
+            # with open('test1.txt', 'w') as f:
             #     f.write(str(page))
-            # ic(soup)
-            set_price = soup.find('span',
-                                      class_='ds-heading-lg ProductPrice_priceText__ndJDK',
-                                      attrs={'data-test': 'product-price'})
 
-            set_price_sale = soup.find('span',
-                                      class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
-                                      attrs={'data-test': 'product-price-sale'})
+            # ic(page)
+            if page:
+                system_logger.info('-------------------------------------')
+                system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
-            for price_element in [set_price, set_price_sale]:
-                if price_element:
-                    price = price_element.get_text(strip=True)
-                    system_logger.info(f'Lego set {item_id} exists, price: {price}')
-                    return {"lego_set_id": item_id,
-                            "price": price.replace('\xa0', ' ')}
+                soup = BeautifulSoup(page, 'lxml')
+                # with open('test2.txt', 'w') as f:
+                #     f.write(str(page))
+                # ic(soup)
+                set_price = soup.find('span',
+                                          class_='ds-heading-lg ProductPrice_priceText__ndJDK',
+                                          attrs={'data-test': 'product-price'})
 
-                else:
-                    system_logger.info(f'Lego set {item_id} not found')
+                set_price_sale = soup.find('span',
+                                          class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
+                                          attrs={'data-test': 'product-price-sale'})
 
+                for price_element in [set_price, set_price_sale]:
+                    if price_element:
+                        price = price_element.get_text(strip=True)
+                        system_logger.info(f'Lego set {item_id} exists, price: {price}')
+                        return {"lego_set_id": item_id,
+                                "price": price.replace('\xa0', ' ')}
+
+                    else:
+                        system_logger.info(f'Lego set {item_id} not found')
+        except Exception as e:
+            print(f"Error: {e}")
 
 
         return None

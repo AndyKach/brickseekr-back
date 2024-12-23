@@ -28,10 +28,10 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
 
         self.website_id = "2"
 
-    async def parse_item(self):
+    async def parse_lego_sets_price(self):
         pass
 
-    async def parse_items(self):
+    async def parse_lego_sets_prices(self):
         items = await self.lego_sets_repository.get_all()
         # print(await self.lego_sets_prices_repository.get_all_items()[:10])
         # print(items[145:195])

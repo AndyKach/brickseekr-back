@@ -33,15 +33,21 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
 
         self.website_id = '1'
 
-    async def parse_item(self):
-        pass
+    async def parse_lego_sets_price(self, lego_set_id: str):
+        lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
+        await self._parse_item(
+            lego_set=lego_set,
+            website_interface=self.website_interface,
+            lego_sets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            website_id=self.website_id
+        )
 
-    async def parse_items(self):
+    async def parse_lego_sets_prices(self):
         lego_sets = await self.lego_sets_repository.get_all()
         await self._parse_items(
-            lego_sets=lego_sets[4255:4700],
+            lego_sets=lego_sets[200:220],
             website_interface=self.website_interface,
-            lego_sets_prices_repository=self.lego_sets_prices_repository,
+            lego_sets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )
 
@@ -63,19 +69,18 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
     async def parse_set(self, lego_set_id: str):
         await self._parse_item(lego_set_id=lego_set_id)
 
-    async def _parse_item(self, lego_set_id: str):
-        time_start = datetime.now()
-
-        item_info = await self.website_interface.parse_lego_sets_price(lego_set=lego_set_id)
-        if item_info is not None:
-            lego_sets_prices = LegoSetsPrices(
-                lego_set_id=item_info.get('lego_set_id'),
-                prices={self.website_id: item_info.get('price')}
-            )
-            await self._save_new_price(lego_sets_prices=lego_sets_prices)
-
-        system_logger.info(f'Parse is end in {datetime.now() - time_start}')
-
+    # async def _parse_item(self, lego_set_id: str):
+    #     time_start = datetime.now()
+    #
+    #     item_info = await self.website_interface.parse_lego_sets_price(lego_set=lego_set_id)
+    #     if item_info is not None:
+    #         lego_sets_prices = LegoSetsPrices(
+    #             lego_set_id=item_info.get('lego_set_id'),
+    #             prices={self.website_id: item_info.get('price')}
+    #         )
+    #         await self._save_new_price(lego_sets_prices=lego_sets_prices)
+    #
+    #     system_logger.info(f'Parse is end in {datetime.now() - time_start}')
 
     async def parse_lego_sets_price(self, lego_set_id: str):
         time_start = datetime.now()

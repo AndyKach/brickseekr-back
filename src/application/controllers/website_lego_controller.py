@@ -23,7 +23,7 @@ class WebsiteLegoController(WebsiteController):
         )
 
     async def parse_lego_sets_prices(self):
-        pass
+        await self.website_parser.parse_lego_sets_prices()
 
     async def parse_lego_sets_price(self, lego_set_id: str):
         await self.website_parser.parse_lego_sets_price(lego_set_id=lego_set_id)
