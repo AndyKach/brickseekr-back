@@ -23,7 +23,7 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
         super().__init__()
         self.driver = None
         self.waiting_time = 2
-        self.url = 'https://www.lego.com/de-de/product/{artikel}'
+        self.url = 'https://www.lego.com/cz-cz/product'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
             'Accept-Language': 'de-DE,de;q=0.9',
@@ -31,13 +31,12 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
         self.response = None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_price(self, lego_set: str):
-        result = None
-        url = self.url + lego_set
+    async def parse_lego_sets_price(self, lego_set: LegoSet):
+        url = f"{self.url}/{lego_set.lego_set_id}"
         async with aiohttp.ClientSession() as session:
-            result = await self.__get_item_info(session=session, item_id=lego_set)
-
-        return result
+            return await self.__get_item_info(
+                session=session, url=url, item_id=lego_set.lego_set_id
+            )
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
@@ -68,8 +67,8 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
     async def __get_item_info(self, session, url: str, item_id: str):
         last_datetime = datetime.now()
         page = await self.fetch_page(session=session, url=url)
-        with open('test1.txt', 'w') as f:
-            f.write(str(page))
+        # with open('test1.txt', 'w') as f:
+        #     f.write(str(page))
 
         # ic(page)
         if page:

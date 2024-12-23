@@ -43,7 +43,7 @@ class WebsiteMuseumOfBricksParserUseCase:
         result = await self.website_interface.parse_lego_sets_price(lego_set=lego_set)
         system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
         await self.lego_sets_prices_repository.save_price(
-            item_id=lego_set.lego_set_id, price=result.get('price'), website_id=self.website_id
+            lego_set_id=lego_set.lego_set_id, price=result.get('price'), website_id=self.website_id
         )
         return result
 
@@ -56,10 +56,10 @@ class WebsiteMuseumOfBricksParserUseCase:
             for result in results:
                 if result is not None:
                     if await self.lego_sets_prices_repository.get_item(
-                            item_id=result.get('lego_set_id'),
+                            lego_set_id=result.get('lego_set_id'),
                     ) is not None:
                         await self.lego_sets_prices_repository.save_price(
-                            item_id=result.get('lego_set_id'),
+                            lego_set_id=result.get('lego_set_id'),
                             price=result.get('price'),
                             website_id=self.website_id
                         )

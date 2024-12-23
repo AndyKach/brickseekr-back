@@ -56,7 +56,7 @@ class WebsiteParserUseCase(ABC):
                                website_id: str,
                                ):
 
-        if await lego_sets_prices_repository.get_item(item_id=lego_sets_prices.lego_set_id) is None:
+        if await lego_sets_prices_repository.get_item(lego_set_id=lego_sets_prices.lego_set_id) is None:
             # Первое создание
             try:
                 await lego_sets_prices_repository.add_item(
@@ -71,10 +71,10 @@ class WebsiteParserUseCase(ABC):
                 system_logger.error(f"Error by add new set with price: {e}")
         else:
             # Добавление цены
-            print(f"item_price: {await lego_sets_prices_repository.get_item_price(item_id=lego_sets_prices.lego_set_id, website_id=website_id)}")
+            print(f"item_price: {await lego_sets_prices_repository.get_item_price(lego_set_id=lego_sets_prices.lego_set_id, website_id=website_id)}")
             try:
                 await lego_sets_prices_repository.save_price(
-                    item_id=lego_sets_prices.lego_set_id, website_id=website_id,
+                    lego_set_id=lego_sets_prices.lego_set_id, website_id=website_id,
                     price=lego_sets_prices.prices.get(website_id)
                 )
                 system_logger.info(f"Save new items price successfully:\n"

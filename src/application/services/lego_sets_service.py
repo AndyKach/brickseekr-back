@@ -98,7 +98,7 @@ class LegoSetsService:
         await self.website_lego_controller.parse_all_sets()
 
     async def get_sets_prices(self, set_id: str):
-        lego_sets_prices = await self.lego_sets_prices_repository.get_item_all_prices(item_id=set_id)
+        lego_sets_prices = await self.lego_sets_prices_repository.get_item_all_prices(lego_set_id=set_id)
         result = {
             "set_id": set_id,
             "prices": lego_sets_prices
@@ -106,7 +106,7 @@ class LegoSetsService:
         return result
 
     async def get_sets_prices_from_website(self, set_id: str, website_id: str):
-        lego_sets_price = await self.lego_sets_prices_repository.get_item_price(item_id=set_id, website_id=website_id)
+        lego_sets_price = await self.lego_sets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
         result = {
             "set_id": set_id,
             "website_id": website_id,

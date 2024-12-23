@@ -7,8 +7,10 @@ from requests.utils import extract_zipped_paths
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.lego_set import LegoSet
+from domain.lego_sets_price import LegoSetsPrice
 from domain.lego_sets_prices import LegoSetsPrices
 import logging
 
@@ -20,11 +22,14 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             self,
             lego_sets_prices_repository: LegoSetsPricesRepository,
             lego_sets_repository: LegoSetsRepository,
-            website_lego_interface: WebsiteInterface,
+            website_interface: WebsiteInterface,
     ):
         self.lego_sets_repository = lego_sets_repository
         self.lego_sets_prices_repository = lego_sets_prices_repository
-        self.website_lego_interface = website_lego_interface
+        self.website_interface = website_interface
+        self.lego_sets_prices_save_use_case = LegoSetsPricesSaveUseCase(
+            lego_sets_prices_repository=self.lego_sets_prices_repository
+        )
 
         self.website_id = '1'
 
@@ -35,7 +40,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
         lego_sets = await self.lego_sets_repository.get_all()
         await self._parse_items(
             lego_sets=lego_sets[4255:4700],
-            website_interface=self.website_lego_interface,
+            website_interface=self.website_interface,
             lego_sets_prices_repository=self.lego_sets_prices_repository,
             website_id=self.website_id
         )
@@ -61,7 +66,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
     async def _parse_item(self, lego_set_id: str):
         time_start = datetime.now()
 
-        item_info = await self.website_lego_interface.parse_lego_sets_price(lego_set=lego_set_id)
+        item_info = await self.website_interface.parse_lego_sets_price(lego_set=lego_set_id)
         if item_info is not None:
             lego_sets_prices = LegoSetsPrices(
                 lego_set_id=item_info.get('lego_set_id'),
@@ -70,3 +75,22 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             await self._save_new_price(lego_sets_prices=lego_sets_prices)
 
         system_logger.info(f'Parse is end in {datetime.now() - time_start}')
+
+
+    async def parse_lego_sets_price(self, lego_set_id: str):
+        time_start = datetime.now()
+
+        lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
+        result = await self.website_interface.parse_lego_sets_price(lego_set=lego_set)
+        system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
+        await self.lego_sets_prices_save_use_case.save_lego_sets_price(
+            LegoSetsPrice(
+                lego_set_id=lego_set.lego_set_id,
+                price=result.get('price'),
+                website_id=self.website_id
+            )
+        )
+
+        system_logger.info(f'Parse is end in {datetime.now() - time_start}')
+
+        return result
