@@ -24,21 +24,22 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
         super().__init__()
         self.driver = None
         self.waiting_time = 2
-        self.url = 'https://www.capi-cap.cz/lego-star-wars-{artikel}-{name}/'
+        self.url = 'https://www.capi-cap.cz/lego-{category}-{artikel}-{name}/'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
             'Accept-Language': 'de-DE,de;q=0.9',
         }
         self.response = None
 
-    @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_price(self, lego_set: str):
-        result = None
-        url = self.url + lego_set
-        async with aiohttp.ClientSession() as session:
-            result = await self.__get_item_info(session=session, item_id=lego_set)
+    async def format_lego_set_url(self, lego_set: LegoSet):
+        return self.url.format(category=lego_set.category_name, artikel=lego_set.lego_set_id, name=lego_set.url_name)
+        # return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
 
-        return result
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_lego_sets_price(self, lego_set: LegoSet):
+        url = await self.format_lego_set_url(lego_set=lego_set)
+        async with aiohttp.ClientSession() as session:
+            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
@@ -47,15 +48,13 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
             try:
                 async with rate_limiter:
                     tasks = [
-                        self.__get_item_info(
+                        self.__get_lego_sets_price(
                             session,
-                            url=self.url.format(
-                                name=self.normalize_string(lego_set.name),
-                                artikel=lego_set.lego_set_id
-                            ),
+                            url=await self.format_lego_set_url(lego_set=lego_set),
                             item_id=lego_set.lego_set_id
                         ) for lego_set in lego_sets
-                    ]  # Параллельное выполнение всех задач
+                    ]
+                    # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
                     return results
 
@@ -64,29 +63,30 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
 
             return None
 
+
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_item_info(self, session, url: str, item_id: str):
-        last_datetime = datetime.now()
+    async def __get_lego_sets_price(self, session, url: str, item_id: str):
+        start_time = datetime.now()
         page = await self.fetch_page(session=session, url=url)
-        with open('test1.txt', 'w') as f:
-            f.write(str(page))
+        # with open('test1.txt', 'w') as f:
+        #     f.write(str(page))
 
         # ic(page)
         if page:
             system_logger.info('-------------------------------------')
-            system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
+            system_logger.info('Get page: ' + str(datetime.now() - start_time))
             system_logger.info(f'URL: {url}')
 
             soup = BeautifulSoup(page, 'lxml')
             # print(f"DOM:\n{soup}")
             # set_price = dom.xpath('/html/body/div[4]/div/div[1]/div[2]/div/div/main/div/form/fieldset/table/tbody/tr/td[2]/table[1]/tbody/tr[3]/td[1]/strong')
-            set_price = soup.find(
+            price_element = soup.find(
                 'strong',
                 class_="price sub-left-position",
                 attrs={'data-testid': "productCardPrice"})
 
-            if set_price:
-                price = set_price.get_text(strip=True)
+            if price_element:
+                price = price_element.get_text(strip=True)
                 system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
                 return {"lego_set_id": item_id,
                         "price": price.replace('\xa0', ' ')}

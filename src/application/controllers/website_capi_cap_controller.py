@@ -2,6 +2,7 @@ from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 
 
 class WebsiteCapiCapController(WebsiteController):
@@ -15,9 +16,14 @@ class WebsiteCapiCapController(WebsiteController):
         self.lego_sets_prices_repository = lego_sets_prices_repository,
         self.website_interface = website_interface
 
-    def parse_lego_sets_prices(self):
-        pass
+        self.website_parser_use_case = WebsiteCapiCapParserUseCase(
+            lego_sets_repository=lego_sets_repository,
+            lego_sets_prices_repository=lego_sets_prices_repository,
+            website_interface=self.website_interface
+        )
 
+    async def parse_lego_sets_prices(self):
+        await self.website_parser_use_case.parse_lego_sets_prices()
 
     async def parse_lego_sets_price(self, lego_set_id: str):
-        pass
+        return await self.website_parser_use_case.parse_lego_sets_price(lego_set_id=lego_set_id)

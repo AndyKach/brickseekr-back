@@ -33,15 +33,16 @@ class WebsiteParserUseCase(ABC):
                            website_id: str
                            ):
         time_start=datetime.now()
+        count_valuable = 0
         system_logger.info(f'Count Lego sets: {len(lego_sets)}')
         for i in range(0, len(lego_sets), 75):
             system_logger.info(f'Start parse sets from {i} bis {i+75}')
             lego_sets_prices = await website_interface.parse_lego_sets_prices(lego_sets=lego_sets[i:i + 75])
-            ic(lego_sets_prices)
             if lego_sets_prices is not None:
             # ic(results)
                 for lego_set in lego_sets_prices:
                     if lego_set is not None:
+                        count_valuable += 1
                         lego_sets_price = LegoSetsPrice(
                             lego_set_id=lego_set.get('lego_set_id'),
                             price=lego_set.get('price'),
@@ -54,7 +55,7 @@ class WebsiteParserUseCase(ABC):
 
             system_logger.info(f'Start pause 15s')
             await asyncio.sleep(15)
-
+        system_logger.info(f"Number of successful ones: {count_valuable}")
         system_logger.info(f'Parse is end in {datetime.now()-time_start}')
 
     @staticmethod

@@ -128,7 +128,6 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_price(self, lego_set: LegoSet):
-
         url = await self.format_lego_set_url(lego_set=lego_set)
         async with aiohttp.ClientSession() as session:
             return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
