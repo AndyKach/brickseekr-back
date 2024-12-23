@@ -18,129 +18,71 @@ from infrastructure.config.logs_config import log_decorator, system_logger
 
 class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
     def __init__(self):
+        super().__init__()
         self.driver = None
         self.waiting_time = 2
-        self.url = 'https://www.lego.com/de-de/product/{artikel}'
+        self.url = 'https://www.sparkys.cz'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
             'Accept-Language': 'de-DE,de;q=0.9',
         }
         self.response = None
 
+
+    async def format_lego_set_url(self, lego_set: LegoSet):
+        return f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_price(self, lego_set: str):
-        pass
-        # result = None
-        # url = self.url + item_id
-        # async with aiohttp.ClientSession() as session:
-        #     result = await self.__get_item_info(session=session, item_id=item_id)
-        #
-        # return result
+    async def parse_lego_sets_price(self, lego_set: LegoSet):
+        url = await self.format_lego_set_url(lego_set=lego_set)
+        async with aiohttp.ClientSession() as session:
+            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
-        pass
-        # async with aiohttp.ClientSession() as session:
-        #     rate_limiter = AsyncLimiter(60, 60)
-        #     try:
-        #         async with rate_limiter:
-        #             tasks = [
-        #                 self.__get_item_info(
-        #                     session,
-        #                     url=self.url.format(
-        #                         name=self.normalize_string(lego_set.name),
-        #                         artikel=lego_set.lego_set_id
-        #                     ),
-        #                     item_id=lego_set.lego_set_id
-        #                 ) for lego_set in lego_sets
-        #             ]
-        #             # Параллельное выполнение всех задач
-        #             results = await asyncio.gather(*tasks)
-        #             return results
-        #
-        #     except TooManyRedirects as e:
-        #         print(e)
-        #
-        #     return None
+        async with aiohttp.ClientSession() as session:
+            rate_limiter = AsyncLimiter(60, 60)
+            try:
+                async with rate_limiter:
+                    tasks = [
+                        self.__get_lego_sets_price(
+                            session,
+                            url=await self.format_lego_set_url(lego_set=lego_set),
+                            item_id=lego_set.lego_set_id
+                        ) for lego_set in lego_sets
+                    ]
+                    # Параллельное выполнение всех задач
+                    results = await asyncio.gather(*tasks)
+                    return results
+
+            except TooManyRedirects as e:
+                print(e)
+
+            return None
 
 
-    async def __get_item_info(self, session, url: str, item_id: str):
-        pass
-        # last_datetime = datetime.now()
-        # page = await self.fetch_page(session=session, url=url)
-        # with open('test1.txt', 'w') as f:
-        #     f.write(str(page))
-        #
-        # # ic(page)
-        # if page:
-        #     system_logger.info('-------------------------------------')
-        #     system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
-        #
-        #     soup = BeautifulSoup(page, 'lxml')
-        #     # with open('test2.txt', 'w') as f:
-        #     #     f.write(str(page))
-        #     # ic(soup)
-        #     set_price = soup.find('span',
-        #                               class_='ds-heading-lg ProductPrice_priceText__ndJDK',
-        #                               attrs={'data-test': 'product-price'})
-        #
-        #     set_price_sale = soup.find('span',
-        #                               class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
-        #                               attrs={'data-test': 'product-price-sale'})
-        #
-        #     for price_element in [set_price, set_price_sale]:
-        #         if price_element:
-        #             price = price_element.get_text(strip=True)
-        #             system_logger.info(f'Lego set {item_id} exists, price: {price}')
-        #             return {"lego_set_id": item_id,
-        #                     "price": price.replace('\xa0', ' ')}
-        #
-        #         else:
-        #             system_logger.info(f'Lego set {item_id} not found')
-        #
-        #
-        #
-        # return None
-            # ic(price_element.get_text(strip=True))
+    async def __get_lego_sets_price(self, session, url: str, item_id: str):
+        start_time = datetime.now()
+        page = await self.fetch_page(session=session, url=url)
 
-    async def get_all_info_about_item(self, item_id: str):
-        pass
-        # self.response = requests.get(self.url + item_id)
-        # soup = BeautifulSoup(self.response.content, 'lxml')
-        # price_element = soup.find('span',
-        #                           class_='ds-heading-lg ProductPrice_priceText__ndJDK',
-        #                           attrs={'data-test': 'product-price'})
-        # ic(soup)
-        # ic(price_element)
-        # if price_element:
-        #     teile = soup.find('div',
-        #                       class_='ProductAttributesstyles__ValueWrapper-sc-1sfk910-5 jNaXJo',
-        #                       attrs={'data-test': "pieces-value"})
-        #     ic(teile)
-        #
-        #     element = soup.find('div', {'data-test': 'pieces-value',
-        #                                 'class': 'ProductAttributesstyles__ValueWrapper-sc-1sfk910-5 jNaXJo'})
-        #     ic(element)
+        # print(url)
 
-    async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
-        async with session.get(url, headers=self.headers) as response:
-            return await response.text()
+        if page:
+            system_logger.info('-------------------------------------')
+            system_logger.info('Get page: ' + str(datetime.now() - start_time))
+            system_logger.info(f'URL: {url}')
 
-        # rate_limiter = AsyncLimiter(limiter_max_rate, limiter_time_period)
-        # try:
-        #     async with rate_limiter:
-        #         async with session.get(url, headers=self.headers) as response:
-        #             return await response.text()
-        # except TooManyRedirects as e:
-        #     print(e)
+            soup = BeautifulSoup(page, 'lxml')
 
-
-# if __name__ == '__main__':
-#     lego_parser = WebsiteLegoInterface()
-#     asyncio.run(lego_parser.parse_item(item_id='60431'))
-    # asyncio.run(lego_parser.get_all_info_about_item(item_id='60431'))
-    # asyncio.run(lego_parser.get_all_info_about_item(item_id='61505'))
-
-
-
-""
+            price_element = soup.find('div', class_="Product-priceFinal")
+            # print(f"price_element: {price_element}")
+            if price_element:
+                price = price_element.get_text(strip=True)
+                price = price.replace('&nbsp;', ' ')
+                system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
+                return {
+                    "lego_set_id": item_id,
+                    "price": price.replace('\xa0', ' ')
+                }
+            else:
+                system_logger.info(f'Lego set price not found')

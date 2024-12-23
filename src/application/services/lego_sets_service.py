@@ -4,8 +4,10 @@ from icecream import ic
 
 from application.controllers.website_capi_cap_controller import WebsiteCapiCapController
 from application.controllers.website_controller import WebsiteController
+from application.controllers.website_kostickyshop_controller import WebsiteKostikyShopController
 from application.controllers.website_lego_controller import WebsiteLegoController
 from application.controllers.website_museum_of_bricks_controller import WebsiteMuseumOfBricksController
+from application.controllers.website_sparkys_controller import WebsiteSparkysController
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
@@ -44,6 +46,17 @@ class LegoSetsService:
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_museum_of_bricks_interface
         )
+        self.website_sparkys_controller = WebsiteSparkysController(
+            lego_sets_repository=lego_sets_repository,
+            lego_sets_prices_repository=lego_sets_prices_repository,
+            website_interface=self.website_sparkys_interface
+        )
+        self.website_kostickyshop_controller = WebsiteKostikyShopController(
+            lego_sets_repository=lego_sets_repository,
+            lego_sets_prices_repository=lego_sets_prices_repository,
+            website_interface=self.website_kostickyshop_interface
+        )
+
 
     @property
     def website_lego_interface(self) -> WebsiteInterface:
@@ -59,11 +72,11 @@ class LegoSetsService:
     
     @property
     def website_sparkys_interface(self) -> WebsiteInterface:
-        return self.websites_interfaces_provider.get_website_lego_interface()
+        return self.websites_interfaces_provider.get_website_sparkys_interface()
 
     @property
     def website_kostickyshop_interface(self) -> WebsiteInterface:
-        return self.websites_interfaces_provider.get_website_capi_cap_interface()
+        return self.websites_interfaces_provider.get_website_kostickyshop_interface()
 
     async def get_set_info(self, set_id: str):
         return await self.lego_sets_repository.get_set(set_id=set_id)
@@ -124,5 +137,9 @@ class LegoSetsService:
                 return self.website_lego_controller
             case "2":
                 return self.website_capi_cap_controller
+            case "3":
+                return self.website_sparkys_controller
             case "4":
                 return self.website_museum_of_bricks_controller
+            case "5":
+                return self.website_kostickyshop_controller

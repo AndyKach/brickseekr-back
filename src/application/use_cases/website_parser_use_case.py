@@ -67,13 +67,14 @@ class WebsiteParserUseCase(ABC):
                           ):
         result = await website_interface.parse_lego_sets_price(lego_set=lego_set)
         system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
-        await lego_sets_prices_save_use_case.save_lego_sets_price(
-            LegoSetsPrice(
-                lego_set_id=lego_set.lego_set_id,
-                price=result.get('price'),
-                website_id=website_id
+        if result:
+            await lego_sets_prices_save_use_case.save_lego_sets_price(
+                LegoSetsPrice(
+                    lego_set_id=lego_set.lego_set_id,
+                    price=result.get('price'),
+                    website_id=website_id
+                )
             )
-        )
         return result
 
 
