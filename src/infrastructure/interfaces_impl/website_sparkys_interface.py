@@ -28,15 +28,17 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
         }
         self.response = None
 
-
     async def format_lego_set_url(self, lego_set: LegoSet):
-        return f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}"
+        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/{lego_set.url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_price(self, lego_set: LegoSet):
-        url = await self.format_lego_set_url(lego_set=lego_set)
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
+            return await self.__get_lego_sets_price(session=session, lego_set=lego_set)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
@@ -46,9 +48,8 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
                 async with rate_limiter:
                     tasks = [
                         self.__get_lego_sets_price(
-                            session,
-                            url=await self.format_lego_set_url(lego_set=lego_set),
-                            item_id=lego_set.lego_set_id
+                            session=session,
+                            lego_set=lego_set
                         ) for lego_set in lego_sets
                     ]
                     # Параллельное выполнение всех задач
@@ -60,29 +61,39 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
 
             return None
 
-
-    async def __get_lego_sets_price(self, session, url: str, item_id: str):
+    async def __get_lego_sets_price(self, session, lego_set: LegoSet):
+        """
+        :param session: Async session
+        :param lego_set: LegoSet object
+        :return: {'lego_set_id': str, 'price': str} or None
+        """
         start_time = datetime.now()
-        page = await self.fetch_page(session=session, url=url)
 
-        # print(url)
+        urls = self.format_lego_set_url(lego_set=lego_set)
 
-        if page:
-            system_logger.info('-------------------------------------')
-            system_logger.info('Get page: ' + str(datetime.now() - start_time))
-            system_logger.info(f'URL: {url}')
+        async for url in urls:
+            page = await self.fetch_page(session=session, url=url)
 
-            soup = BeautifulSoup(page, 'lxml')
+            # print(url)
 
-            price_element = soup.find('div', class_="Product-priceFinal")
-            # print(f"price_element: {price_element}")
-            if price_element:
-                price = price_element.get_text(strip=True)
-                price = price.replace('&nbsp;', ' ')
-                system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
-                return {
-                    "lego_set_id": item_id,
-                    "price": price.replace('\xa0', ' ')
-                }
-            else:
-                system_logger.info(f'Lego set price not found')
+            if page:
+                system_logger.info('-------------------------------------')
+                system_logger.info('Get page: ' + str(datetime.now() - start_time))
+                system_logger.info(f'URL: {url}')
+
+                soup = BeautifulSoup(page, 'lxml')
+
+                price_element = soup.find('div', class_="Product-priceFinal")
+                # print(f"price_element: {price_element}")
+                if price_element:
+                    price = price_element.get_text(strip=True)
+                    price = price.replace('&nbsp;', ' ')
+                    price = price.replace(' ', '')
+                    system_logger.info(f'Lego set {lego_set.lego_set_id} exists, price: {price}')
+                    return {
+                        "lego_set_id": lego_set.lego_set_id,
+                        "price": price.replace('\xa0', ' ')
+                    }
+
+        system_logger.info(f'Lego set {lego_set.lego_set_id} price not found')
+        return None
