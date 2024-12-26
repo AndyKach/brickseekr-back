@@ -135,9 +135,8 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_price(self, lego_set: LegoSet):
-        url = await self.format_lego_set_url(lego_set=lego_set)
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
+            return await self.__get_lego_sets_price(session=session, lego_set=lego_set)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
@@ -147,9 +146,8 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
                 async with rate_limiter:
                     tasks = [
                         self.__get_lego_sets_price(
-                            session,
-                            url=await self.format_lego_set_url(lego_set=lego_set),
-                            item_id=lego_set.lego_set_id
+                            session=session,
+                            lego_set=lego_set,
                         ) for lego_set in lego_sets
                     ]
                     # Параллельное выполнение всех задач
@@ -163,24 +161,27 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, url: str, item_id: str):
+    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, lego_set: LegoSet):
         start_time = datetime.now()
-        page = await self.fetch_page(session=session, url=url)
+        urls = self.format_lego_set_url(lego_set=lego_set)
 
-        if page:
-            system_logger.info('-------------------------------------')
-            system_logger.info('Get page: ' + str(datetime.now() - start_time))
+        async for url in urls:
+            page = await self.fetch_page(session=session, url=url)
 
-            soup = BeautifulSoup(page, 'lxml')
+            if page:
+                system_logger.info('-------------------------------------')
+                system_logger.info('Get page: ' + str(datetime.now() - start_time))
 
-            price_element = soup.find('span', class_="price-final-holder")
+                soup = BeautifulSoup(page, 'lxml')
 
-            if price_element:
-                price = price_element.get_text(strip=True)
-                system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
-                return {
-                    "lego_set_id": item_id,
-                    "price": price.replace('\xa0', ' ')
-                }
-            else:
-                system_logger.info(f'Lego set price not found')
+                price_element = soup.find('span', class_="price-final-holder")
+
+                if price_element:
+                    price = price_element.get_text(strip=True)
+                    system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
+                    return {
+                        "lego_set_id": lego_set.lego_set_id,
+                        "price": price.replace('\xa0', ' ')
+                    }
+                else:
+                    system_logger.info(f'Lego set price not found')
