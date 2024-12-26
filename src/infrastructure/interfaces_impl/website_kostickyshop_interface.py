@@ -26,14 +26,14 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
         self.response = None
 
     async def format_lego_set_url(self, lego_set: LegoSet):
-        return f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
         # return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_price(self, lego_set: LegoSet):
-        url = await self.format_lego_set_url(lego_set=lego_set)
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, url=url, item_id=lego_set.lego_set_id)
+            return await self.__get_lego_sets_price(session=session, lego_set=lego_set)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
@@ -43,9 +43,8 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
                 async with rate_limiter:
                     tasks = [
                         self.__get_lego_sets_price(
-                            session,
-                            url=await self.format_lego_set_url(lego_set=lego_set),
-                            item_id=lego_set.lego_set_id
+                            session=session,
+                            lego_set=lego_set
                         ) for lego_set in lego_sets
                     ]
                     # Параллельное выполнение всех задач
@@ -58,29 +57,31 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
             return None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, url: str, item_id: str):
+    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, lego_set: LegoSet):
         start_time = datetime.now()
-        page = await self.fetch_page(session=session, url=url)
-        # print(url)
-        # print(page)
-        if page:
-            print('!!!!!!!!!!!!!!!!')
-            system_logger.info('-------------------------------------')
-            system_logger.info('Get page: ' + str(datetime.now() - start_time))
-            system_logger.info(f'URL: {url}')
+        urls = self.format_lego_set_url(lego_set=lego_set)
+        async for url in urls:
+            page = await self.fetch_page(session=session, url=url)
+            # print(url)
+            # print(page)
+            if page:
+                print('!!!!!!!!!!!!!!!!')
+                system_logger.info('-------------------------------------')
+                system_logger.info('Get page: ' + str(datetime.now() - start_time))
+                system_logger.info(f'URL: {url}')
 
 
-            soup = BeautifulSoup(page, 'lxml')
+                soup = BeautifulSoup(page, 'lxml')
 
-            price_element = soup.find('b', class_="product-card-price2")
+                price_element = soup.find('b', class_="product-card-price2")
 
-            if price_element:
-                price = price_element.get_text(strip=True)
-                system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
-                return {
-                    "lego_set_id": item_id,
-                    "price": price.replace('\xa0', ' ')
-                }
-            else:
-                system_logger.info(f'Lego set price not found')
+                if price_element:
+                    price = price_element.get_text(strip=True)
+                    system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
+                    return {
+                        "lego_set_id": lego_set.lego_set_id,
+                        "price": price.replace('\xa0', ' ')
+                    }
+                else:
+                    system_logger.info(f'Lego set price not found')
 

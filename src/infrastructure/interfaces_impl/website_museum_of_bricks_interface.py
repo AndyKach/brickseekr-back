@@ -124,7 +124,14 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             print(e)
 
     async def format_lego_set_url(self, lego_set: LegoSet):
-        return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
+        if lego_set.category_name == 'disney':
+            yield f"{self.url}/lego---{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+            yield f"{self.url}/lego---{lego_set.category_name}-princess-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego--{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
+        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_lego_sets_price(self, lego_set: LegoSet):
