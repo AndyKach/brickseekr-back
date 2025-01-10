@@ -52,6 +52,23 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
     return await get_success_json_response(data={'message': "API is working"})
 
 
+# @app.get('/sets/parseAllSetsAllStores')
+# @app.get('/sets/{set_id}/getData')
+# @app.get('/sets/{set_id}/parseAllStores')
+# @app.get('/sets/{set_id}/{store_id}/getData)
+# @app.get('/sets/{set_id}/{store_id}/parseSet')
+
+# @app.get('/store/{store_id}/parseAllSets')
+# ''
+
+
+
+
+
+
+
+
+
 @app.post("/sets/parseKnownSets")
 @log_api_decorator
 async def parse_sets(
