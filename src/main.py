@@ -1,7 +1,7 @@
 import asyncio
 
 from infrastructure.db.base import Base, sync_engine, async_engine
-from infrastructure.config.fastapi_app_config import app
+from infrastructure.config.fastapi_app_config import app, config
 import infrastructure.web.api
 
 
@@ -11,5 +11,6 @@ import infrastructure.web.api
 #         await conn.run_sync(Base.metadata.create_all)
 
 if __name__ == '__main__':
+    config()
     # asyncio.run(init_models())
     pass

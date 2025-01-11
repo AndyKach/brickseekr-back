@@ -41,7 +41,8 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             query = select(LegoSetsPricesOrm).where(LegoSetsPricesOrm.lego_set_id == lego_set_id)
             res = await session.execute(query)
             if res:
-                lego_set_prices_orm = res.scalars()
+                lego_set_prices_orm = res.scalars().first()
+                print(lego_set_prices_orm)
                 lego_set_prices = lego_set_prices_orm.prices
                 # lego_set_price = LegoSetsPrices(
                 #     price_id=lego_set_price_orm.price_id,

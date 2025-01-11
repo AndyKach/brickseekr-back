@@ -53,47 +53,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 
 
 # @app.get('/sets/parseAllSetsAllStores')
-# @app.get('/sets/{set_id}/getData')
-# @app.get('/sets/{set_id}/parseAllStores')
-# @app.get('/sets/{set_id}/{store_id}/getData)
-# @app.get('/sets/{set_id}/{store_id}/parseSet')
-
-# @app.get('/store/{store_id}/parseAllSets')
-# ''
-
-
-
-
-
-
-
-
-
-@app.post("/sets/parseKnownSets")
-@log_api_decorator
-async def parse_sets(
-        response: Response, background_tasks: BackgroundTasks,
-        response_model=ResponseModel,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-):
-    background_tasks.add_task(lego_sets_service.async_parse_all_known_sets)
-    # data = await lego_sets_service.parse_all_sets()
-    return await get_success_json_response(data={'status': 'parse start'})
-
-
-@app.post("/sets/parseUnknownSets")
-@log_api_decorator
-async def parse_sets(
-        response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-):
-    background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
-    # data = await lego_sets_service.parse_all_sets()
-    return await get_success_json_response(data={'status': 'parse start'})
-
-
-
-@app.get("/sets/{set_id}/getData")
+@app.get("/sets/{set_id}/getData", tags=['Sets'])
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
@@ -107,8 +67,7 @@ async def get_set(set_id: str, response: Response, background_tasks: BackgroundT
     else:
         return await get_success_json_response(data=data)
 
-
-@app.get("/sets/{set_id}/getPrices")
+@app.get("/sets/{set_id}/getPrices", tags=['Sets'])
 @log_api_decorator
 async def get_sets_prices(
         set_id: str, response: Response, background_tasks: BackgroundTasks,
@@ -117,9 +76,7 @@ async def get_sets_prices(
     data = await lego_sets_service.get_sets_prices(set_id=set_id)
     return await get_success_json_response(data=data)
 
-
-
-@app.get("/sets/{set_id}/prices/{website_id}")
+@app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'])
 @log_api_decorator
 async def get_sets_prices_from_website(
         set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
@@ -127,6 +84,54 @@ async def get_sets_prices_from_website(
     ):
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
     return await get_success_json_response(data=data)
+
+# @app.get('/sets/{set_id}/parseAllStores')
+
+# @app.get('/sets/{set_id}/{store_id}/parseSet')
+
+# @app.get('/store/{store_id}/parseAllSets')
+# ''
+
+
+
+
+
+
+
+
+
+@app.post("/sets/parseKnownSets", tags=['Experimental'])
+@log_api_decorator
+async def parse_sets(
+        response: Response, background_tasks: BackgroundTasks,
+        response_model=ResponseModel,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.async_parse_all_known_sets)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
+
+
+@app.post("/sets/parseUnknownSets", tags=['Experimental'])
+@log_api_decorator
+async def parse_sets(
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
+
+
+
+
+
+
+
+
+
+
+
 
 # @app.post("/sets/{set_id}/parse")
 # @log_api_decorator
@@ -151,7 +156,7 @@ async def get_sets_prices_from_website(
 #     # data = await lego_sets_service.parse_all_sets()
 #     return await get_success_json_response(data={'status': 'parse start'})
 
-@app.post("/set-{set_id}/store-{store_id}/parseSet")
+@app.post("/sets/{set_id}/stores/{store_id}/parseSet", tags=['Experimental'])
 async def parse_set_in_store(
         set_id: str, store_id: str,
         response: Response, background_tasks: BackgroundTasks,
@@ -162,7 +167,7 @@ async def parse_set_in_store(
 
 
 
-@app.get("/sets/parseSetsUrls")
+@app.get("/sets/parseSetsUrls", tags=['Experimental'])
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
@@ -173,7 +178,7 @@ async def parse_sets(
     return await get_success_json_response(data={'status': 'parse start'})
 
 
-@app.post("/store-{store_id}/parseAllSets")
+@app.post("/stores/{store_id}/parseAllSets", tags=['Experimental'])
 @log_api_decorator
 async def parse_sets(
         store_id: str,
