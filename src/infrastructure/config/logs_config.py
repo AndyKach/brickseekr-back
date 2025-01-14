@@ -90,7 +90,7 @@ def log_api_decorator(func, log_level=logging.INFO):
         result = await func(*args, **kwargs)
 
         # Запись результата выполнения функции
-        system_logger.log(level=log_level, msg=f"Result: {result}")
+        system_logger.log(level=log_level, msg=f"Result: {result.body}")
 
         return result
 
