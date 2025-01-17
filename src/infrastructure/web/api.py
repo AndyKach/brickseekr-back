@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from fastapi import Depends, APIRouter, Path, Response, status, BackgroundTasks, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -30,7 +31,7 @@ async def get_success_json_response(data: dict):
         ),
         result=data
     )
-    return response
+    return JSONResponse(content=response.model_dump(), status_code=200)
 
 
 @app.exception_handler(HTTPException)
@@ -44,7 +45,7 @@ async def custom_http_exception_handler(request, exc: HTTPException):
         ),
         result={}
     )
-    return response
+    return JSONResponse(content=response.model_dump(), status_code=exc.status_code)
 
 @app.get("/")
 @log_api_decorator
@@ -74,7 +75,13 @@ async def get_sets_prices(
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
     ):
     data = await lego_sets_service.get_sets_prices(set_id=set_id)
-    return await get_success_json_response(data=data)
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data=data)
 
 @app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'])
 @log_api_decorator
@@ -83,7 +90,13 @@ async def get_sets_prices_from_website(
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
     ):
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
-    return await get_success_json_response(data=data)
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data=data)
 
 # @app.get('/sets/{set_id}/parseAllStores')
 

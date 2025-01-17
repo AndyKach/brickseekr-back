@@ -111,21 +111,10 @@ class LegoSetsService:
         await self.website_lego_controller.parse_all_sets()
 
     async def get_sets_prices(self, set_id: str):
-        lego_sets_prices = await self.lego_sets_prices_repository.get_item_all_prices(lego_set_id=set_id)
-        result = {
-            "set_id": set_id,
-            "prices": lego_sets_prices
-        }
-        return result
+        return await self.lego_sets_prices_repository.get_item_all_prices(lego_set_id=set_id)
 
     async def get_sets_prices_from_website(self, set_id: str, website_id: str):
-        lego_sets_price = await self.lego_sets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
-        result = {
-            "set_id": set_id,
-            "website_id": website_id,
-            "price": lego_sets_price
-        }
-        return result
+        return await self.lego_sets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
