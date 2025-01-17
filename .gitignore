@@ -162,3 +162,5 @@ cython_debug/
 .idea/
 src/test1.txt
 src/test2.txt
+
+.DS_Store
