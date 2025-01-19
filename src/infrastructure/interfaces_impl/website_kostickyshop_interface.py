@@ -4,7 +4,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 from application.interfaces.website_interface import WebsiteInterface
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 from infrastructure.config.logs_config import log_decorator
 import asyncio
 import aiohttp

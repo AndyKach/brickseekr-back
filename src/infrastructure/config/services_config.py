@@ -7,7 +7,7 @@ from infrastructure.config.repositories_config import lego_sets_repository, lego
 
 def get_lego_sets_service():
     return LegoSetsService(
-        lego_sets_repository=lego_sets_repository,
+        legosets_repository=lego_sets_repository,
         lego_sets_prices_repository=lego_sets_prices_repository,
         websites_interfaces_provider=websites_interfaces_provider,
     )

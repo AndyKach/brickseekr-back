@@ -14,6 +14,7 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
@@ -24,38 +25,41 @@ from domain.lego_sets_prices import LegoSetsPrices
 class LegoSetsService:
     def __init__(
             self,
-            lego_sets_repository: LegoSetsRepository,
+            legosets_repository: LegoSetsRepository,
             lego_sets_prices_repository: LegoSetsPricesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
             ):
-        self.lego_sets_repository = lego_sets_repository
+        self.lego_sets_repository = legosets_repository
         self.lego_sets_prices_repository = lego_sets_prices_repository
         self.websites_interfaces_provider = websites_interfaces_provider
 
         self.website_lego_controller = WebsiteLegoController(
-            lego_sets_repository=lego_sets_repository,
+            lego_sets_repository=legosets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_lego_interface
         )
         self.website_capi_cap_controller = WebsiteCapiCapController(
-            lego_sets_repository=lego_sets_repository,
+            lego_sets_repository=legosets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_capi_cap_interface
         )
         self.website_museum_of_bricks_controller = WebsiteMuseumOfBricksController(
-            lego_sets_repository=lego_sets_repository,
+            lego_sets_repository=legosets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_museum_of_bricks_interface
         )
         self.website_sparkys_controller = WebsiteSparkysController(
-            lego_sets_repository=lego_sets_repository,
+            lego_sets_repository=legosets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_sparkys_interface
         )
         self.website_kostickyshop_controller = WebsiteKostikyShopController(
-            lego_sets_repository=lego_sets_repository,
+            lego_sets_repository=legosets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_kostickyshop_interface
+        )
+        self.get_legoset_use_case = GetLegoSetUseCase(
+            legosets_repository=legosets_repository,
         )
 
 
@@ -84,7 +88,7 @@ class LegoSetsService:
         return self.websites_interfaces_provider.get_website_brickset_interface()
 
     async def get_set_info(self, set_id: str):
-        return await self.lego_sets_repository.get_set(set_id=set_id)
+        return await self.get_legoset_use_case.execute(legoset_id=set_id)
 
     async def async_parse_sets(self, store: str):
         website_controller = await self.__get_website_use_case(store=store)

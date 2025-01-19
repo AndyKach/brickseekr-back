@@ -11,7 +11,7 @@ from pygments.lexer import words
 
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_interface import WebsiteInterface
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator, system_logger
 from infrastructure.config.selenium_config import get_selenium_driver

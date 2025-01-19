@@ -2,7 +2,7 @@ import time
 import logging
 from datetime import datetime
 from application.interfaces.website_interface import WebsiteInterface
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.config.selenium_config import get_selenium_driver
 import asyncio

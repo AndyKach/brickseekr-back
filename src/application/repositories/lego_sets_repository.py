@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 
 
 class LegoSetsRepository(ABC):

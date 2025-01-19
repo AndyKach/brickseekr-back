@@ -59,7 +59,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
     data = await lego_sets_service.get_set_info(set_id=set_id)
-    print(f"data: {data}")
+    # print(f"data: {data}")
     if data is None:
         raise HTTPException(
             status_code=404,

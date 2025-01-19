@@ -9,7 +9,7 @@ from icecream import ic
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 from domain.lego_sets_price import LegoSetsPrice
 from domain.lego_sets_prices import LegoSetsPrices
 

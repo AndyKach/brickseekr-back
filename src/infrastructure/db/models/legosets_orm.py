@@ -21,11 +21,12 @@ class LegoSetsOrm(Base):
     pieces: Mapped[int] = mapped_column(String, default=0)
     dimensions: Mapped[dict] = mapped_column(JSON, default={})
     weigh: Mapped[float] = mapped_column(Float, default=0.0)
-    tags: Mapped[dict] = mapped_column(JSON, default=[])
+    tags: Mapped[list] = mapped_column(JSON, default=[])
     description: Mapped[str] = mapped_column(String, default="-")
     ages_range: Mapped[dict] = mapped_column(JSON, default={})
 
     extendedData: Mapped[dict] = mapped_column(JSON, default={'cz_url_name': "None", 'cz_category_name': "None"})
+
     launchDate: Mapped[datetime] = mapped_column(nullable=True)
     exitDate: Mapped[datetime] = mapped_column(nullable=True)
     updated_at: Mapped[datetime] = mapped_column(nullable=True)

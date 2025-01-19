@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import time
 
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 
 
 class WebsiteInterface(ABC):

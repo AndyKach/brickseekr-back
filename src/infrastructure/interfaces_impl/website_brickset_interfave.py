@@ -11,7 +11,7 @@ from application.interfaces.website_data_source_interface import WebsiteDataSour
 from application.interfaces.website_interface import WebsiteInterface
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 
 load_dotenv()
 

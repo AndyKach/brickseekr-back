@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 from infrastructure.config.gateways_config import bricklink_gateway
 from infrastructure.config.repositories_config import lego_sets_repository
-from domain.lego_set import LegoSet
+from domain.legoset import LegoSet
 
 async def get_category_name(category_id: int):
     try:
