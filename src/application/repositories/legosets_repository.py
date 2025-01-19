@@ -16,7 +16,13 @@ class LegoSetsRepository(ABC):
     async def update_url_name(self, lego_set_id: str, url_name: str) -> None:
         pass
 
+    @abstractmethod
+    async def set_set(self, legoset: LegoSet) -> None:
+        pass
 
+    @abstractmethod
+    async def update_set(self, legoset: LegoSet) -> None:
+        pass
 
 
 

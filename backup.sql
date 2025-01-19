@@ -345,7 +345,7 @@ COPY public.lego_sets (lego_set_id, name, year, weigh, dimensions, ages, images,
 75875	Ford F-150 Raptor & Ford Model A Hot Rod	2016	850	{"dim_x": "38.20", "dim_y": "26.00", "dim_z": "7.00"}	3	{"1": "//img.bricklink.com/SL/75875-1.jpg"}	2024-12-22 16:18:31.118529	speed-champions	no_url
 70633	Kai - Spinjitzu Master	2018	160	{"dim_x": "25.00", "dim_y": "23.00", "dim_z": "7.00"}	3	{"1": "//img.bricklink.com/SL/70633-1.jpg"}	2024-12-22 16:10:00.559076	ninjago	no_url
 70667	Kai&#39;s Blade Cycle & Zane&#39;s Snowmobile	2019	484	{"dim_x": "0.00", "dim_y": "0.00", "dim_z": "0.00"}	3	{"1": "//img.bricklink.com/SL/70667-1.jpg"}	2024-12-22 16:10:16.520944	ninjago	no_url
-70676	Lloyd&#39;s Titan Mech	2019	1083	{"dim_x": "35.40", "dim_y": "37.80", "dim_z": "7.10"}	3	{"1": "//img.bricklink.com/SL/70676-1.jpg"}	2024-12-22 16:10:20.831911	ninjago	no_url
+70676	Lloyd&#39;s Titan Mech	201f9	1083	{"dim_x": "35.40", "dim_y": "37.80", "dim_z": "7.10"}	3	{"1": "//img.bricklink.com/SL/70676-1.jpg"}	2024-12-22 16:10:20.831911	ninjago	no_url
 70736	Attack of the Morro Dragon	2015	986	{"dim_x": "53.50", "dim_y": "28.00", "dim_z": "5.50"}	3	{"1": "//img.bricklink.com/SL/70736-1.jpg"}	2024-12-22 16:10:40.205755	ninjago	no_url
 70749	Enter the Serpent	2015	838	{"dim_x": "48.00", "dim_y": "28.00", "dim_z": "6.00"}	3	{"1": "//img.bricklink.com/SL/70749-1.jpg"}	2024-12-22 16:10:46.501627	ninjago	no_url
 70801	Melting Room	2014	140.9	{"dim_x": "15.70", "dim_y": "13.90", "dim_z": "6.00"}	3	{"1": "//img.bricklink.com/SL/70801-1.jpg"}	2024-12-22 16:10:59.455495	the-lego-movie	no_url

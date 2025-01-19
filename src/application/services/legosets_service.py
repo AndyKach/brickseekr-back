@@ -130,7 +130,7 @@ class LegoSetsService:
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):
-        await self.website_brickset_interface.parse_all_legosets()
+        await self.website_brickset_interface.parse_all_legosets(legosets_repository=self.lego_sets_repository)
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:
         match store_id:

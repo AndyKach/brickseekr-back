@@ -36,7 +36,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             # await session.get(LegoSetsPricesOrm)
 
     @log_decorator(print_args=False)
-    async def get_item_all_prices(self, lego_set_id: str) -> dict | None:
+    async def get_item_all_prices(self, lego_set_id: str) -> LegoSetsPrices | None:
         session = self.get_session()
         async with session.begin():
             query = select(LegoSetsPricesOrm).where(LegoSetsPricesOrm.lego_set_id == lego_set_id)
@@ -44,9 +44,14 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             if res:
                 lego_set_prices_orm = res.scalars().first()
                 if lego_set_prices_orm:
-                    print(lego_set_prices_orm)
-                    lego_set_prices = lego_set_prices_orm.prices
-                    return lego_set_prices
+                    # print(lego_set_prices_orm)
+                    return LegoSetsPrices(
+                        lego_set_id=lego_set_prices_orm.lego_set_id,
+                        prices=lego_set_prices_orm.prices,
+                        created_at=lego_set_prices_orm.created_at,
+                    )
+                    # lego_set_prices = lego_set_prices_orm.prices
+                    # return lego_set_prices
                 # lego_set_price = LegoSetsPrices(
                 #     price_id=lego_set_price_orm.price_id,
                 #     lego_set_id=lego_set_price_orm.lego_set_id,

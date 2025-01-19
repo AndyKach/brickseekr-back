@@ -66,10 +66,10 @@ async def get_set_items():
                         # print('!!!!!!!!!')
                         try:
                             if await lego_sets_repository.get_set(set_id=lego_set.lego_set_id) is None:
-                                await lego_sets_repository.set_set(lego_set=lego_set)
+                                await lego_sets_repository.set_set(legoset=lego_set)
                             else:
-                                await lego_sets_repository.delete_set(lego_set_id=lego_set.lego_set_id)
-                                await lego_sets_repository.set_set(lego_set=lego_set)
+                                await lego_sets_repository.delete_set(legoset_id=lego_set.lego_set_id)
+                                await lego_sets_repository.set_set(legoset=lego_set)
                         # except IntegrityError as e:
                         except Exception as e:
                             print(f"ERROR: {str(e)[str(e).find('\n')+1:str(e).find('\n', str(e).find('\n')+1)]}")

@@ -10,22 +10,22 @@ class LegoSetsOrm(Base):
     __tablename__ = "legosets"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    name: Mapped[str] = mapped_column(String, default="-")
-    year: Mapped[int] = mapped_column(INTEGER, default=0)
+    name: Mapped[str] = mapped_column(String, default="-", nullable=True)
+    year: Mapped[int] = mapped_column(INTEGER, default=0, nullable=True)
 
-    theme: Mapped[str] = mapped_column(String, default="-")
-    themeGroup: Mapped[str] = mapped_column(String, default="-")
-    subtheme: Mapped[str] = mapped_column(String, default="-")
+    theme: Mapped[str] = mapped_column(String, default="-", nullable=True)
+    themeGroup: Mapped[str] = mapped_column(String, default="-", nullable=True)
+    subtheme: Mapped[str] = mapped_column(String, default="-", nullable=True)
 
-    images: Mapped[dict] = mapped_column(JSON, default={})
-    pieces: Mapped[int] = mapped_column(String, default=0)
-    dimensions: Mapped[dict] = mapped_column(JSON, default={})
-    weigh: Mapped[float] = mapped_column(Float, default=0.0)
-    tags: Mapped[list] = mapped_column(JSON, default=[])
-    description: Mapped[str] = mapped_column(String, default="-")
-    ages_range: Mapped[dict] = mapped_column(JSON, default={})
+    images: Mapped[dict] = mapped_column(JSON, default={}, nullable=True)
+    pieces: Mapped[int] = mapped_column(INTEGER, default=0, nullable=True)
+    dimensions: Mapped[dict] = mapped_column(JSON, default={}, nullable=True)
+    weigh: Mapped[float] = mapped_column(Float, default=0.0, nullable=True)
+    tags: Mapped[list] = mapped_column(JSON, default=[], nullable=True)
+    description: Mapped[str] = mapped_column(String, default="-", nullable=True)
+    ages_range: Mapped[dict] = mapped_column(JSON, default={}, nullable=True)
 
-    extendedData: Mapped[dict] = mapped_column(JSON, default={'cz_url_name': "None", 'cz_category_name': "None"})
+    extendedData: Mapped[dict] = mapped_column(JSON, default={'cz_url_name': "None", 'cz_category_name': "None"}, nullable=True)
 
     launchDate: Mapped[datetime] = mapped_column(nullable=True)
     exitDate: Mapped[datetime] = mapped_column(nullable=True)

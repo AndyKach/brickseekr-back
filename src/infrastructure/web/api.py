@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from application.services.legosets_service import LegoSetsService
+from domain.legoset import LegoSet
+from domain.legosets_prices import LegoSetsPrices
 # from application.services.scheduler_service import SchedulerService
 from infrastructure.config.logs_config import log_api_decorator
 from infrastructure.config.services_config import get_lego_sets_service
@@ -54,7 +56,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 
 
 # @app.get('/sets/parseAllSetsAllStores')
-@app.get("/sets/{set_id}/getData", tags=['Sets'])
+@app.get("/sets/{set_id}/getData", tags=['Sets'], response_model=LegoSet)
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
@@ -68,7 +70,7 @@ async def get_set(set_id: str, response: Response, background_tasks: BackgroundT
     else:
         return await get_success_json_response(data=data)
 
-@app.get("/sets/{set_id}/getPrices", tags=['Sets'])
+@app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
 @log_api_decorator
 async def get_sets_prices(
         set_id: str, response: Response, background_tasks: BackgroundTasks,

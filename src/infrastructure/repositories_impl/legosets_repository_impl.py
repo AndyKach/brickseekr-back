@@ -1,3 +1,7 @@
+import logging
+
+from sqlalchemy.orm.attributes import flag_modified
+
 from infrastructure.db.models.legosets_orm import LegoSetsOrm
 from application.repositories.legosets_repository import LegoSetsRepository
 from domain.legoset import LegoSet
@@ -6,6 +10,7 @@ from sqlalchemy import select, delete, text, update
 
 from infrastructure.db.base import async_engine
 
+system_logger = logging.getLogger("system_logger")
 
 class LegoSetsRepositoryImpl(LegoSetsRepository):
     def get_session(self) :
@@ -65,34 +70,34 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 .where(LegoSetsOrm.id==set_id)
             )
             result = await session.execute(query)
-            lego_set_orm = result.scalars().first()
+            legoset_orm = result.scalars().first()
 
-            if lego_set_orm:
-                return await self.orm_to_pydantic(legoset_orm=lego_set_orm)
+            if legoset_orm:
+                return await self.orm_to_pydantic(legoset_orm=legoset_orm)
             return None
 
-    async def set_set(self, lego_set: LegoSet):
+    async def set_set(self, legoset: LegoSet):
         session = self.get_session()
         async with session.begin():
-            lego_set_orm = await self.pydantic_to_orm(legoset_pydantic=lego_set)
-            session.add(lego_set_orm)
+            legoset_orm = await self.pydantic_to_orm(legoset_pydantic=legoset)
+            session.add(legoset_orm)
             await session.commit()
 
     async def get_all(self) -> [LegoSet]:
         session = self.get_session()
         async with session.begin():
             query = await session.execute(select(LegoSetsOrm))
-            lego_sets_orm = query.scalars().all()
-            lego_sets = []
-            if lego_sets:
-                for lego_set_orm in lego_sets_orm:
-                    lego_sets.append(await self.orm_to_pydantic(legoset_orm=lego_set_orm))
-            return lego_sets
+            legosets_orm = query.scalars().all()
+            legosets = []
+            if legosets:
+                for legoset_orm in legosets_orm:
+                    legosets.append(await self.orm_to_pydantic(legoset_orm=legoset_orm))
+            return legosets
 
-    async def delete_set(self, lego_set_id):
+    async def delete_set(self, legoset_id):
         session = self.get_session()
         async with session.begin():
-            query = delete(LegoSetsOrm).where(LegoSetsOrm.id==lego_set_id)
+            query = delete(LegoSetsOrm).where(LegoSetsOrm.id == legoset_id)
 
             await session.execute(query)
             await session.commit()
@@ -108,4 +113,23 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
+
+    async def update_set(self, legoset: LegoSet) -> None:
+        session = self.get_session()
+        async with (session.begin()):
+            query = select(LegoSetsOrm).where(LegoSetsOrm.id==legoset.id)
+            result = await session.execute(query)
+            legoset_orm = result.scalars().first()
+
+            # system_logger.info(legoset_orm)
+            # system_logger.info(legoset.model_fields)
+            # system_logger.info(legoset.model_fields.items())
+
+            for key in legoset.model_dump():
+                # system_logger.info(f"Key: {key}, Value: {getattr(legoset, key)}")
+                # system_logger.info(f"Key: {key}, Value: ")
+                if getattr(legoset_orm, key) != getattr(legoset, key):
+                    if getattr(legoset, key) != 0 and getattr(legoset, key) is not None and getattr(legoset, key) != {} and getattr(legoset, key) != []:
+                        setattr(legoset_orm, key, getattr(legoset, key))
+                        flag_modified(legoset_orm, key)
 
