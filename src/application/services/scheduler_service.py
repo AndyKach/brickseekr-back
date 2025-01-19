@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from application.interfaces.scheduler_interface import SchedulerInterface
-from application.services.lego_sets_service import LegoSetsService
+from application.services.legosets_service import LegoSetsService
 from application.use_cases.set_all_scheduler_jobs_use_case import SetAllSchedulerJobsUseCase
 from domain.job import Job
 

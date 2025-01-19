@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from application.services.lego_sets_service import LegoSetsService
+from application.services.legosets_service import LegoSetsService
 # from application.services.scheduler_service import SchedulerService
 from infrastructure.config.logs_config import log_api_decorator
 from infrastructure.config.services_config import get_lego_sets_service

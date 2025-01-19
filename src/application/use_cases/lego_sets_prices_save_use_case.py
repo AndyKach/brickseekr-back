@@ -1,6 +1,6 @@
 from application.repositories.prices_repository import LegoSetsPricesRepository
-from domain.lego_sets_price import LegoSetsPrice
-from domain.lego_sets_prices import LegoSetsPrices
+from domain.legosets_price import LegoSetsPrice
+from domain.legosets_prices import LegoSetsPrices
 
 import logging
 system_logger = logging.getLogger('system_logger')

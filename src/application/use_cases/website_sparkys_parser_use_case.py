@@ -1,5 +1,5 @@
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.lego_sets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 
 import logging

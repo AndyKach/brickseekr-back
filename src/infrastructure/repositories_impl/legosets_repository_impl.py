@@ -1,5 +1,5 @@
 from infrastructure.db.models.legosets_orm import LegoSetsOrm
-from application.repositories.lego_sets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegoSetsRepository
 from domain.legoset import LegoSet
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update

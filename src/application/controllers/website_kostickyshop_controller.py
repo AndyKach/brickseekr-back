@@ -1,6 +1,6 @@
 from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.lego_sets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.website_kostickyshop_parser_use_case import WebsiteKostickyShopParserUseCase
 

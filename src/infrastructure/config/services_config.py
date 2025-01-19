@@ -1,4 +1,4 @@
-from application.services.lego_sets_service import LegoSetsService
+from application.services.legosets_service import LegoSetsService
 from application.services.scheduler_service import SchedulerService
 from infrastructure.config.interfaces_config import scheduler_interface
 from infrastructure.config.providers_config import websites_interfaces_provider

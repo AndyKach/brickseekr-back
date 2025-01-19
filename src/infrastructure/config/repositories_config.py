@@ -1,5 +1,5 @@
 from infrastructure.repositories_impl.legosets_repository_impl import LegoSetsRepositoryImpl
-from infrastructure.repositories_impl.lego_sets_prices_repository_impl import LegoSetsPricesRepositoryImpl
+from infrastructure.repositories_impl.legosets_prices_repository_impl import LegoSetsPricesRepositoryImpl
 
 lego_sets_repository = LegoSetsRepositoryImpl()
 lego_sets_prices_repository = LegoSetsPricesRepositoryImpl()

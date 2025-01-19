@@ -6,12 +6,12 @@ from requests.utils import extract_zipped_paths
 from watchfiles import awatch
 
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.lego_sets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.legoset import LegoSet
-from domain.lego_sets_prices import LegoSetsPrices
+from domain.legosets_prices import LegoSetsPrices
 import logging
 
 system_logger = logging.getLogger('system_logger')

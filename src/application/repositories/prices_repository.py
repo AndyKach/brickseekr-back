@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.lego_sets_prices import LegoSetsPrices
+from domain.legosets_prices import LegoSetsPrices
 
 
 class LegoSetsPricesRepository(ABC):

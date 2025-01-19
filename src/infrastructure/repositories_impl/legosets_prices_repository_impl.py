@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update
 
 from application.repositories.prices_repository import LegoSetsPricesRepository
-from domain.lego_sets_prices import LegoSetsPrices
+from domain.legosets_prices import LegoSetsPrices
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.db.base import async_engine
 from infrastructure.db.models.legosets_orm import LegoSetsOrm

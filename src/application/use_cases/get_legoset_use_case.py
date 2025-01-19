@@ -1,4 +1,4 @@
-from application.repositories.lego_sets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegoSetsRepository
 from domain.legoset import LegoSet
 
 
