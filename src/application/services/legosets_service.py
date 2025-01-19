@@ -19,7 +19,7 @@ from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCa
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
-from domain.lego_sets_prices import LegoSetsPrices
+from domain.legosets_prices import LegoSetsPrices
 
 
 class LegoSetsService:
