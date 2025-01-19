@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from infrastructure.db.base import Base
 
 class LegoSetsPricesOrm(Base):
-    __tablename__ = 'lego_sets_prices'
+    __tablename__ = 'legosets_prices'
 
     lego_set_id: Mapped[str] = mapped_column(String, primary_key=True)
     prices: Mapped[dict] = mapped_column(JSON)

@@ -25,6 +25,10 @@ class WebsitesInterfacesProvider(ABC):
     def get_website_kostickyshop_interface(self):
         pass
 
+    @abstractmethod
+    def get_website_brickset_interface(self):
+        pass
+
 
 
 

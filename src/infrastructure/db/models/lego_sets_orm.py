@@ -7,7 +7,7 @@ from infrastructure.db.base import Base
 
 
 class LegoSetsOrm(Base):
-    __tablename__ = "lego_sets"
+    __tablename__ = "legosets"
 
     lego_set_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, default="-")

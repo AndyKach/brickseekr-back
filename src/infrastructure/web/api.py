@@ -59,7 +59,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
     data = await lego_sets_service.get_set_info(set_id=set_id)
-    print(data)
+    print(f"data: {data}")
     if data is None:
         raise HTTPException(
             status_code=404,
@@ -135,6 +135,15 @@ async def parse_sets(
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
 
+@app.post("/parseSetsFromBrickSet", tags=['Experimental'])
+@log_api_decorator
+async def parse_sets_from_brickset(
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+):
+    background_tasks.add_task(lego_sets_service.parse_sets_from_brickset)
+    # data = await lego_sets_service.parse_all_sets()
+    return await get_success_json_response(data={'status': 'parse start'})
 
 
 

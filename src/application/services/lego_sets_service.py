@@ -9,6 +9,7 @@ from application.controllers.website_lego_controller import WebsiteLegoControlle
 from application.controllers.website_museum_of_bricks_controller import WebsiteMuseumOfBricksController
 from application.controllers.website_sparkys_controller import WebsiteSparkysController
 from application.interfaces.parser_interface import ParserInterface
+from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.lego_sets_repository import LegoSetsRepository
@@ -78,6 +79,10 @@ class LegoSetsService:
     def website_kostickyshop_interface(self) -> WebsiteInterface:
         return self.websites_interfaces_provider.get_website_kostickyshop_interface()
 
+    @property
+    def website_brickset_interface(self) -> WebsiteDataSourceInterface:
+        return self.websites_interfaces_provider.get_website_brickset_interface()
+
     async def get_set_info(self, set_id: str):
         return await self.lego_sets_repository.get_set(set_id=set_id)
 
@@ -119,6 +124,9 @@ class LegoSetsService:
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
+
+    async def parse_sets_from_brickset(self):
+        await self.website_brickset_interface.parse_all_legosets()
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:
         match store_id:

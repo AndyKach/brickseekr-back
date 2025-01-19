@@ -12,7 +12,7 @@ class LegoSet(BaseModel):
     weigh: float = Field(default=0.0)
     dimensions: dict | None = Field(default={})
     ages: int = Field(default=0)
-    created_at: datetime | None = Field(default_factory=datetime.now)
+    created_at: datetime | str | None = Field(default_factory=datetime.now)
 
 
 """

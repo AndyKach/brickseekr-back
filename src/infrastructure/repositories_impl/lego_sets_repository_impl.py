@@ -31,7 +31,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                     weigh=lego_set.weigh,
                     dimensions=lego_set.dimensions,
                     ages=lego_set.ages,
-                    created_at=lego_set.created_at,
+                    created_at=lego_set.created_at.isoformat(),
                 )
             return None
 
