@@ -6,8 +6,8 @@ from application.repositories.prices_repository import LegoSetsPricesRepository
 from domain.lego_sets_prices import LegoSetsPrices
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.db.base import async_engine
-from infrastructure.db.models.lego_sets_orm import LegoSetsOrm
-from infrastructure.db.models.prices_orm import LegoSetsPricesOrm
+from infrastructure.db.models.legosets_orm import LegoSetsOrm
+from infrastructure.db.models.legosets_prices_orm import LegoSetsPricesOrm
 
 
 class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):

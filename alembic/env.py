@@ -27,8 +27,8 @@ config.set_main_option("sqlalchemy.url", os.getenv("DB_URL"))
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from infrastructure.db.base import Base
-from infrastructure.db.models.lego_sets_orm import LegoSetsOrm
-from infrastructure.db.models.prices_orm import LegoSetsPricesOrm
+from infrastructure.db.models.legosets_orm import LegoSetsOrm
+from infrastructure.db.models.legosets_prices_orm import LegoSetsPricesOrm
 from infrastructure.db.models.websites_orm import WebsitesOrm
 target_metadata = Base.metadata
 
@@ -38,7 +38,7 @@ target_metadata = Base.metadata
 # ... etc.
 def backup_database():
     """Создает резервную копию базы данных перед миграцией."""
-    db_url = config.get_main_option("sqlalchemy.url")
+    db_url = config.get_main_option("sqlalchemy.url").replace('+psycopg2', '')
     backup_file = "backup_before_migration.dump"
 
     try:

@@ -1,4 +1,4 @@
-from infrastructure.db.models.lego_sets_orm import LegoSetsOrm
+from infrastructure.db.models.legosets_orm import LegoSetsOrm
 from application.repositories.lego_sets_repository import LegoSetsRepository
 from domain.lego_set import LegoSet
 from sqlalchemy.ext.asyncio import AsyncSession
