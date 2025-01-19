@@ -37,7 +37,24 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
     @staticmethod
     async def pydantic_to_orm(legoset_pydantic: LegoSet):
         return LegoSetsOrm(
-
+            id=legoset_pydantic.id,
+            name=legoset_pydantic.name,
+            year=legoset_pydantic.year,
+            theme=legoset_pydantic.theme,
+            themeGroup=legoset_pydantic.themeGroup,
+            subtheme=legoset_pydantic.subtheme,
+            images=legoset_pydantic.images,
+            pieces=legoset_pydantic.pieces,
+            dimensions=legoset_pydantic.dimensions,
+            weigh=legoset_pydantic.weigh,
+            tags=legoset_pydantic.tags,
+            description=legoset_pydantic.description,
+            ages_range=legoset_pydantic.ages_range,
+            extendedData=legoset_pydantic.extendedData,
+            launchDate=legoset_pydantic.launchDate,
+            exitDate=legoset_pydantic.exitDate,
+            updated_at=legoset_pydantic.updated_at,
+            created_at=legoset_pydantic.created_at,
         )
 
     async def get_set(self, set_id: str) -> LegoSet | None:
@@ -48,28 +65,16 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 .where(LegoSetsOrm.id==set_id)
             )
             result = await session.execute(query)
-            lego_set = result.scalars().first()
-            print(type(lego_set))
-            print(lego_set)
-            if lego_set:
-                return await self.orm_to_pydantic(legoset_orm=lego_set)
+            lego_set_orm = result.scalars().first()
+
+            if lego_set_orm:
+                return await self.orm_to_pydantic(legoset_orm=lego_set_orm)
             return None
 
     async def set_set(self, lego_set: LegoSet):
         session = self.get_session()
         async with session.begin():
-            lego_set_orm = LegoSetsOrm(
-                lego_set_id=lego_set.lego_set_id,
-                images=lego_set.images,
-                name=lego_set.name,
-                category_name=lego_set.category_name,
-                url_name=lego_set.url_name,
-                year=lego_set.year,
-                weigh=lego_set.weigh,
-                dimensions=lego_set.dimensions,
-                ages=lego_set.ages,
-                created_at=lego_set.created_at,
-            )
+            lego_set_orm = await self.pydantic_to_orm(legoset_pydantic=lego_set)
             session.add(lego_set_orm)
             await session.commit()
 
@@ -80,33 +85,14 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             lego_sets_orm = query.scalars().all()
             lego_sets = []
             if lego_sets:
-                for lego_set in lego_sets_orm:
-                    lego_sets.append(LegoSet(
-                    id=lego_set.id,
-                    name=lego_set.name,
-                    year=lego_set.year,
-                    theme=lego_set.theme,
-                    themeGroup=lego_set.themeGroup,
-                    subtheme=lego_set.subtheme,
-                    images=lego_set.images,
-                    pieces=lego_set.pieces,
-                    dimensions=lego_set.dimensions,
-                    weigh=lego_set.weigh,
-                    tags=lego_set.tags,
-                    description=lego_set.description,
-                    ages_range=lego_set.ages_range,
-                    extendedData=lego_set.extendedData,
-                    launchDate=lego_set.launchDate,
-                    exitDate=lego_set.exitDate,
-                    updated_at=lego_set.updated_at,
-                    created_at=lego_set.created_at,
-                ))
+                for lego_set_orm in lego_sets_orm:
+                    lego_sets.append(await self.orm_to_pydantic(legoset_orm=lego_set_orm))
             return lego_sets
 
     async def delete_set(self, lego_set_id):
         session = self.get_session()
         async with session.begin():
-            query = delete(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id)
+            query = delete(LegoSetsOrm).where(LegoSetsOrm.id==lego_set_id)
 
             await session.execute(query)
             await session.commit()
@@ -118,7 +104,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             # print("Befor", row)
             # row.url_name = url_name
             # print("After", row)
-            query = update(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id).values(url_name=url_name)
+            query = update(LegoSetsOrm).where(LegoSetsOrm.id==lego_set_id).values(url_name=url_name)
             await session.execute(query)
             await session.commit()
 
