@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-class Minifigures(BaseModel):
+class Minifigure(BaseModel):
     id: int = Field()
     name: str | None = Field(default='-')
 
