@@ -12,6 +12,9 @@ from domain.legosets_prices import LegoSetsPrices
 from infrastructure.config.logs_config import log_api_decorator
 from infrastructure.config.services_config import get_lego_sets_service
 from infrastructure.config.fastapi_app_config import app
+from infrastructure.web.setup import setup
+
+setup()
 
 # router = APIRouter()
 

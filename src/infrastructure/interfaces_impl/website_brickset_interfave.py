@@ -39,7 +39,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
         count_saves_legosets = 0
         count_to_parse = 2
         results = []
-        for year in range(2023, 2020, -count_to_parse):
+        for year in range(2020, 2010, -count_to_parse):
             # time.sleep(2)
             system_logger.info(f"Year {year} is started")
             async with aiohttp.ClientSession() as session:

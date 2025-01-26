@@ -10,8 +10,11 @@ class GetLegoSetUseCase:
 
     async def execute(self, legoset_id: str):
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
-        legoset = await self.validate_datetime_values(legoset)
+        if legoset:
+            legoset = await self.validate_datetime_values(legoset)
         return legoset
+
+
 
     @staticmethod
     async def validate_datetime_values(legoset: LegoSet):
