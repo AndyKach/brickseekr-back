@@ -74,7 +74,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
 
                     legoset_price = LegoSetsPrice(
                         legoset_id=legoset_price_orm.legoset_id,
-                        price=legoset_price_orm.prices.get(website_id, '-'),
+                        price=legoset_price_orm.prices.get(str(website_id), '-'),
                         website_id=website_id,
                         created_at=legoset_price_orm.created_at,
                     )
