@@ -30,9 +30,9 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
             lego_sets_prices_repository=self.lego_sets_prices_repository
         )
 
-        self.website_id = "2"
+        self.website_id = 2
 
-    async def parse_lego_sets_price(self, lego_set_id: str):
+    async def parse_legosets_price(self, lego_set_id: str):
         lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
         await self._parse_item(
             lego_set=lego_set,

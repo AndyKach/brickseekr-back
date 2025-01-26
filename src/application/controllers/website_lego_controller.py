@@ -8,22 +8,22 @@ from application.use_cases.website_lego_parser_use_case import WebsiteLegoParser
 class WebsiteLegoController(WebsiteController):
 
     def __init__(self,
-                 lego_sets_repository: LegoSetsRepository,
-                 lego_sets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegoSetsRepository,
+                 legosets_prices_repository: LegoSetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
-        self.lego_sets_repository = lego_sets_repository
-        self.lego_sets_prices_repository = lego_sets_prices_repository
+        self.legosets_repository = legosets_repository
+        self.legosets_prices_repository = legosets_prices_repository
         self.website_interface = website_interface
 
         self.website_parser = WebsiteLegoParserUseCase(
-            lego_sets_prices_repository=self.lego_sets_prices_repository,
-            lego_sets_repository=self.lego_sets_repository,
+            legosets_prices_repository=self.legosets_prices_repository,
+            legosets_repository=self.legosets_repository,
             website_interface=self.website_interface
         )
 
-    async def parse_lego_sets_prices(self):
+    async def parse_legosets_prices(self):
         await self.website_parser.parse_lego_sets_prices()
 
-    async def parse_lego_sets_price(self, lego_set_id: str):
-        await self.website_parser.parse_lego_sets_price(lego_set_id=lego_set_id)
+    async def parse_legosets_price(self, legoset_id: str):
+        await self.website_parser.parse_legosets_price(legoset_id=legoset_id)

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from application.services.legosets_service import LegoSetsService
 from domain.legoset import LegoSet
+from domain.legosets_price import LegoSetsPrice
 from domain.legosets_prices import LegoSetsPrices
 # from application.services.scheduler_service import SchedulerService
 from infrastructure.config.logs_config import log_api_decorator
@@ -88,10 +89,10 @@ async def get_sets_prices(
     else:
         return await get_success_json_response(data=data)
 
-@app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'])
+@app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
 @log_api_decorator
 async def get_sets_prices_from_website(
-        set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
+        set_id: str, website_id: int, response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
     ):
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)

@@ -14,6 +14,7 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.get_legoset_price_use_case import GetLegoSetPriceUseCase
 from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
@@ -26,40 +27,43 @@ class LegoSetsService:
     def __init__(
             self,
             legosets_repository: LegoSetsRepository,
-            lego_sets_prices_repository: LegoSetsPricesRepository,
+            legosets_prices_repository: LegoSetsPricesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
             ):
-        self.lego_sets_repository = legosets_repository
-        self.lego_sets_prices_repository = lego_sets_prices_repository
+        self.legosets_repository = legosets_repository
+        self.legosets_prices_repository = legosets_prices_repository
         self.websites_interfaces_provider = websites_interfaces_provider
 
         self.website_lego_controller = WebsiteLegoController(
-            lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_lego_interface
         )
         self.website_capi_cap_controller = WebsiteCapiCapController(
             lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_capi_cap_interface
         )
         self.website_museum_of_bricks_controller = WebsiteMuseumOfBricksController(
             lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_museum_of_bricks_interface
         )
         self.website_sparkys_controller = WebsiteSparkysController(
             lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_sparkys_interface
         )
         self.website_kostickyshop_controller = WebsiteKostikyShopController(
             lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_kostickyshop_interface
         )
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
+        )
+        self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
+            legosets_prices_repository=legosets_prices_repository
         )
 
 
@@ -93,7 +97,7 @@ class LegoSetsService:
     async def async_parse_sets(self, store: str):
         website_controller = await self.__get_website_use_case(store=store)
         print(website_controller)
-        await website_controller.parse_lego_sets_prices()
+        await website_controller.parse_legosets_prices()
 
     async def parse_lego_sets_url(self):
         await self.website_museum_of_bricks_controller.parse_lego_sets_url()
@@ -107,11 +111,11 @@ class LegoSetsService:
 
     async def parse_set_in_store(self, set_id: str, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
-        return await website_controller.parse_lego_sets_price(lego_set_id=set_id)
+        return await website_controller.parse_legosets_price(lego_set_id=set_id)
 
     async def parse_all_sets_in_store(self, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
-        await website_controller.parse_lego_sets_prices()
+        await website_controller.parse_legosets_prices()
 
     async def async_parse_all_known_sets(self):
         await self.website_lego_controller.parse_known_sets()
@@ -119,18 +123,21 @@ class LegoSetsService:
     async def async_parse_all_unknown_sets(self):
         await self.website_lego_controller.parse_all_sets()
 
+    # TODO: добавить корректировку datetime в нормальный вид как в getData
     async def get_sets_prices(self, set_id: str):
-        return await self.lego_sets_prices_repository.get_item_all_prices(lego_set_id=set_id)
+        return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)
+        # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
 
-    async def get_sets_prices_from_website(self, set_id: str, website_id: str):
-        return await self.lego_sets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
+    async def get_sets_prices_from_website(self, set_id: str, website_id: int):
+        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
+        # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):
-        await self.website_brickset_interface.parse_all_legosets(legosets_repository=self.lego_sets_repository)
+        await self.website_brickset_interface.parse_all_legosets(legosets_repository=self.legosets_repository)
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:
         match store_id:

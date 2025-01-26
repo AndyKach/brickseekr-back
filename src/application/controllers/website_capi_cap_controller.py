@@ -22,8 +22,8 @@ class WebsiteCapiCapController(WebsiteController):
             website_interface=self.website_interface
         )
 
-    async def parse_lego_sets_prices(self):
+    async def parse_legosets_prices(self):
         await self.website_parser_use_case.parse_lego_sets_prices()
 
-    async def parse_lego_sets_price(self, lego_set_id: str):
-        return await self.website_parser_use_case.parse_lego_sets_price(lego_set_id=lego_set_id)
+    async def parse_legosets_price(self, lego_set_id: str):
+        return await self.website_parser_use_case.parse_legosets_price(lego_set_id=lego_set_id)

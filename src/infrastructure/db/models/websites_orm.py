@@ -9,7 +9,7 @@ from infrastructure.db.base import Base
 class WebsitesOrm(Base):
     __tablename__ = "websites"
 
-    website_id: Mapped[int] =  mapped_column(Integer, primary_key=True)
+    id: Mapped[int] =  mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(server_default=text("TIMEZONE('utc', now())"))
 

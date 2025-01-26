@@ -11,19 +11,19 @@ class LegoSetsPricesSaveUseCase:
                  ):
         self.lego_sets_prices_repository = lego_sets_prices_repository
 
-    async def save_lego_sets_price(self, lego_sets_price: LegoSetsPrice):
+    async def save_lego_sets_price(self, legosets_price: LegoSetsPrice):
         log_text = f"\n==================\n"\
-                   f"ID: {lego_sets_price.lego_set_id} \n"\
-                   f"Price: {lego_sets_price.price}\n"
+                   f"ID: {legosets_price.legoset_id} \n"\
+                   f"Price: {legosets_price.price}\n"
 
         if await self.lego_sets_prices_repository.get_item(
-                lego_set_id=lego_sets_price.lego_set_id,
+                lego_set_id=legosets_price.legoset_id,
         ) is not None:
             try:
                 await self.lego_sets_prices_repository.save_price(
-                    lego_set_id=lego_sets_price.lego_set_id,
-                    price=lego_sets_price.price,
-                    website_id=lego_sets_price.website_id
+                    legoset_id=legosets_price.legoset_id,
+                    price=legosets_price.price,
+                    website_id=legosets_price.website_id
                 )
                 log_text += f"---Save new items price successfully---"
             except Exception as e:
@@ -32,8 +32,8 @@ class LegoSetsPricesSaveUseCase:
             try:
                 await self.lego_sets_prices_repository.add_item(
                     LegoSetsPrices(
-                        lego_set_id=lego_sets_price.lego_set_id,
-                        prices={lego_sets_price.website_id: lego_sets_price.price}
+                        legoset_id=legosets_price.legoset_id,
+                        prices={legosets_price.website_id: legosets_price.price}
                     )
                 )
                 log_text += f"~~~Add new item successfully~~~"
