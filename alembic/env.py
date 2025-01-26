@@ -30,6 +30,7 @@ from infrastructure.db.base import Base
 from infrastructure.db.models.legosets_orm import LegoSetsOrm
 from infrastructure.db.models.legosets_prices_orm import LegoSetsPricesOrm
 from infrastructure.db.models.websites_orm import WebsitesOrm
+from infrastructure.db.models.minifigures_orm import MinifiguresOrm
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
