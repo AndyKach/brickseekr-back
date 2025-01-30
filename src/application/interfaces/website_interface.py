@@ -9,11 +9,11 @@ class WebsiteInterface(ABC):
         self.headers = None
 
     @abstractmethod
-    async def parse_lego_sets_price(self, lego_set: LegoSet) -> dict:
+    async def parse_legosets_price(self, lego_set: LegoSet) -> dict:
         pass
 
     @abstractmethod
-    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
+    async def parse_legosets_prices(self, lego_sets: list[LegoSet]):
         pass
 
     async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):

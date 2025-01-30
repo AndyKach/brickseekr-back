@@ -15,13 +15,13 @@ class WebsiteBricklinkInterface(WebsiteInterface):
             'Accept-Language': 'de-DE,de;q=0.9'
         }
 
-    async def parse_lego_sets_price(self, lego_set: str):
+    async def parse_legosets_price(self, lego_set: str):
         url = self.url + f"/items/set/{lego_set}-1"
         response = requests.get(auth=bricklink_auth, url=url)
         # ic(response.json())
         return response.json()
 
-    async def parse_lego_sets_prices(self, lego_sets: list):
+    async def parse_legosets_prices(self, lego_sets: list):
         results = []
         for item_id in lego_sets:
             url = self.url + f"/items/set/{item_id}-1"

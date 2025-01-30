@@ -37,7 +37,7 @@ class WebsiteParserUseCase(ABC):
         system_logger.info(f'Count Lego sets: {len(legosets)}')
         for i in range(0, len(legosets), 75):
             system_logger.info(f'Start parse sets from {i} bis {i+75}')
-            legosets_prices = await website_interface.parse_lego_sets_prices(lego_sets=legosets[i:i + 75])
+            legosets_prices = await website_interface.parse_legosets_prices(lego_sets=legosets[i:i + 75])
             if legosets_prices is not None:
             # ic(results)
                 for lego_set in legosets_prices:
@@ -65,7 +65,7 @@ class WebsiteParserUseCase(ABC):
                           legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
                           website_id: int
                           ):
-        result = await website_interface.parse_lego_sets_price(lego_set=legoset)
+        result = await website_interface.parse_legosets_price(lego_set=legoset)
         system_logger.info(f"Lego set {legoset.legoset_id} - {result}")
         if result:
             await legosets_prices_save_use_case.save_lego_sets_price(

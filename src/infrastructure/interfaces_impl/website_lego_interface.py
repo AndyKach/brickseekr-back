@@ -31,15 +31,15 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
         self.response = None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_price(self, lego_set: LegoSet):
-        url = f"{self.url}/{lego_set.lego_set_id}"
+    async def parse_legosets_price(self, legoset: LegoSet):
+        url = f"{self.url}/{legoset.lego_set_id}"
         async with aiohttp.ClientSession() as session:
             return await self.__get_item_info(
-                session=session, url=url, item_id=lego_set.lego_set_id
+                session=session, url=url, item_id=legoset.legoset_id
             )
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
+    async def parse_legosets_prices(self, legosets: list[LegoSet]):
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:
@@ -47,9 +47,9 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
                     tasks = [
                         self.__get_item_info(
                             session,
-                            url=f"{self.url}/{lego_set.lego_set_id}",
-                            item_id=lego_set.lego_set_id
-                        ) for lego_set in lego_sets
+                            url=f"{self.url}/{legoset.lego_set_id}",
+                            item_id=legoset.lego_set_id
+                        ) for legoset in legosets
                     ]
                     # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
@@ -77,15 +77,33 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
                 # with open('test2.txt', 'w') as f:
                 #     f.write(str(page))
                 # ic(soup)
-                set_price = soup.find('span',
+                legoset_price = soup.find('span',
                                           class_='ds-heading-lg ProductPrice_priceText__ndJDK',
                                           attrs={'data-test': 'product-price'})
 
-                set_price_sale = soup.find('span',
+                legoset_price_sale = soup.find('span',
                                           class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
                                           attrs={'data-test': 'product-price-sale'})
 
-                for price_element in [set_price, set_price_sale]:
+                legoset_minifigures_count = soup.find('span',
+                                                  class_='Text__BaseText-sc-13i1y3k-0 gbjGsS ProductAttributesstyles__Value-sc-1sfk910-6 CPPEL',
+                                                  attrs={'data-test': 'minifigures-value'})
+
+                legoset_pieces_count = soup.find('span',
+                                                 class_='',
+                                                 attrs={'data-test': ''})
+
+                legoset_min_age = soup.find('span',
+                                                 class_='',
+                                                 attrs={'data-test': ''})
+
+                legoset_dimensions = soup.find('span',
+                                                 class_='',
+                                                 attrs={'data-test': ''})
+
+                legoset_description = soup.find('span',)
+
+                for price_element in [legoset_price, legoset_price_sale]:
                     if price_element:
                         price = price_element.get_text(strip=True)
                         system_logger.info(f'Lego set {item_id} exists, price: {price}')

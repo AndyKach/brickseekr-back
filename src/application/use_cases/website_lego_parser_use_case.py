@@ -4,6 +4,7 @@ from datetime import datetime
 from icecream import ic
 from requests.utils import extract_zipped_paths
 
+from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
@@ -22,7 +23,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             self,
             legosets_prices_repository: LegoSetsPricesRepository,
             legosets_repository: LegoSetsRepository,
-            website_interface: WebsiteInterface,
+            website_interface: WebsiteDataSourceInterface,
     ):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
@@ -42,7 +43,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             website_id=self.website_id
         )
 
-    async def parse_lego_sets_prices(self):
+    async def parse_legosets_prices(self):
         lego_sets = await self.legosets_repository.get_all()
         await self._parse_items(
             legosets=lego_sets[200:220],
@@ -51,23 +52,26 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             website_id=self.website_id
         )
 
-    async def parse_known_sets(self):
-        """
-        Parse sets from lego_sets_prices
-        """
-        lego_sets = await self.legosets_prices_repository.get_all_items()
-        # print(lego_sets)
-        await self._parse_items(legosets=lego_sets)
+    async def parse_legosets(self):
+        await self.website_interface.parse_legosets(legosets_repository=self.legosets_repository)
 
-    async def parse_all_sets(self):
-        """
-        Parse sets from lego_sets
-        """
-        lego_sets = await self.legosets_repository.get_all()
-        await self._parse_items(legosets=lego_sets)
+    # async def parse_known_sets(self):
+    #     """
+    #     Parse sets from lego_sets_prices
+    #     """
+    #     lego_sets = await self.legosets_prices_repository.get_all_items()
+    #     # print(lego_sets)
+    #     await self._parse_items(legosets=lego_sets)
 
-    async def parse_set(self, lego_set_id: str):
-        await self._parse_item(lego_set_id=lego_set_id)
+    # async def parse_all_sets(self):
+    #     """
+    #     Parse sets from legosets
+    #     """
+    #     lego_sets = await self.legosets_repository.get_all()
+    #     await self._parse_items(legosets=lego_sets)
+    #
+    # async def parse_set(self, lego_set_id: str):
+    #     await self._parse_item(lego_set_id=lego_set_id)
 
     # async def _parse_item(self, lego_set_id: str):
     #     time_start = datetime.now()
@@ -82,20 +86,20 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
     #
     #     system_logger.info(f'Parse is end in {datetime.now() - time_start}')
 
-    async def parse_lego_sets_price(self, lego_set_id: str):
-        time_start = datetime.now()
-
-        lego_set = await self.legosets_repository.get_set(set_id=lego_set_id)
-        result = await self.website_interface.parse_lego_sets_price(lego_set=lego_set)
-        system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
-        await self.legosets_prices_save_use_case.save_lego_sets_price(
-            LegoSetsPrice(
-                legoset_id=lego_set.lego_set_id,
-                price=result.get('price'),
-                website_id=self.website_id
-            )
-        )
-
-        system_logger.info(f'Parse is end in {datetime.now() - time_start}')
-
-        return result
+    # async def parse_lego_sets_price(self, lego_set_id: str):
+    #     time_start = datetime.now()
+    #
+    #     lego_set = await self.legosets_repository.get_set(set_id=lego_set_id)
+    #     result = await self.website_interface.parse_legosets_price(lego_set=lego_set)
+    #     system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
+    #     await self.legosets_prices_save_use_case.save_lego_sets_price(
+    #         LegoSetsPrice(
+    #             legoset_id=lego_set.lego_set_id,
+    #             price=result.get('price'),
+    #             website_id=self.website_id
+    #         )
+    #     )
+    #
+    #     system_logger.info(f'Parse is end in {datetime.now() - time_start}')
+    #
+    #     return result

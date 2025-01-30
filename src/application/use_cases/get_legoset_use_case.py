@@ -20,8 +20,9 @@ class GetLegoSetUseCase:
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
         else:
+            pass
             # TODO 1. спарсить, сохранить, вернуть
-            await self.website_brickset_parser_use_case.parse
+            # await self.website_brickset_parser_use_case.parse
         return legoset
 
 

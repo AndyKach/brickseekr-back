@@ -31,12 +31,12 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
         # return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_price(self, lego_set: LegoSet):
+    async def parse_legosets_price(self, lego_set: LegoSet):
         async with aiohttp.ClientSession() as session:
             return await self.__get_lego_sets_price(session=session, lego_set=lego_set)
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_prices(self, lego_sets: list[LegoSet]):
+    async def parse_legosets_prices(self, lego_sets: list[LegoSet]):
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:
