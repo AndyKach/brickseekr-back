@@ -21,6 +21,7 @@ system_logger = logging.getLogger('system_logger')
 
 
 class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
+
     def __init__(self):
         super().__init__()
         self.driver = None
@@ -38,7 +39,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
         self.response = None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_all_legosets(self, legosets_repository: LegoSetsRepository):
+    async def parse_legosets(self, legosets_repository: LegoSetsRepository):
         last_datetime = datetime.now()
         log_text = ""
         count_saves_legosets = 0
@@ -174,3 +175,9 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             exitDate=legoset_json.get('exitDate'),
             updated_at=legoset_json.get('updated_at'),
         )
+
+    async def parse_legosets_price(self, lego_set: LegoSet) -> dict:
+        pass
+
+    async def parse_legosets_prices(self, lego_sets: list[LegoSet]):
+        pass

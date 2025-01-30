@@ -10,7 +10,9 @@ from icecream import ic
 from pygments.lexer import words
 
 from application.interfaces.parser_interface import ParserInterface
+from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
+from application.repositories.legosets_repository import LegoSetsRepository
 from domain.legoset import LegoSet
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator, system_logger
@@ -18,7 +20,7 @@ from infrastructure.config.selenium_config import get_selenium_driver
 from infrastructure.db.base import session_factory
 
 
-class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
+class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
     def __init__(self):
         super().__init__()
         self.driver = None
@@ -34,7 +36,7 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
     async def parse_legosets_price(self, legoset: LegoSet):
         url = f"{self.url}/{legoset.lego_set_id}"
         async with aiohttp.ClientSession() as session:
-            return await self.__get_item_info(
+            return await self.__get_item_info_bs4(
                 session=session, url=url, item_id=legoset.legoset_id
             )
 
@@ -45,7 +47,7 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
             try:
                 async with rate_limiter:
                     tasks = [
-                        self.__get_item_info(
+                        self.__get_item_info_bs4(
                             session,
                             url=f"{self.url}/{legoset.lego_set_id}",
                             item_id=legoset.lego_set_id
@@ -60,8 +62,21 @@ class WebsiteLegoInterface(WebsiteInterface, StringsToolKit):
 
             return None
 
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_legoset(self, legosets_repository: LegoSetsRepository):
+        pass
+        # driver = await get_selenium_driver()
+        # driver.get(self.url + "/75355")
 
-    async def __get_item_info(self, session, url: str, item_id: str):
+
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def parse_legosets(self, legosets_repository: LegoSetsRepository):
+        driver = await get_selenium_driver()
+        driver.get(self.url+"/75355")
+
+
+
+    async def __get_item_info_bs4(self, session, url: str, item_id: str):
         last_datetime = datetime.now()
         try:
             page = await self.fetch_page(session=session, url=url)

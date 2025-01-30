@@ -13,9 +13,9 @@ from infrastructure.config.logs_config import log_decorator
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 @log_decorator(print_args=False, print_kwargs=False)
-async def get_selenium_driver():
+async def get_selenium_driver() -> webdriver.Firefox:
     FF_OPTIONS = [
-        '--headless',         # удалить чтобы появилась картинка
+        # '--headless',         # удалить чтобы появилась картинка
         '--no-sandbox',
         '--accept-cookies'
         '--disable-xss-auditor',

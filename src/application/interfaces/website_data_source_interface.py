@@ -2,13 +2,22 @@ from abc import ABC, abstractmethod
 
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
+from domain.legoset import LegoSet
 
 
-class WebsiteDataSourceInterface(ABC, WebsiteInterface):
+class WebsiteDataSourceInterface(WebsiteInterface):
     @abstractmethod
-    async def parse_all_legosets(self, legosets_repository: LegoSetsRepository):
+    async def parse_legosets(self, legosets_repository: LegoSetsRepository):
         pass
 
     @abstractmethod
     async def parse_legoset(self, legoset_id: str):
+        pass
+
+    @abstractmethod
+    async def parse_legosets_price(self, lego_set: LegoSet) -> dict:
+        pass
+
+    @abstractmethod
+    async def parse_legosets_prices(self, lego_sets: list[LegoSet]):
         pass

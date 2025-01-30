@@ -2,6 +2,7 @@ import asyncio
 
 from icecream import ic
 
+from application.controllers.website_brickset_controller import WebsiteBricksetController
 from application.controllers.website_capi_cap_controller import WebsiteCapiCapController
 from application.controllers.website_controller import WebsiteController
 from application.controllers.website_kostickyshop_controller import WebsiteKostikyShopController
@@ -59,9 +60,13 @@ class LegoSetsService:
             lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_kostickyshop_interface
         )
-        self.website_brickset_controller = WebsiteBricksetController()
+        self.website_brickset_controller = WebsiteBricksetController(
+            website_interface=self.website_brickset_interface,
+            legosets_repository=legosets_repository
+        )
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
+            website_brickset_controller=self.website_brickset_controller
         )
         self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
             legosets_prices_repository=legosets_prices_repository
@@ -142,7 +147,10 @@ class LegoSetsService:
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):
-        await self.website_brickset_interface.parse_all_legosets(legosets_repository=self.legosets_repository)
+        await self.website_brickset_controller.parse_legosets()
+
+    async def parse_legosets_from_lego(self):
+        await self.website_lego_controller.parse_legosets()
 
     async def __get_website_use_case(self, store_id: int) -> WebsiteController:
         match store_id:

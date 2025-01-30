@@ -152,14 +152,13 @@ async def parse_sets_from_brickset(
     return await get_success_json_response(data={'status': 'parse start'})
 
 
-@app.post("parseLegoSetFromLego", tags=['Experimental'])
+@app.post("/parseLegoSetFromLego", tags=['Experimental'])
 @log_api_decorator
 async def parse_sets_from_lego(
-        legoset_id: str,
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
-    background_tasks.add_task()
+    background_tasks.add_task(lego_sets_service.parse_legosets_from_lego)
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
 

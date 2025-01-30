@@ -14,7 +14,7 @@ class WebsiteBricksetParserUseCase(WebsiteParserUseCase):
     def parse_legosets_price(self, legoset_id: str):
         pass
 
-    def parse_lego_sets_prices(self):
+    def parse_legosets_prices(self):
         pass
 
     #TODO доделать нормально
@@ -22,4 +22,4 @@ class WebsiteBricksetParserUseCase(WebsiteParserUseCase):
         legoset = await self.website_interface.parse_legoset(legoset_id=legoset_id)
 
     async def parse_legosets(self):
-        legosets = await self.website_interface.parse_all_legosets(legosets_repository=self.legosets_repository)
+        legosets = await self.website_interface.parse_legosets(legosets_repository=self.legosets_repository)

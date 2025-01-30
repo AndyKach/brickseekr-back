@@ -22,7 +22,7 @@ class WebsiteParserUseCase(ABC):
         pass
 
     @abstractmethod
-    def parse_lego_sets_prices(self):
+    def parse_legosets_prices(self):
         pass
 
     @staticmethod
