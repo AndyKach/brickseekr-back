@@ -4,6 +4,7 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
+from infrastructure.config.logs_config import log_decorator
 
 
 class WebsiteLegoController(WebsiteController):
@@ -29,5 +30,6 @@ class WebsiteLegoController(WebsiteController):
     async def parse_legosets_price(self, legoset_id: str):
         await self.website_parser.parse_legosets_price(legoset_id=legoset_id)
 
+    @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets(self):
         await self.website_parser.parse_legosets()

@@ -88,11 +88,12 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         async with session.begin():
             query = await session.execute(select(LegoSetsOrm))
             legosets_orm = query.scalars().all()
+            # print(legosets_orm)
             legosets = []
-            if legosets:
+            if legosets_orm:
                 for legoset_orm in legosets_orm:
                     legosets.append(await self.orm_to_pydantic(legoset_orm=legoset_orm))
-            return legosets
+                return legosets
 
     async def delete_set(self, legoset_id):
         session = self.get_session()

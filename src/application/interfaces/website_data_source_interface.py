@@ -6,13 +6,14 @@ from domain.legoset import LegoSet
 
 
 class WebsiteDataSourceInterface(WebsiteInterface):
-    @abstractmethod
-    async def parse_legosets(self, legosets_repository: LegoSetsRepository):
-        pass
-
-    @abstractmethod
-    async def parse_legoset(self, legoset_id: str):
-        pass
+    # @abstractmethod
+    # async def parse_legosets(self, legosets_repository: LegoSetsRepository):
+    #
+    #     pass
+    #
+    # @abstractmethod
+    # async def parse_legoset(self, legoset_id: str):
+    #     pass
 
     @abstractmethod
     async def parse_legosets_price(self, lego_set: LegoSet) -> dict:

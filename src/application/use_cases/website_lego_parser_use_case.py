@@ -15,6 +15,8 @@ from domain.legosets_price import LegoSetsPrice
 from domain.legosets_prices import LegoSetsPrices
 import logging
 
+from infrastructure.config.logs_config import log_decorator
+
 system_logger = logging.getLogger('system_logger')
 
 
@@ -52,8 +54,9 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             website_id=self.website_id
         )
 
+    @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets(self):
-        await self.website_interface.parse_legosets(legosets_repository=self.legosets_repository)
+        await self.website_interface.parse_legosets(legosets_repository=self.legosets_repository, legosets_prices_repository=self.legosets_prices_repository)
 
     # async def parse_known_sets(self):
     #     """

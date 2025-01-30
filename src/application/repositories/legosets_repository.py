@@ -9,7 +9,7 @@ class LegoSetsRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> [LegoSet]:
+    async def get_all(self) -> list[LegoSet]:
         pass
 
     @abstractmethod

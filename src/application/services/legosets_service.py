@@ -1,5 +1,5 @@
 import asyncio
-
+import logging
 from icecream import ic
 
 from application.controllers.website_brickset_controller import WebsiteBricksetController
@@ -22,8 +22,9 @@ from application.use_cases.website_lego_parser_use_case import WebsiteLegoParser
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.legosets_prices import LegoSetsPrices
+from infrastructure.config.logs_config import log_decorator
 
-
+system_logger = logging.getLogger('system_logger')
 class LegoSetsService:
     def __init__(
             self,
@@ -149,8 +150,13 @@ class LegoSetsService:
     async def parse_sets_from_brickset(self):
         await self.website_brickset_controller.parse_legosets()
 
+    @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_from_lego(self):
+        system_logger.warning('START')
         await self.website_lego_controller.parse_legosets()
+        system_logger.warning('END')
+
+
 
     async def __get_website_use_case(self, store_id: int) -> WebsiteController:
         match store_id:
