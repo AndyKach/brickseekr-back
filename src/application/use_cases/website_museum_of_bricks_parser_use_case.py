@@ -48,9 +48,9 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
     async def parse_legosets_price(self, lego_set_id: str):
         lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
         await self._parse_item(
-            lego_set=lego_set,
+            legoset=lego_set,
             website_interface=self.website_interface,
-            lego_sets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )
 

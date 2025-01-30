@@ -94,6 +94,18 @@ class LegoSetsService:
     async def get_set_info(self, set_id: str):
         return await self.get_legoset_use_case.execute(legoset_id=set_id)
 
+    async def get_sets_prices(self, set_id: str):
+        return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)
+        # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
+
+    async def get_sets_prices_from_website(self, set_id: str, website_id: int):
+        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
+        # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
+
+    async def get_legoset_from_lego_website(self, legoset_id: str):
+        lego_website_controller = await self.__get_website_use_case(store_id=1)
+        await lego_website_controller.parse_legosets_price(legoset_id=legoset_id)
+
     async def async_parse_sets(self, store: str):
         website_controller = await self.__get_website_use_case(store=store)
         print(website_controller)
@@ -111,7 +123,7 @@ class LegoSetsService:
 
     async def parse_set_in_store(self, set_id: str, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
-        return await website_controller.parse_legosets_price(lego_set_id=set_id)
+        return await website_controller.parse_legosets_price(legoset_id=set_id)
 
     async def parse_all_sets_in_store(self, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
@@ -123,14 +135,6 @@ class LegoSetsService:
     async def async_parse_all_unknown_sets(self):
         await self.website_lego_controller.parse_all_sets()
 
-    # TODO: добавить корректировку datetime в нормальный вид как в getData
-    async def get_sets_prices(self, set_id: str):
-        return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)
-        # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
-
-    async def get_sets_prices_from_website(self, set_id: str, website_id: int):
-        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
-        # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
@@ -139,15 +143,15 @@ class LegoSetsService:
     async def parse_sets_from_brickset(self):
         await self.website_brickset_interface.parse_all_legosets(legosets_repository=self.legosets_repository)
 
-    async def __get_website_use_case(self, store_id: str) -> WebsiteController:
+    async def __get_website_use_case(self, store_id: int) -> WebsiteController:
         match store_id:
-            case "1":
+            case 1:
                 return self.website_lego_controller
-            case "2":
+            case 2:
                 return self.website_capi_cap_controller
-            case "3":
+            case 3:
                 return self.website_sparkys_controller
-            case "4":
+            case 4:
                 return self.website_museum_of_bricks_controller
-            case "5":
+            case 5:
                 return self.website_kostickyshop_controller
