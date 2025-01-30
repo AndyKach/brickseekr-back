@@ -64,7 +64,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)):
-    data = await lego_sets_service.get_set_info(set_id=set_id)
+    data = await lego_sets_service.get_legoset_info(legoset_id=set_id)
     # print(f"data: {data}")
     if data is None:
         raise HTTPException(

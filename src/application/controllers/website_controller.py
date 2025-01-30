@@ -6,6 +6,6 @@ class WebsiteController(ABC):
         pass
 
     @abstractmethod
-    async def parse_legosets_price(self, lego_set_id: str):
+    async def parse_legosets_price(self, legoset_id: str):
         pass
 
