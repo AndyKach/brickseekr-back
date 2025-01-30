@@ -59,6 +59,7 @@ class LegoSetsService:
             lego_sets_prices_repository=legosets_prices_repository,
             website_interface=self.website_kostickyshop_interface
         )
+        self.website_brickset_controller = WebsiteBricksetController()
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
         )
@@ -91,8 +92,8 @@ class LegoSetsService:
     def website_brickset_interface(self) -> WebsiteDataSourceInterface:
         return self.websites_interfaces_provider.get_website_brickset_interface()
 
-    async def get_set_info(self, set_id: str):
-        return await self.get_legoset_use_case.execute(legoset_id=set_id)
+    async def get_legoset_info(self, legoset_id: str):
+        return await self.get_legoset_use_case.execute(legoset_id=legoset_id)
 
     async def get_sets_prices(self, set_id: str):
         return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)

@@ -18,7 +18,7 @@ system_logger = logging.getLogger('system_logger')
 
 class WebsiteParserUseCase(ABC):
     @abstractmethod
-    def parse_legosets_price(self, lego_set_id: str):
+    def parse_legosets_price(self, legoset_id: str):
         pass
 
     @abstractmethod
@@ -27,20 +27,20 @@ class WebsiteParserUseCase(ABC):
 
     @staticmethod
     async def _parse_items(
-                           lego_sets: list[LegoSet],
+                           legosets: list[LegoSet],
                            website_interface: WebsiteInterface,
-                           lego_sets_prices_save_use_case: LegoSetsPricesSaveUseCase,
+                           legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
                            website_id: int
                            ):
         time_start=datetime.now()
         count_valuable = 0
-        system_logger.info(f'Count Lego sets: {len(lego_sets)}')
-        for i in range(0, len(lego_sets), 75):
+        system_logger.info(f'Count Lego sets: {len(legosets)}')
+        for i in range(0, len(legosets), 75):
             system_logger.info(f'Start parse sets from {i} bis {i+75}')
-            lego_sets_prices = await website_interface.parse_lego_sets_prices(lego_sets=lego_sets[i:i + 75])
-            if lego_sets_prices is not None:
+            legosets_prices = await website_interface.parse_lego_sets_prices(lego_sets=legosets[i:i + 75])
+            if legosets_prices is not None:
             # ic(results)
-                for lego_set in lego_sets_prices:
+                for lego_set in legosets_prices:
                     if lego_set is not None:
                         count_valuable += 1
                         lego_sets_price = LegoSetsPrice(
@@ -48,7 +48,7 @@ class WebsiteParserUseCase(ABC):
                             price=lego_set.get('price'),
                             website_id=website_id
                         )
-                        await lego_sets_prices_save_use_case.save_lego_sets_price(
+                        await legosets_prices_save_use_case.save_lego_sets_price(
                             legosets_price=lego_sets_price,
 
                         )

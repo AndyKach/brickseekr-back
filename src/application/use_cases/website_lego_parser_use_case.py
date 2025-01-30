@@ -45,9 +45,9 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
     async def parse_lego_sets_prices(self):
         lego_sets = await self.legosets_repository.get_all()
         await self._parse_items(
-            lego_sets=lego_sets[200:220],
+            legosets=lego_sets[200:220],
             website_interface=self.website_interface,
-            lego_sets_prices_save_use_case=self.legosets_prices_save_use_case,
+            legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )
 
@@ -57,14 +57,14 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
         """
         lego_sets = await self.legosets_prices_repository.get_all_items()
         # print(lego_sets)
-        await self._parse_items(lego_sets=lego_sets)
+        await self._parse_items(legosets=lego_sets)
 
     async def parse_all_sets(self):
         """
         Parse sets from lego_sets
         """
         lego_sets = await self.legosets_repository.get_all()
-        await self._parse_items(lego_sets=lego_sets)
+        await self._parse_items(legosets=lego_sets)
 
     async def parse_set(self, lego_set_id: str):
         await self._parse_item(lego_set_id=lego_set_id)
