@@ -16,6 +16,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
     def get_session(self) :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
 
+    #TODO переделать на более нормальное решение
     @log_decorator(print_args=False)
     async def save_price(self, legoset_id: str, website_id: str, price: str) -> None:
         session = self.get_session()
