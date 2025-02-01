@@ -30,7 +30,7 @@ class LegoSetsPricesSaveUseCase:
                 system_logger.error(log_text + f"Error by save new price: {e}")
         else:
             try:
-                await self.lego_sets_prices_repository.add_item(
+                await self.lego_sets_prices_repository.add_items(
                     LegoSetsPrices(
                         legoset_id=legosets_price.legoset_id,
                         prices={legosets_price.website_id: legosets_price.price}

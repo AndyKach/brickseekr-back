@@ -27,7 +27,11 @@ class LegoSetsPricesRepository(ABC):
 
 
     @abstractmethod
-    async def add_item(self, legosets_prices: LegoSetsPrices):
+    async def add_items(self, legosets_prices: LegoSetsPrices):
+        pass
+
+    @abstractmethod
+    async def add_item(self, legosets_price: LegoSetsPrice):
         pass
 
 

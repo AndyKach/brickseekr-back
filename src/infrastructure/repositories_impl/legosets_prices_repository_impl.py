@@ -1,6 +1,7 @@
 from pydantic.v1 import NoneIsNotAllowedError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, text, update
+from sqlalchemy import select, delete, text, update, func, cast
+from sqlalchemy.dialects.postgresql import JSONB
 
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from domain.legosets_price import LegoSetsPrice
@@ -27,10 +28,11 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             prices = res.scalars().first()
 
             prices[website_id] = price
+            price_json = cast(func.to_jsonb(price), JSONB)
             query = (
                 update(LegoSetsPricesOrm)
                 .where(LegoSetsPricesOrm.legoset_id == legoset_id)
-                .values(prices=prices)
+                .values(prices=func.jsonb_set(LegoSetsPricesOrm.prices, f'{{{website_id}}}', price_json, True))
             )
             await session.execute(query)
             await session.commit()
@@ -110,7 +112,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
                 return legosets_prices
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def add_item(self, legosets_prices: LegoSetsPrices):
+    async def add_items(self, legosets_prices: LegoSetsPrices):
         session = self.get_session()
         legosets_prices_orm = LegoSetsPricesOrm(
             legoset_id=legosets_prices.legoset_id,
@@ -119,6 +121,18 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
         async with session.begin():
             session.add(legosets_prices_orm)
             await session.commit()
+
+    @log_decorator(print_args=False, print_kwargs=False)
+    async def add_item(self, legosets_price: LegoSetsPrice):
+        session = self.get_session()
+        legosets_prices_orm = LegoSetsPricesOrm(
+            legoset_id=legosets_price.legoset_id,
+            prices={legosets_price.website_id: legosets_price.price}
+        )
+        async with session.begin():
+            session.add(legosets_prices_orm)
+            await session.commit()
+
 
 
 
