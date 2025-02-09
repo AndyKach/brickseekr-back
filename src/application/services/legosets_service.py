@@ -17,6 +17,7 @@ from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.get_legoset_price_use_case import GetLegoSetPriceUseCase
 from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
+from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
@@ -71,6 +72,10 @@ class LegoSetsService:
         )
         self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
             legosets_prices_repository=legosets_prices_repository
+        )
+        self.get_legosets_rating_use_case = GetLegoSetsRatingUseCase(
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
         )
 
 
@@ -142,13 +147,15 @@ class LegoSetsService:
     async def async_parse_all_unknown_sets(self):
         await self.website_lego_controller.parse_all_sets()
 
+    async def get_legosets_rating(self, legoset_id: str):
+        return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):
-        await self.website_brickset_controller.parse_legosets()
+        return await self.website_brickset_controller.parse_legosets()
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_from_lego(self):

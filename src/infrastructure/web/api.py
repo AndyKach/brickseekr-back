@@ -104,6 +104,27 @@ async def get_sets_prices_from_website(
     else:
         return await get_success_json_response(data=data)
 
+
+@app.get('/sets/{set_id}/getRating', tags=['Sets'])
+@log_api_decorator
+async def get_sets_prices_from_website(
+        legoset_id: str, response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
+    ):
+    data = await lego_sets_service.get_legosets_rating(legoset_id=legoset_id)
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        if data.get('status_code') == 500:
+            raise HTTPException(
+                status_code=500,
+                detail=data.get('message')
+            )
+        return await get_success_json_response(data=data)
+
 # @app.get('/sets/{set_id}/parseAllStores')
 
 # @app.get('/sets/{set_id}/{store_id}/parseSet')
@@ -161,6 +182,7 @@ async def parse_sets_from_lego(
     background_tasks.add_task(lego_sets_service.parse_legosets_from_lego)
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
+
 
 
 
