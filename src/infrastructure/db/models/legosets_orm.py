@@ -12,6 +12,7 @@ class LegoSetsOrm(Base):
     id: Mapped[str]                = mapped_column(String, primary_key=True)
     name: Mapped[str]              = mapped_column(String, default="-", nullable=True)
     year: Mapped[int]              = mapped_column(INTEGER, default=0, nullable=True)
+    rating: Mapped[float]          = mapped_column(Float, default=0.0, nullable=True)
 
     theme: Mapped[str]             = mapped_column(String, default="-", nullable=True)
     themeGroup: Mapped[str]        = mapped_column(String, default="-", nullable=True)

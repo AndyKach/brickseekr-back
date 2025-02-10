@@ -22,6 +22,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             id=legoset_orm.id,
             name=legoset_orm.name,
             year=legoset_orm.year,
+            rating=legoset_orm.rating,
             theme=legoset_orm.theme,
             themeGroup=legoset_orm.themeGroup,
             subtheme=legoset_orm.subtheme,
@@ -45,6 +46,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             id=legoset_pydantic.id,
             name=legoset_pydantic.name,
             year=legoset_pydantic.year,
+            rating=legoset_pydantic.rating,
             theme=legoset_pydantic.theme,
             themeGroup=legoset_pydantic.themeGroup,
             subtheme=legoset_pydantic.subtheme,
@@ -117,7 +119,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
 
     async def update_set(self, legoset: LegoSet) -> None:
         session = self.get_session()
-        async with (session.begin()):
+        async with (((session.begin()))):
             query = select(LegoSetsOrm).where(LegoSetsOrm.id==legoset.id)
             result = await session.execute(query)
             legoset_orm = result.scalars().first()
@@ -130,7 +132,12 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 # system_logger.info(f"Key: {key}, Value: {getattr(legoset, key)}")
                 # system_logger.info(f"Key: {key}, Value: ")
                 if getattr(legoset_orm, key) != getattr(legoset, key):
-                    if getattr(legoset, key) != 0 and getattr(legoset, key) is not None and getattr(legoset, key) != {} and getattr(legoset, key) != []:
-                        setattr(legoset_orm, key, getattr(legoset, key))
-                        flag_modified(legoset_orm, key)
+                    if getattr(legoset, key) != 0 and \
+                        getattr(legoset, key) is not None and \
+                            getattr(legoset, key) != {} and \
+                                getattr(legoset, key) != [] and \
+                                    getattr(legoset, key) != 0.0 and \
+                                        getattr(legoset, key) != "":
+                                            setattr(legoset_orm, key, getattr(legoset, key))
+                                            flag_modified(legoset_orm, key)
 

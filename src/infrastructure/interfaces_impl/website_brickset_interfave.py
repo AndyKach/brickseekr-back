@@ -45,7 +45,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
         count_saves_legosets = 0
         count_to_parse = 2
         results = []
-        for year in range(2010, 2009, -count_to_parse):
+        for year in range(2025, 2009, -count_to_parse):
             # time.sleep(2)
             system_logger.info(f"Year {year} is started")
             async with aiohttp.ClientSession() as session:
@@ -159,6 +159,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
                     "smallSize": legoset_json.get('image', {}).get('thumbnailURL')},
             name=legoset_json.get('name'),
             year=legoset_json.get('year'),
+            rating=legoset_json.get('rating'),
             theme=legoset_json.get('theme'),
             themeGroup=legoset_json.get('themeGroup'),
             subtheme=legoset_json.get('subtheme'),
@@ -169,7 +170,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             description=legoset_json.get('extendedData').get('description'),
             ages_range=legoset_json.get('ageRange'),
             minifigures_ids=[],
-            minifigures_count=0,
+            minifigures_count=legoset_json.get('minifigs'),
             extendedData={'cz_url_name': "None", 'cz_category_name': "None"},
             launchDate=legoset_json.get('launchDate'),
             exitDate=legoset_json.get('exitDate'),

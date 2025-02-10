@@ -6,6 +6,7 @@ class LegoSet(BaseModel):
     id:            str                          = Field()
     name:          str | None                   = Field(default='-')
     year:          int | None                   = Field(default=0)
+    rating:      float | None                   = Field(default=0.0)
 
     theme:         str | None                   = Field(default='-')
     themeGroup:    str | None                   = Field(default='-')
