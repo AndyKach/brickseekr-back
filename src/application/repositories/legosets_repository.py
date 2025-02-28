@@ -24,5 +24,9 @@ class LegoSetsRepository(ABC):
     async def update_set(self, legoset: LegoSet) -> None:
         pass
 
+    @abstractmethod
+    async def update_rating(self, legoset_id: str, rating: float) -> None:
+        pass
+
 
 

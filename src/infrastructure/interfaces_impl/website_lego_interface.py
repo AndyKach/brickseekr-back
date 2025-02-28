@@ -39,7 +39,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
         self.response = None
         self.legosets_repository: LegoSetsRepository = None
         self.legosets_prices_repository: LegoSetsPricesRepository = None
-        self.website_id = 1
+        self.website_id = "1"
 
     async def set_repository(self, legosets_repository: LegoSetsRepository, legosets_prices_repository: LegoSetsPricesRepository):
         self.legosets_repository = legosets_repository
@@ -47,10 +47,10 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_price(self, legoset: LegoSet):
-        url = f"{self.url}/{legoset.lego_set_id}"
+        url = f"{self.url}/product/{legoset.id}"
         async with aiohttp.ClientSession() as session:
             return await self.__get_item_info_bs4(
-                session=session, url=url, item_id=legoset.legoset_id
+                session=session, url=url, item_id=legoset.id
             )
 
     @log_decorator(print_args=False, print_kwargs=False)
@@ -62,8 +62,8 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                     tasks = [
                         self.__get_item_info_bs4(
                             session,
-                            url=f"{self.url}/{legoset.lego_set_id}",
-                            item_id=legoset.lego_set_id
+                            url=f"{self.url}/product/{legoset.id}",
+                            item_id=legoset.id
                         ) for legoset in legosets
                     ]
                     # Параллельное выполнение всех задач
@@ -77,6 +77,9 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
 
     async def __get_item_info_bs4(self, session, url: str, item_id: str):
         last_datetime = datetime.now()
+        # ic(url)
+        result = {}
+        result['legoset_id'] = item_id
         try:
             page = await self.fetch_page(session=session, url=url)
             # with open('test1.txt', 'w') as f:
@@ -99,35 +102,41 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                                           class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
                                           attrs={'data-test': 'product-price-sale'})
 
-                legoset_minifigures_count = soup.find('span',
-                                                  class_='Text__BaseText-sc-13i1y3k-0 gbjGsS ProductAttributesstyles__Value-sc-1sfk910-6 CPPEL',
-                                                  attrs={'data-test': 'minifigures-value'})
+                small_size_params = "?format=webply&fit=bounds&quality=75&width=170&height=170&dpr=1"
+                big_size_params = "?format=webply&fit=bounds&quality=75&width=800&height=800&dpr=1"
 
-                legoset_pieces_count = soup.find('span',
-                                                 class_='',
-                                                 attrs={'data-test': ''})
+                for i in range(1, 6):
+                    legoset_image = soup.find('button',
+                                                   class_='GalleryThumbnail_galleryThumbnail__Q2_vY',
+                                                   attrs={'data-test': f"gallery-thumbnail-{i}"})
+                    if legoset_image:
+                        source_tag = legoset_image.find("source")
+                        if source_tag and "srcset" in source_tag.attrs:
+                            srcset_value = source_tag["srcset"]
+                            first_url = srcset_value.split(",")[0].strip().split()[0]
+                            base_url = first_url.split("?")[0]
+                            # print(base_url)
+                            image_small_link = base_url + small_size_params
+                            image_big_link = base_url + big_size_params
 
-                legoset_min_age = soup.find('span',
-                                                 class_='',
-                                                 attrs={'data-test': ''})
+                            result[f'small_image{i}'] = image_small_link
+                            result[f'big_image{i}'] = image_big_link
 
-                legoset_dimensions = soup.find('span',
-                                                 class_='',
-                                                 attrs={'data-test': ''})
 
-                legoset_description = soup.find('span',)
 
                 for price_element in [legoset_price, legoset_price_sale]:
                     if price_element:
                         price = price_element.get_text(strip=True)
                         system_logger.info(f'Lego set {item_id} exists, price: {price}')
-                        return {"lego_set_id": item_id,
-                                "price": price.replace('\xa0', ' ')}
+                        # result['legoset_id'] = item_id
+                        result['price'] = price.replace('\xa0', ' ')
+                        return result
 
                     else:
                         system_logger.info(f'Lego set {item_id} not found')
+                return result
         except Exception as e:
-            print(f"Error: {e}")
+            system_logger.error(f"Error: {e}")
 
 
         return None

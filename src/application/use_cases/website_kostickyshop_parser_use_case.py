@@ -16,9 +16,9 @@ class WebsiteKostickyShopParserUseCase(WebsiteParserUseCase):
         self.website_interface = website_interface
 
         self.lego_sets_prices_save_use_case = LegoSetsPricesSaveUseCase(
-            lego_sets_prices_repository=self.lego_sets_prices_repository
+            legosets_prices_repository=self.lego_sets_prices_repository
         )
-        self.website_id = 5
+        self.website_id = "5"
 
 
     async def parse_legosets_price(self, legoset_id: str):

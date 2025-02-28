@@ -42,3 +42,6 @@
 url = "https://eshop.museumofbricks.cz/lego-star-wars--75257-millennium-falcon/"
 
 print(url[url.find('75257')+6:-1])
+
+
+

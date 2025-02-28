@@ -31,10 +31,10 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
         self.legosets_prices_repository = legosets_prices_repository
         self.website_interface = website_interface
         self.legosets_prices_save_use_case = LegoSetsPricesSaveUseCase(
-            lego_sets_prices_repository=self.legosets_prices_repository
+            legosets_prices_repository=self.legosets_prices_repository
         )
 
-        self.website_id = 1
+        self.website_id = "1"
 
     async def parse_legosets_price(self, legoset_id: str):
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
@@ -42,17 +42,31 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
             legoset=legoset,
             website_interface=self.website_interface,
             legosets_prices_save_use_case=self.legosets_prices_save_use_case,
+            legosets_repository=self.legosets_repository,
             website_id=self.website_id
         )
 
     async def parse_legosets_prices(self):
-        lego_sets = await self.legosets_repository.get_all()
+        list_of_legosets_prices = await self.legosets_prices_repository.get_all_items()
+        # ic(list_of_legosets_prices)
+        legosets = []
+
+        for legosets_prices in list_of_legosets_prices[:]:
+            if legosets_prices.prices.get('1'):
+                if '€' in legosets_prices.prices.get('1'):
+                    legosets.append(await self.legosets_repository.get_set(set_id=legosets_prices.legoset_id))
+
+        # ic(legosets)
+        # legosets = await self.legosets_repository.get_all()
+        system_logger.info(f"Count of legosets for parse: {len(legosets)}")
         await self._parse_items(
-            legosets=lego_sets[200:220],
+            legosets=legosets,
             website_interface=self.website_interface,
             legosets_prices_save_use_case=self.legosets_prices_save_use_case,
+            legosets_repository=self.legosets_repository,
             website_id=self.website_id
         )
+
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets(self):

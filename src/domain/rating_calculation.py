@@ -1,53 +1,64 @@
+import logging
+import copy
 from icecream import ic
 
 from infrastructure.config.logs_config import log_decorator
 
+system_logger = logging.getLogger("system_logger")
 
 class RatingCalculation:
     def __init__(self):
-        self.investment_potential = 0
-        self.theme_popularity = 0
-        self.build_complexity = 0
-        self.price_to_piece_ratio = 0
-        self.rarity = 0
-        self.playability = 0
-        self.durability = 0
-        self.google_rating = 0
+        self.rating_values = {
+            "investment_potential": 0,
+            "theme_popularity": 0,
+            "build_complexity": 0,
+            "price_to_piece_ratio": 0,
+            "playability": 0,
+            "durability": 0,
+            "google_rating": 0,
+        }
+
+        self.investment_potential_weight  = 0.25
+        self.theme_popularity_weight      = 0.2
+        self.build_complexity_weight      = 0.1
+        self.price_to_piece_ratio_weight  = 0.15
+        self.playability_weight           = 0.1
+        self.durability_weight            = 0.05
+        self.google_rating_weight         = 3
 
     @log_decorator(print_args=False, print_kwargs=True)
     async def calculate_rating(self,
-                         final_price: float, initial_price: float, years_since_release: float,
-                         theme: str,
-                         pieces_count: int,
-                         official_price: float, best_ratio: float, worst_ratio: float,
-                         rarity_type: str = "Regular Set"
+                               final_price: float, initial_price: float, years_since_release: float, theme: str,
+                               pieces_count: int, best_ratio: float, worst_ratio: float, google_rating: float,
                          ):
-        await self.calculate_investment_potential(final_price=final_price, initial_price=initial_price, years_since_release=years_since_release)
-        await self.calculate_theme_popularity(theme=theme)
-        await self.calculate_build_complexity(pieces_count=pieces_count)
-        await self.calculate_price_to_piece_ratio(official_price=official_price, best_ratio=best_ratio, worst_ratio=worst_ratio, pieces_count=pieces_count)
-        await self.calculate_rarity(rarity_type=rarity_type)
-        await self.calculate_playability(theme=theme)
-        await self.calculate_durability(theme=theme)
+        # Так как этот класс может использоваться для вычисления сразу нескольких рейтингов одновременно,
+        # для каждого набора создается временная переменная, которая хранит значения для вычисления общего рейтинг
+        rating_values = copy.deepcopy(self.rating_values)
+        system_logger.info(f"rating values: {rating_values}")
 
-        print(f'self.investment: {self.investment_potential}')
-        print(f'self.theme_popularity: {self.theme_popularity}')
-        print(f'self.build_complexity: {self.build_complexity}')
-        print(f'self.price_to_piece_ratio: {self.price_to_piece_ratio}')
-        print(f'self.rarity: {self.rarity}')
-        print(f'self.playability: {self.playability}')
-        print(f'self.durability: {self.durability}')
+        await self.calculate_investment_potential(rating_values=rating_values, final_price=final_price, initial_price=initial_price, years_since_release=years_since_release)
+        await self.calculate_theme_popularity(rating_values=rating_values, theme=theme)
+        await self.calculate_build_complexity(rating_values=rating_values, pieces_count=pieces_count)
+        await self.calculate_price_to_piece_ratio(rating_values=rating_values, initial_price=initial_price, best_ratio=best_ratio, worst_ratio=worst_ratio, pieces_count=pieces_count)
+        await self.calculate_playability(rating_values=rating_values, theme=theme)
+        await self.calculate_durability(rating_values=rating_values, theme=theme)
+        await self.calculate_google_rating(rating_values=rating_values, google_rating=google_rating)
 
-        result = self.investment_potential + self.theme_popularity + self.build_complexity + self.price_to_piece_ratio + self.rarity + self.playability + self.durability
-        print(f"result: {result}")
+        system_logger.info(f"rating values: {rating_values}")
+
+        result = 0
+        for key in rating_values.keys():
+            result += rating_values.get(key, 0)
+        ic(f"result: {result}")
         return result
 
-    async def calculate_investment_potential(self, final_price: float, initial_price: float, years_since_release: float):
-        CAGR = (final_price/initial_price)**(1/years_since_release) - 1
+    async def calculate_investment_potential(self, rating_values: dict, final_price: float, initial_price: float, years_since_release: float):
+        score = (1 - (final_price/initial_price)**(1/years_since_release)) * 100
 
-        self.investment_potential = (min(CAGR, 15)/15*100)*0.25
+        system_logger.info(f"Investment potential CAGR: {score}")
+        rating_values["investment_potential"] = score * self.investment_potential_weight
 
-    async def calculate_theme_popularity(self, theme: str):
+    async def calculate_theme_popularity(self, rating_values: dict, theme: str):
         themes_score = {
             'star-wars': 100,
             'harry-potter': 95,
@@ -67,13 +78,13 @@ class RatingCalculation:
             "speed-champions": 80,
             "city": 80,
             "minecraft": 80,
-            "the-simpsons": 35,  # Повторное значение: сначала было 80, затем 35
+            "the-simpsons": 35,  #
             "the-hobbit": 80,
             "the-lego-movie": 80,
             "sonic-the-hedgehog": 75,
             "spider-man": 75,
             "avatar": 75,
-            "avatar:-the-last-airbender": 50,  # Повторное значение: сначала 75, затем 50
+            "avatar:-the-last-airbender": 50,
             "indiana-jones": 75,
             "disney": 70,
             "friends": 70,
@@ -81,8 +92,8 @@ class RatingCalculation:
             "wednesday": 70,
             "wicked": 70,
             "animal-crossing": 65,
-            "the-angry-birds-movie": 10,  # Повторное значение: сначала 65, затем 10
-            "the-powerpuff-girls": 10,  # Повторное значение: сначала 65, затем 10
+            "the-angry-birds-movie": 10,
+            "the-powerpuff-girls": 10,
             "classic": 65,
             "botanical-collection": 65,
             "minifigures": 60,
@@ -101,7 +112,7 @@ class RatingCalculation:
             "elves": 50,
             "ultra-agents": 50,
             "lego-dimensions": 50,
-            "trolls-world-tour": 10,  # Повторное значение: сначала 50, затем 10
+            "trolls-world-tour": 10,
             "the-lego-movie-2": 50,
             "monkie-kid": 45,
             "duplo": 45,
@@ -143,7 +154,7 @@ class RatingCalculation:
             "freestyle": 25,
             "studios": 25,
             "bulk-bricks": 25,
-            "lego-forma": 10,  # Повторное значение: сначала 20, затем 10
+            "lego-forma": 10,
             "lego-serious-play": 20,
             "lego-powered-up": 20,
             "braille-bricks": 20,
@@ -158,9 +169,12 @@ class RatingCalculation:
             "bluey": 10,
             "lego-xtra": 5
         }
-        self.theme_popularity = themes_score.get(theme, 0)*0.25
 
-    async def calculate_build_complexity(self, pieces_count: int):
+        score = themes_score.get(theme  , 0)
+        system_logger.info(f"Themes score: {score}")
+        rating_values["theme_popularity"] = score * self.theme_popularity_weight
+
+    async def calculate_build_complexity(self, rating_values: dict, pieces_count: int):
         pieces_score = 0
         match pieces_count:
             case pieces_count if 0 < pieces_count <= 100:
@@ -175,39 +189,42 @@ class RatingCalculation:
                 pieces_score = 85
             case pieces_count if 3001 <= pieces_count:
                 pieces_score = 100
-        self.build_complexity = pieces_score * 0.15
 
-    async def calculate_price_to_piece_ratio(self, official_price: float, best_ratio: float, worst_ratio: float, pieces_count: int):
-        PPR = official_price/pieces_count
-        BPPR = best_ratio/pieces_count
-        WPPR = worst_ratio/pieces_count
-        ic(PPR)
-        ic(BPPR)
-        ic(WPPR)
+        system_logger.info(f"Build complexity score: {pieces_score}")
+        rating_values["build_complexity"] = pieces_score * self.build_complexity_weight
 
-        score = 100 - (((PPR - BPPR)/(WPPR - BPPR))*100)
-        ic(score)
-        self.price_to_piece_ratio = score * 0.15
+    async def calculate_price_to_piece_ratio(self, rating_values: dict, initial_price: float, best_ratio: float, worst_ratio: float, pieces_count: int):
+        # ic(initial_price)
+        # ic(best_ratio)
+        # ic(worst_ratio)
+        # ic(pieces_count)
+        # PPR  = initial_price / pieces_count
+        # BPPR = best_ratio    / pieces_count
+        # WPPR = worst_ratio   / pieces_count
+        # ic(PPR)
+        # ic(BPPR)
+        # ic(WPPR)
 
-    async def calculate_rarity(self, rarity_type: str = "Regular Set"):
+        PPR = initial_price / pieces_count
         score = 0
-        match rarity_type:
-            case "Retired + Limited Edition":
+        match PPR:
+            case PPR if         PPR <= 1.15:
                 score = 100
-            case "Retired":
+            case PPR if 1.16 <= PPR <= 1.85:
                 score = 80
-            case "Limited Edition":
-                score = 70
-            case "UCS/D2C":
+            case PPR if 1.86 <= PPR <= 2.30:
                 score = 60
-            case "Regular Set":
+            case PPR if 2.31 <= PPR <= 3.00:
                 score = 40
-            case "Common set":
+            case PPR if 3.01 <= PPR <= 3.70:
                 score = 20
+            case PPR if 3.91 <= PPR:
+                score = 0
 
-        self.rarity = score * 0.10
+        system_logger.info(f"PPR: {PPR} score: {score}")
+        rating_values["price_to_piece_ratio"] = score * self.price_to_piece_ratio_weight
 
-    async def calculate_playability(self, theme: str):
+    async def calculate_playability(self, rating_values: dict, theme: str):
         playability_scores = {
             "town": 100,
             "technic": 100,
@@ -317,12 +334,13 @@ class RatingCalculation:
             "brickheadz": 10,
             "botanical-collection": 10
         }
-        ic(theme)
+        system_logger.info(f"Theme: {theme}")
         score = playability_scores.get(theme, 0)
-        ic(score)
-        self.playability = score * 0.1
 
-    async def calculate_durability(self, theme: str):
+        system_logger.info(f"Playability score: {score}")
+        rating_values["playability"] = score * self.playability_weight
+
+    async def calculate_durability(self, rating_values: dict, theme: str):
         durability_scores = {
             "duplo": 100,
             "freestyle": 100,
@@ -356,7 +374,7 @@ class RatingCalculation:
             "the-lego-movie": 80,
             "space": 80,
             "sports": 80,
-            "trolls-world-tour": 80,  # Повторное значение, указано один раз
+            "trolls-world-tour": 80,
             "fabuland": 80,
             "monkie-kid": 80,
             "dino-attack": 80,
@@ -425,7 +443,7 @@ class RatingCalculation:
             "star-trek": 60,
             "stranger-things": 60,
             "harry-potter": 60,
-            "lego-forma": 40,  # Повторное значение (встречается дважды)
+            "lego-forma": 40,
             "star-wars": 40,
             "botanical-collection": 20,
             "brickheadz": 20,
@@ -433,4 +451,8 @@ class RatingCalculation:
             "lego-art": 20
         }
         score = durability_scores.get(theme, 0)
-        self.durability = score * 0.1
+        system_logger.info(f"Durability score: {score}")
+        rating_values["durability"] = score * self.durability_weight
+
+    async def calculate_google_rating(self, rating_values: dict, google_rating: float):
+        rating_values["google_rating"] = int(google_rating * self.google_rating_weight)

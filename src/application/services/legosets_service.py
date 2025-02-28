@@ -10,6 +10,7 @@ from application.controllers.website_lego_controller import WebsiteLegoControlle
 from application.controllers.website_museum_of_bricks_controller import WebsiteMuseumOfBricksController
 from application.controllers.website_sparkys_controller import WebsiteSparkysController
 from application.interfaces.parser_interface import ParserInterface
+from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
@@ -32,6 +33,7 @@ class LegoSetsService:
             legosets_repository: LegoSetsRepository,
             legosets_prices_repository: LegoSetsPricesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
+            search_api_interface: SearchAPIInterface,
             ):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
@@ -66,17 +68,21 @@ class LegoSetsService:
             website_interface=self.website_brickset_interface,
             legosets_repository=legosets_repository
         )
+        self.get_legosets_rating_use_case = GetLegoSetsRatingUseCase(
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
+            search_api_interface=search_api_interface
+        )
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
-            website_brickset_controller=self.website_brickset_controller
+            legosets_prices_repository=legosets_prices_repository,
+            website_brickset_controller=self.website_brickset_controller,
+            get_legosets_rating_use_case=self.get_legosets_rating_use_case,
         )
         self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
             legosets_prices_repository=legosets_prices_repository
         )
-        self.get_legosets_rating_use_case = GetLegoSetsRatingUseCase(
-            legosets_repository=legosets_repository,
-            legosets_prices_repository=legosets_prices_repository,
-        )
+
 
 
     @property
@@ -110,7 +116,7 @@ class LegoSetsService:
         return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)
         # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
 
-    async def get_sets_prices_from_website(self, set_id: str, website_id: int):
+    async def get_sets_prices_from_website(self, set_id: str, website_id: str):
         return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
         # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
 
@@ -133,11 +139,11 @@ class LegoSetsService:
     async def async_parse_set(self, set_id: str):
         await self.website_lego_controller.parse_set(lego_set_id=set_id)
 
-    async def parse_set_in_store(self, set_id: str, store_id: str):
+    async def parse_set_in_store(self, set_id: str, store_id: int):
         website_controller = await self.__get_website_use_case(store_id=store_id)
         return await website_controller.parse_legosets_price(legoset_id=set_id)
 
-    async def parse_all_sets_in_store(self, store_id: str):
+    async def parse_all_sets_in_store(self, store_id: int):
         website_controller = await self.__get_website_use_case(store_id=store_id)
         await website_controller.parse_legosets_prices()
 
@@ -147,8 +153,8 @@ class LegoSetsService:
     async def async_parse_all_unknown_sets(self):
         await self.website_lego_controller.parse_all_sets()
 
-    async def get_legosets_rating(self, legoset_id: str):
-        return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
+    # async def get_legosets_rating(self, legoset_id: str):
+    #     return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')

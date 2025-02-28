@@ -1,4 +1,5 @@
 from infrastructure.interfaces_impl.scheduler_interface_impl import SchedulerInterfaceImpl
+from infrastructure.interfaces_impl.searchapi_interface_impl import SearchAPIInterfaceImpl
 from infrastructure.interfaces_impl.website_bricklick_interface import WebsiteBricklinkInterface
 from infrastructure.interfaces_impl.website_brickset_interfave import WebsiteBricksetInterface
 from infrastructure.interfaces_impl.website_capi_cap_interface import WebsiteCapiCapInterface
@@ -16,3 +17,6 @@ website_kostickyshop_interface = WebsiteKostickyshopInterface()
 website_brickset_interface = WebsiteBricksetInterface()
 
 scheduler_interface = SchedulerInterfaceImpl()
+
+
+search_api_interface = SearchAPIInterfaceImpl()

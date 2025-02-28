@@ -1,3 +1,4 @@
+from icecream import ic
 from pydantic.v1 import NoneIsNotAllowedError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update, func, cast
@@ -27,17 +28,25 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             )
             res = await session.execute(query)
             prices = res.scalars().first()
-
+            # ic(prices)
             prices[website_id] = price
-            price_json = cast(func.to_jsonb(price), JSONB)
+            # new_prices = {}
+            # for i in range(1, 6):
+            #     if prices.get(str(i)):
+            #         new_prices[i] = prices.get(str(i))
+            # ic(prices)
+
+            # new_prices[website_id] = price
+            #
+            # ic(new_prices)
+
             query = (
                 update(LegoSetsPricesOrm)
                 .where(LegoSetsPricesOrm.legoset_id == legoset_id)
-                .values(prices=func.jsonb_set(LegoSetsPricesOrm.prices, f'{{{website_id}}}', price_json, True))
+                .values(prices=prices)
             )
             await session.execute(query)
             await session.commit()
-            # await session.get(LegoSetsPricesOrm)
 
     @log_decorator(print_args=False)
     async def get_item_all_prices(self, legoset_id: str) -> LegoSetsPrices | None:
@@ -66,7 +75,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
 
 
     @log_decorator(print_args=False)
-    async def get_item_price(self, legoset_id: str, website_id: int) -> LegoSetsPrice | None:
+    async def get_item_price(self, legoset_id: str, website_id: str) -> LegoSetsPrice | None:
         session = self.get_session()
         async with session.begin():
             query = select(LegoSetsPricesOrm).where(LegoSetsPricesOrm.legoset_id == legoset_id)
@@ -101,14 +110,14 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
         async with session.begin():
             query = select(LegoSetsPricesOrm)
             res = await session.execute(query)
-            legosets_orm = res.scalars().all()
-            if legosets_orm:
+            legosets_prices_orm = res.scalars().all()
+            if legosets_prices_orm:
                 legosets_prices = [
                     LegoSetsPrices(
-                        legoset_id=legoset.legoset_id,
-                        prices=legoset.prices,
-                        created_at=legoset.created_at
-                    ) for legoset in legosets_orm]
+                        legoset_id=legoset_price.legoset_id,
+                        prices=legoset_price.prices,
+                        created_at=legoset_price.created_at
+                    ) for legoset_price in legosets_prices_orm]
 
                 return legosets_prices
 

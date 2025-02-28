@@ -33,6 +33,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             tags=legoset_orm.tags,
             description=legoset_orm.description,
             ages_range=legoset_orm.ages_range,
+            minifigures_count=legoset_orm.minifigures_count,
             extendedData=legoset_orm.extendedData,
             launchDate=legoset_orm.launchDate,
             exitDate=legoset_orm.exitDate,
@@ -57,6 +58,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             tags=legoset_pydantic.tags,
             description=legoset_pydantic.description,
             ages_range=legoset_pydantic.ages_range,
+            minifigures_count=legoset_pydantic.minifigures_count,
             extendedData=legoset_pydantic.extendedData,
             launchDate=legoset_pydantic.launchDate,
             exitDate=legoset_pydantic.exitDate,
@@ -119,7 +121,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
 
     async def update_set(self, legoset: LegoSet) -> None:
         session = self.get_session()
-        async with (((session.begin()))):
+        async with session.begin():
             query = select(LegoSetsOrm).where(LegoSetsOrm.id==legoset.id)
             result = await session.execute(query)
             legoset_orm = result.scalars().first()
@@ -140,4 +142,12 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                                         getattr(legoset, key) != "":
                                             setattr(legoset_orm, key, getattr(legoset, key))
                                             flag_modified(legoset_orm, key)
+
+    async def update_rating(self, legoset_id: str, rating: float):
+        session = self.get_session()
+        async with session.begin():
+            query = update(LegoSetsOrm).where(LegoSetsOrm.id==legoset_id).values(rating=rating)
+            await session.execute(query)
+            await session.commit()
+
 

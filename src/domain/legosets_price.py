@@ -4,5 +4,5 @@ from pydantic import BaseModel, Field
 class LegoSetsPrice(BaseModel):
     legoset_id: str              = Field(default='')
     price: str                   = Field(default='-')
-    website_id: int              = Field(default=0)
+    website_id: str              = Field(default='0')
     created_at: datetime | str   = Field(default_factory=datetime.now)

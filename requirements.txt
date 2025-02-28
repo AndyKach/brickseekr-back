@@ -21,6 +21,8 @@ requests==2.31.0
 requests_oauthlib==2.0.0
 sqlalchemy==2.0.30
 selenium==4.11.2
+serpapi==0.1.5
+
 unicorn==2.0.1.post1
 
 

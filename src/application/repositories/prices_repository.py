@@ -6,7 +6,7 @@ from domain.legosets_prices import LegoSetsPrices
 
 class LegoSetsPricesRepository(ABC):
     @abstractmethod
-    async def save_price(self, legoset_id: str, website_id: int, price: str) -> None:
+    async def save_price(self, legoset_id: str, website_id: str, price: str) -> None:
         pass
 
     @abstractmethod
@@ -14,11 +14,11 @@ class LegoSetsPricesRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_item_price(self, legoset_id: str, website_id: int) -> LegoSetsPrice:
+    async def get_item_price(self, legoset_id: str, website_id: str) -> LegoSetsPrice:
         pass
 
     @abstractmethod
-    async def get_item(self, lego_set_id: str) -> LegoSetsPrices:
+    async def get_item(self, legoset_id: str) -> LegoSetsPrices:
         pass
 
     @abstractmethod

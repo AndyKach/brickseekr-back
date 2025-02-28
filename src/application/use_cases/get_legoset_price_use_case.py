@@ -27,7 +27,7 @@ class GetLegoSetPriceUseCase:
                     #                                                  website_id=website_id)
             return await self.validate_legoset_price_obj(legoset_price=legoset_prices)
 
-    async def get_website_price(self, legoset_id: str, website_id: int):
+    async def get_website_price(self, legoset_id: str, website_id: str):
         legoset_price = await self.legosets_prices_repository.get_item_price(legoset_id=legoset_id, website_id=website_id)
         if legoset_price:
             if '€' in legoset_price.price:

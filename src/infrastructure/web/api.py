@@ -92,7 +92,7 @@ async def get_sets_prices(
 @app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
 @log_api_decorator
 async def get_sets_prices_from_website(
-        set_id: str, website_id: int, response: Response, background_tasks: BackgroundTasks,
+        set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
     ):
     data = await lego_sets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
@@ -105,25 +105,25 @@ async def get_sets_prices_from_website(
         return await get_success_json_response(data=data)
 
 
-@app.get('/sets/{set_id}/getRating', tags=['Sets'])
-@log_api_decorator
-async def get_sets_prices_from_website(
-        legoset_id: str, response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
-    ):
-    data = await lego_sets_service.get_legosets_rating(legoset_id=legoset_id)
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
-    else:
-        if data.get('status_code') == 500:
-            raise HTTPException(
-                status_code=500,
-                detail=data.get('message')
-            )
-        return await get_success_json_response(data=data)
+# @app.get('/sets/{set_id}/getRating', tags=['Sets'])
+# @log_api_decorator
+# async def get_sets_prices_from_website(
+#         legoset_id: str, response: Response, background_tasks: BackgroundTasks,
+#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
+#     ):
+#     data = await lego_sets_service.get_legosets_rating(legoset_id=legoset_id)
+#     if data is None:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Item not found"
+#         )
+#     else:
+#         if data.get('status_code') == 500:
+#             raise HTTPException(
+#                 status_code=500,
+#                 detail=data.get('message')
+#             )
+#         return await get_success_json_response(data=data)
 
 # @app.get('/sets/{set_id}/parseAllStores')
 
@@ -219,7 +219,7 @@ async def parse_sets_from_lego(
 
 @app.post("/sets/{set_id}/stores/{store_id}/parseSet", tags=['Experimental'])
 async def parse_set_in_store(
-        set_id: str, store_id: str,
+        set_id: str, store_id: int,
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):
@@ -242,7 +242,7 @@ async def parse_sets(
 @app.post("/stores/{store_id}/parseAllSets", tags=['Experimental'])
 @log_api_decorator
 async def parse_sets(
-        store_id: str,
+        store_id: int,
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
 ):

@@ -25,10 +25,10 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
         self.lego_sets_prices_repository = lego_sets_prices_repository
         self.website_interface = website_interface
         self.lego_sets_prices_save_use_case = LegoSetsPricesSaveUseCase(
-            lego_sets_prices_repository=self.lego_sets_prices_repository
+            legosets_prices_repository=self.lego_sets_prices_repository
         )
 
-        self.website_id = 4
+        self.website_id = "4"
 
     async def parse_lego_sets_url(self, lego_set_id: str = "75257"):
         lego_set_url = await self.website_interface.parse_lego_sets_url()

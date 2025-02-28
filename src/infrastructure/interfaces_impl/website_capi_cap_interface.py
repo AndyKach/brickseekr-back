@@ -42,12 +42,12 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
 
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_price(self, lego_set: LegoSet):
+    async def parse_legosets_price(self, legoset: LegoSet):
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, lego_set=lego_set)
+            return await self.__get_lego_sets_price(session=session, lego_set=legoset)
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_prices(self, lego_sets: list[LegoSet]):
+    async def parse_legosets_prices(self, legosets: list[LegoSet]):
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:
@@ -56,7 +56,7 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
                         self.__get_lego_sets_price(
                             session=session,
                             lego_set=lego_set
-                        ) for lego_set in lego_sets
+                        ) for lego_set in legosets
                     ]
                     # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
