@@ -105,9 +105,9 @@ async def get_sets_prices_from_website(
         return await get_success_json_response(data=data)
 
 
-@app.get('/sets/{set_id}/getRating', tags=['Sets'])
+@app.get('/sets/{set_id}/getLegosetsTopRating', tags=['Sets'])
 @log_api_decorator
-async def get_sets_prices_from_website(
+async def get_rating_top_list(
         legosets_count: int, response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
     ):
