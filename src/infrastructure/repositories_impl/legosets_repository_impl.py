@@ -99,6 +99,21 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                     legosets.append(await self.orm_to_pydantic(legoset_orm=legoset_orm))
                 return legosets
 
+    async def get_top_rating(self, legosets_count: int):
+        session = self.get_session()
+        async with session.begin():
+            query = await session.execute(
+                select(LegoSetsOrm).filter(LegoSetsOrm.rating.isnot(None)).order_by(LegoSetsOrm.rating.desc()).limit(20)
+            )
+            legosets_orm = query.scalars().all()
+            # print(legosets_orm)
+            legosets = []
+            if legosets_orm:
+                for legoset_orm in legosets_orm:
+                    legosets.append(await self.orm_to_pydantic(legoset_orm=legoset_orm))
+                return legosets
+
+
     async def delete_set(self, legoset_id):
         session = self.get_session()
         async with session.begin():

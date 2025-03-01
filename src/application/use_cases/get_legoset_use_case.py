@@ -11,6 +11,7 @@ from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
 from domain.legoset import LegoSet
 from domain.rating_calculation import RatingCalculation
+from infrastructure.config.logs_config import log_decorator
 
 system_logger = logging.getLogger('system_logger')
 class GetLegoSetUseCase:
@@ -29,13 +30,14 @@ class GetLegoSetUseCase:
 
         self.get_legosets_rating_use_case = get_legosets_rating_use_case
 
+    @log_decorator(print_kwargs=True)
     async def execute(self, legoset_id: str):
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
             if legoset.rating is None or legoset.rating <= 5:
                 legoset.rating = 0
-                system_logger.info(f"Legoset {legoset_id} has no official rating")
+                # system_logger.info(f"Legoset {legoset_id} has no yet official rating")
                 try:
                     result = await self.get_legosets_rating_use_case.execute(legoset=legoset)
                     match result.get('status_code'):
@@ -46,8 +48,8 @@ class GetLegoSetUseCase:
                         case 500:
                             system_logger.error(f"Legoset {legoset_id} rating can't be calculated")
 
-                        # await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
-                        # await self.get_rating(legoset=legoset)
+                    await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
+                    # await self.get_rating(legoset=legoset)
                 except AttributeError:
                     system_logger.error(f"Legoset {legoset_id} has no google rating")
 
@@ -62,7 +64,14 @@ class GetLegoSetUseCase:
             # await self.website_brickset_parser_use_case.parse
         return legoset
 
-
+    @log_decorator(print_kwargs=True)
+    async def get_top_list(self, legosets_count: int):
+        legosets = await self.legosets_repository.get_top_rating(legosets_count=legosets_count)
+        # ic(legosets)
+        for legoset in legosets:
+            await self.validate_datetime_values(legoset)
+            system_logger.info(f"Legoset {legoset.id} has {legoset.rating} rating")
+        return legosets
 
     @staticmethod
     async def validate_datetime_values(legoset: LegoSet):
@@ -75,6 +84,7 @@ class GetLegoSetUseCase:
         if legoset.created_at:
             legoset.created_at = legoset.created_at.isoformat()
         return legoset
+
 
     # async def get_rating(self, legoset: LegoSet):
     #     legoset_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)

@@ -6,6 +6,7 @@ from statistics import median
 from icecream import ic
 
 from application.interfaces.searchapi_interface import SearchAPIInterface
+from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from domain.legoset import LegoSet
@@ -19,11 +20,13 @@ class GetLegoSetsRatingUseCase:
                  legosets_repository: LegoSetsRepository,
                  legosets_prices_repository: LegoSetsPricesRepository,
                  search_api_interface: SearchAPIInterface,
+                 website_lego_interface: WebsiteDataSourceInterface, # TODO NEED TO DELETE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                  ):
         self.rating_calculation = RatingCalculation()
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
         self.search_api_interface = search_api_interface
+        self.website_lego_interface=website_lego_interface
 
     async def execute(self, legoset: LegoSet):
         legosets_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
@@ -49,19 +52,41 @@ class GetLegoSetsRatingUseCase:
             # -------------------------------------------------------------------------------------------------------------
             initial_price_str = legosets_prices.prices.get("1")
             if initial_price_str is not None:
-                if "€" in initial_price_str or "\u20ac" in initial_price_str:
-                    system_logger.error(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but it is in Euro")
+                if "€" in initial_price_str or "\u20ac" in initial_price_str or "valid" in initial_price_str:
+                    # system_logger.error(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but it is in Euro")
+                    system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but its not valid")
 
-                    return await self.get_error_code(legoset_id=legoset.id)
+                    new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
+                    system_logger.debug(new_value)
+                    new_price = new_value.get('price')
+                    if new_price is not None:
+                        initial_price = await self.refactor_price_from_str_to_float(new_price)
+                        legosets_prices.prices["1"] = new_price
+                        await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč", website_id="1")
+                        system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
+
+                    else:
+                        return await self.get_error_code(legoset_id=legoset.id)
 
                 else:
                     system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str}")
 
                     initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
+            else:
+                system_logger.debug(f"Legoset: {legoset.id} has no initial price")
+                new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
+                system_logger.debug(new_value)
+                new_price = new_value.get('price')
+                if new_price is not None:
+                    initial_price = await self.refactor_price_from_str_to_float(new_price)
+                    legosets_prices.prices["1"] = new_price
+                    await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč",
+                                                                     website_id="1")
+                    system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
+                else:
+                    return await self.get_error_code(legoset_id=legoset.id)
 
-                # else:
-                #     initial_price = float(legosets_prices.prices.get("1").replace('€', '').replace(' ','').replace(',', '.'))
-                #     final_price += initial_price * 25.13
+            system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price}")
 
             # -------------------------------------------------------------------------------------------------------------
 
@@ -69,8 +94,8 @@ class GetLegoSetsRatingUseCase:
             for website_id in legosets_prices.prices.keys():
                 prices_list.append(await self.refactor_price_from_str_to_float(legosets_prices.prices.get(website_id)))
 
-            ic(prices_list)
-            ic(median(prices_list))
+            system_logger.debug(f"Legoset: {legoset.id} has a prices_list: {prices_list}")
+            system_logger.debug(f"Legoset: {legoset.id} has a median(prices_list): {median(prices_list)}")
 
             final_price = median(prices_list)
             if final_price == 0.0:
@@ -143,7 +168,7 @@ class GetLegoSetsRatingUseCase:
 
     @staticmethod
     async def refactor_price_from_str_to_float(price: str) -> float:
-        return float(price[:price.rfind(' ')].replace(' ', '').replace(',', '.'))
+        return float(price.replace(' ', '').replace(',', '.').replace('Kč', ''))
 
     @staticmethod
     async def get_error_code(legoset_id: str) -> dict:
@@ -151,5 +176,6 @@ class GetLegoSetsRatingUseCase:
             "status_code": 500,
             "message": f"Legoset {legoset_id} can't be calculated because it's not enough data"
         }
+
 
 

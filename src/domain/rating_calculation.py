@@ -18,7 +18,7 @@ class RatingCalculation:
             "google_rating": 0,
         }
 
-        self.investment_potential_weight  = 0.25
+        self.investment_potential_weight  = 25
         self.theme_popularity_weight      = 0.2
         self.build_complexity_weight      = 0.1
         self.price_to_piece_ratio_weight  = 0.15
@@ -49,14 +49,17 @@ class RatingCalculation:
         result = 0
         for key in rating_values.keys():
             result += rating_values.get(key, 0)
+        result = round(result, 2)
         ic(f"result: {result}")
         return result
 
     async def calculate_investment_potential(self, rating_values: dict, final_price: float, initial_price: float, years_since_release: float):
-        score = (1 - (final_price/initial_price)**(1/years_since_release)) * 100
-
-        system_logger.info(f"Investment potential CAGR: {score}")
-        rating_values["investment_potential"] = score * self.investment_potential_weight
+        score = (initial_price-final_price)/initial_price
+        if score <= 0:
+            rating_values["investment_potential"] = 0
+        else:
+            system_logger.info(f"Investment potential CAGR: {score}")
+            rating_values["investment_potential"] = score * self.investment_potential_weight
 
     async def calculate_theme_popularity(self, rating_values: dict, theme: str):
         themes_score = {
@@ -65,8 +68,8 @@ class RatingCalculation:
             'lego-icons': 95,
             'creator-expert': 90,
             'technic': 90,
-            'marvel super-heroes': 85,
-            'lego ideas': 85,
+            'marvel-super-heroes': 85,
+            'lego-ideas': 85,
             'architecture': 85,
             'the-legend-of-zelda': 90,
             'ninjago': 85,

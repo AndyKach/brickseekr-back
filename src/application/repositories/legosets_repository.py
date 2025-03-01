@@ -13,6 +13,10 @@ class LegoSetsRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_top_rating(self, legosets_count: int):
+        pass
+
+    @abstractmethod
     async def update_url_name(self, lego_set_id: str, url_name: str) -> None:
         pass
 

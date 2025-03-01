@@ -46,7 +46,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
         self.legosets_prices_repository = legosets_prices_repository
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_price(self, legoset_id: str):
+    async def parse_legosets_price(self, legoset_id: str) -> dict:
         url = f"{self.url}/product/{legoset_id}"
         async with aiohttp.ClientSession() as session:
             return await self.__get_item_info_bs4(

@@ -71,7 +71,8 @@ class LegoSetsService:
         self.get_legosets_rating_use_case = GetLegoSetsRatingUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
-            search_api_interface=search_api_interface
+            search_api_interface=search_api_interface,
+            website_lego_interface=self.website_lego_interface
         )
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
@@ -126,6 +127,9 @@ class LegoSetsService:
         lego_website_controller = await self.__get_website_use_case(store_id=1)
         await lego_website_controller.parse_legosets_price(legoset_id=legoset_id)
 
+    async def get_legosets_rating_list(self, legosets_count: int = 20):
+        return await self.get_legoset_use_case.get_top_list(legosets_count=legosets_count)
+
     async def async_parse_sets(self, store: str):
         website_controller = await self.__get_website_use_case(store=store)
         print(website_controller)
@@ -159,6 +163,22 @@ class LegoSetsService:
     #     return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
 
     async def tmp_function(self):
+        legosets = await self.legosets_repository.get_all()
+        k = 0
+        legosets_to_parse = []
+        for legoset in legosets:
+            if legoset.rating is None:
+                legosets_to_parse.append(legoset)
+                if len(legosets_to_parse) >= 60:
+                    break
+
+        for legoset in legosets_to_parse:
+            before = legoset.rating
+            result = await self.get_legoset_use_case.execute(legoset_id=legoset.id)
+            after = result.rating
+            system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}`")
+
+
         print('ITS TIME TO PARSE LEGO')
         # ic(lego_sets)
 

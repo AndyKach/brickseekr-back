@@ -105,25 +105,37 @@ async def get_sets_prices_from_website(
         return await get_success_json_response(data=data)
 
 
-# @app.get('/sets/{set_id}/getRating', tags=['Sets'])
-# @log_api_decorator
-# async def get_sets_prices_from_website(
-#         legoset_id: str, response: Response, background_tasks: BackgroundTasks,
-#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
-#     ):
-#     data = await lego_sets_service.get_legosets_rating(legoset_id=legoset_id)
-#     if data is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Item not found"
-#         )
-#     else:
-#         if data.get('status_code') == 500:
-#             raise HTTPException(
-#                 status_code=500,
-#                 detail=data.get('message')
-#             )
-#         return await get_success_json_response(data=data)
+@app.get('/sets/{set_id}/getRating', tags=['Sets'])
+@log_api_decorator
+async def get_sets_prices_from_website(
+        legosets_count: int, response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
+    ):
+    data = await lego_sets_service.get_legosets_rating_list(legosets_count=legosets_count)
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data={"result": data})
+
+
+
+@app.get('/sets/{set_id}/calculateRating', tags=['Sets'])
+@log_api_decorator
+async def calculate_rating(
+        response: Response, background_tasks: BackgroundTasks,
+        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service)
+    ):
+    data = await lego_sets_service.tmp_function()
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data={"result": data})
 
 # @app.get('/sets/{set_id}/parseAllStores')
 
