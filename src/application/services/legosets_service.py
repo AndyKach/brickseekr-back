@@ -169,7 +169,7 @@ class LegoSetsService:
         for legoset in legosets:
             if legoset.rating is None:
                 legosets_to_parse.append(legoset)
-                if len(legosets_to_parse) >= 60:
+                if len(legosets_to_parse) >= 2:
                     break
 
         for legoset in legosets_to_parse:
