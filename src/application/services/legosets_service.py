@@ -80,13 +80,14 @@ class LegoSetsService:
             get_legosets_rating_use_case=self.get_legosets_rating_use_case,
         )
         self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
-            legosets_prices_repository=legosets_prices_repository
+            legosets_prices_repository=legosets_prices_repository,
+            website_lego_interface=self.website_lego_interface
         )
 
 
 
     @property
-    def website_lego_interface(self) -> WebsiteInterface:
+    def website_lego_interface(self) -> WebsiteDataSourceInterface:
         return self.websites_interfaces_provider.get_website_lego_interface()
 
     @property

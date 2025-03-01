@@ -53,7 +53,7 @@ def config():
     apscheduler_logger.addHandler(system_handler)
 
 
-def log_decorator(log_level=logging.DEBUG, print_args=False, print_kwargs=False):
+def log_decorator(log_level=logging.DEBUG, print_args: bool = False, print_kwargs: bool = False):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):

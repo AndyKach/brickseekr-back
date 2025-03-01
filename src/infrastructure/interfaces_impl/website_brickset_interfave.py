@@ -177,7 +177,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             updated_at=legoset_json.get('updated_at'),
         )
 
-    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
+    async def parse_legosets_price(self, legoset_id: LegoSet) -> dict:
         pass
 
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
