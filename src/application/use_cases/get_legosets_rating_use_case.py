@@ -39,10 +39,11 @@ class GetLegoSetsRatingUseCase:
                 return await self.get_error_code(legoset_id=legoset.id)
             else:
                 legoset.google_rating = google_rating
+                await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
         else:
             google_rating = legoset.google_rating
 
-        await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
+
         system_logger.info(f"Legoset: {legoset.id} has a google rating: {google_rating}")
 
         # -------------------------------------------------------------------------------------------------------------
@@ -55,37 +56,40 @@ class GetLegoSetsRatingUseCase:
             theme = ''
             # -------------------------------------------------------------------------------------------------------------
             initial_price_str = legosets_prices.prices.get("1")
-            if initial_price_str is not None:
-                if "€" in initial_price_str or "\u20ac" in initial_price_str or "valid" in initial_price_str:
+            if initial_price_str is not None: # legoset have price
+                if "€" in initial_price_str or "\u20ac" in initial_price_str or "valid" in initial_price_str: # legoset price is specific
                     # system_logger.error(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but it is in Euro")
                     system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but its not valid")
 
                     new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
                     system_logger.debug(new_value)
                     new_price = new_value.get('price')
-                    if new_price is not None:
+                    if new_price is not None: # found new price
                         initial_price = await self.refactor_price_from_str_to_float(new_price)
                         legosets_prices.prices["1"] = new_price
                         await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč", website_id="1")
                         system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
 
-                    else:
+                    else: # not found new price
+                        system_logger.debug(f"Legoset: {legoset.id} after parse has no new price: {legosets_prices.prices["1"]}")
+
                         return await self.get_error_code(legoset_id=legoset.id)
 
-                else:
+                else: # legoset price is gut
                     initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
-            else:
+            else: # legoset has no price
                 system_logger.debug(f"Legoset: {legoset.id} has no initial price")
                 new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
                 system_logger.debug(new_value)
                 new_price = new_value.get('price')
-                if new_price is not None:
+                if new_price is not None: # # found new price
                     initial_price = await self.refactor_price_from_str_to_float(new_price)
                     legosets_prices.prices["1"] = new_price
                     await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč",
                                                                      website_id="1")
                     system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
                 else:
+                    system_logger.debug(f"Legoset: {legoset.id} after parse has no new price: {legosets_prices.prices["1"]}")
                     return await self.get_error_code(legoset_id=legoset.id)
 
             system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price}")
@@ -160,6 +164,7 @@ class GetLegoSetsRatingUseCase:
 
         else:
             system_logger.info(f"Legoset {legoset.id} can't be calculated but it has google rating {google_rating}")
+            system_logger.info(f"Legoset {legoset.id} prices: {legosets_prices}, theme: {legoset.theme}, pieces: {legoset.pieces}")
             result = {
                 "status_code": 206,
                 "message": f"Legoset {legoset.id} can't be calculated because it's not enough data but google rating can be send back",
