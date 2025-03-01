@@ -1,7 +1,11 @@
 import logging
 
+from icecream import ic
+
+from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.legoset import LegoSet
 from domain.legosets_prices import LegoSetsPrices
 from domain.legosets_price import LegoSetsPrice
@@ -41,9 +45,14 @@ class GetLegoSetPriceUseCase:
                 await self.legosets_prices_repository.add_items(legoset_prices)
                 return await self.validate_legoset_price_obj(legoset_price=legoset_prices)
 
-    async def get_website_price(self, legoset_id: str, website_id: str):
+    async def get_website_price(self, legoset_id: str, website_id: str, website_controller: WebsiteController):
         legoset_price = await self.legosets_prices_repository.get_item_price(legoset_id=legoset_id, website_id=website_id)
+        ic(legoset_price)
         if legoset_price:
+            if legoset_price.price == "-":
+                new_price = await website_controller.parse_legosets_price(legoset_id=legoset_id)
+                system_logger.info(f'For legoset {legoset_id} FOR WEBSITE {website_id} PRICE NEW: {new_price} ')
+
             if '€' in legoset_price.price or "valid from" in legoset_price.price:
                 new_price = await self.get_legoset_new_initial_price(legoset_id=legoset_id)
                 if new_price:
@@ -54,6 +63,8 @@ class GetLegoSetPriceUseCase:
                         price=f"{new_price} Kč",
                         website_id=website_id
                     )
+
+
 
             return await self.validate_legoset_price_obj(legoset_price=legoset_price)
 

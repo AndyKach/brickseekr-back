@@ -37,6 +37,7 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
         await self._parse_item(
             legoset=lego_set,
             website_interface=self.website_interface,
+            legosets_repository=self.lego_sets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )
@@ -47,6 +48,7 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
         await self._parse_items(
             legosets=lego_sets,
             website_interface=self.website_interface,
+            legosets_repository=self.lego_sets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )

@@ -28,8 +28,8 @@ class WebsiteMuseumOfBricksController(WebsiteController):
     async def parse_legosets_price(self, legoset_id: str):
         return await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)
 
-    async def parse_lego_sets_url(self):
-        await self.website_parser_use_case.parse_lego_sets_url()
+    async def parse_lego_sets_url(self, legoset_id: str):
+        await self.website_parser_use_case.parse_legosets_url(legoset_id=legoset_id)
 
     async def parse_lego_sets_urls(self):
-        await self.website_parser_use_case.parse_lego_sets_urls()
+        await self.website_parser_use_case.parse_legosets_urls()

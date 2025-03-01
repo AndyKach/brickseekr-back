@@ -118,7 +118,8 @@ class LegoSetsService:
         # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
 
     async def get_sets_prices_from_website(self, set_id: str, website_id: str):
-        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
+        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id,
+                                                                        website_controller=await self.__get_website_use_case(website_id))
         # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
 
     async def get_legoset_from_lego_website(self, legoset_id: str):
@@ -148,11 +149,11 @@ class LegoSetsService:
         website_controller = await self.__get_website_use_case(store_id=store_id)
         await website_controller.parse_legosets_prices()
 
-    async def async_parse_all_known_sets(self):
-        await self.website_lego_controller.parse_known_sets()
-
-    async def async_parse_all_unknown_sets(self):
-        await self.website_lego_controller.parse_all_sets()
+    # async def async_parse_all_known_sets(self):
+    #     await self.website_lego_controller.parse_known_sets()
+    #
+    # async def async_parse_all_unknown_sets(self):
+    #     await self.website_lego_controller.parse_all_sets()
 
     # async def get_legosets_rating(self, legoset_id: str):
     #     return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
@@ -172,15 +173,15 @@ class LegoSetsService:
 
 
 
-    async def __get_website_use_case(self, store_id: int) -> WebsiteController:
+    async def __get_website_use_case(self, store_id: str) -> WebsiteController:
         match store_id:
-            case 1:
+            case "1":
                 return self.website_lego_controller
-            case 2:
+            case "2":
                 return self.website_capi_cap_controller
-            case 3:
+            case "3":
                 return self.website_sparkys_controller
-            case 4:
+            case "4":
                 return self.website_museum_of_bricks_controller
-            case 5:
+            case "5":
                 return self.website_kostickyshop_controller

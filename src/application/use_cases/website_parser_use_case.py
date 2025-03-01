@@ -54,13 +54,13 @@ class WebsiteParserUseCase(ABC):
                                     )
                                 )
                             # Needed to be deleted dann
-                            legoset = await legosets_repository.get_set(set_id=result.get('legoset_id'))
-                            for i in range(1, 6):
-                                if result.get(f'small_image{i}'):
-                                    legoset.images[f'small_image{i}'] = result.get(f'small_image{i}')
-                                if result.get(f'big_image{i}'):
-                                    legoset.images[f'big_image{i}'] = result.get(f'big_image{i}')
-                                await legosets_repository.update_set(legoset=legoset)
+                            # legoset = await legosets_repository.get_set(set_id=result.get('legoset_id'))
+                            # for i in range(1, 6):
+                            #     if result.get(f'small_image{i}'):
+                            #         legoset.images[f'small_image{i}'] = result.get(f'small_image{i}')
+                            #     if result.get(f'big_image{i}'):
+                            #         legoset.images[f'big_image{i}'] = result.get(f'big_image{i}')
+                            #     await legosets_repository.update_set(legoset=legoset)
                     except Exception as e:
                         system_logger.error(e)
 
@@ -77,6 +77,7 @@ class WebsiteParserUseCase(ABC):
                           legosets_repository: LegoSetsRepository,
                           website_id: str
                           ):
+
         result = await website_interface.parse_legosets_price(legoset=legoset)
         system_logger.info(f"Lego set {legoset.id} - {result}")
         if result:
@@ -88,12 +89,12 @@ class WebsiteParserUseCase(ABC):
                 )
             )
             # Needed to be deleted dann
-            for i in range(1, 6):
-                if result.get(f'small_image{i}'):
-                    legoset.images[f'small_image{i}'] = result.get(f'small_image{i}')
-                if result.get(f'big_image{i}'):
-                    legoset.images[f'big_image{i}'] = result.get(f'big_image{i}')
-                await legosets_repository.update_set(legoset=legoset)
+            # for i in range(1, 6):
+            #     if result.get(f'small_image{i}'):
+            #         legoset.images[f'small_image{i}'] = result.get(f'small_image{i}')
+            #     if result.get(f'big_image{i}'):
+            #         legoset.images[f'big_image{i}'] = result.get(f'big_image{i}')
+            #     await legosets_repository.update_set(legoset=legoset)
 
         return result
 

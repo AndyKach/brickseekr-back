@@ -4,6 +4,7 @@ from datetime import datetime
 from application.interfaces.website_interface import WebsiteInterface
 from domain.legoset import LegoSet
 from infrastructure.config.logs_config import log_decorator
+from infrastructure.config.repositories_config import lego_sets_repository
 from infrastructure.config.selenium_config import get_selenium_driver
 import asyncio
 import aiohttp
@@ -33,7 +34,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_lego_sets_urls(self, lego_sets: list[LegoSet]):
+    async def parse_legosets_urls(self, legosets: list[LegoSet]):
         result = []
         start_time_all = datetime.now()
         driver = None
@@ -41,18 +42,17 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             driver = await get_selenium_driver()
             driver.get(self.url)
             await self.close_cookies(driver=driver)
-            for lego_set in lego_sets:
+            for legoset in legosets:
                 start_time = datetime.now()
 
-                result.append(await self.open_website(lego_set_id=lego_set.lego_set_id, driver=driver))
+                result.append(await self.open_website(lego_set_id=legoset.lego_set_id, driver=driver))
 
                 # system_logger.info(f"Result: {result}")
                 system_logger.info(f"One lego set time: {datetime.now() - start_time}")
                 system_logger.info('=======================')
 
         except Exception as e:
-            pass
-            print(e)
+            system_logger.error(e)
 
         finally:
             driver.close()
@@ -63,7 +63,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         return result
 
     @log_decorator(print_args=False, print_kwargs=True)
-    async def parse_lego_sets_url(self, lego_set_id: str):
+    async def parse_legosets_url(self, legoset_id: str):
         result = {}
         start_time = datetime.now()
         driver = None
@@ -71,7 +71,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             driver = await get_selenium_driver()
             driver.get(self.url)
             await self.close_cookies(driver=driver)
-            result = await self.open_website(lego_set_id=lego_set_id, driver=driver)
+            result = await self.open_website(lego_set_id=legoset_id, driver=driver)
 
         except Exception as e:
             pass
@@ -87,15 +87,14 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
     @log_decorator(print_args=False, print_kwargs=False)
     async def open_website(self, lego_set_id: str, driver):
         system_logger.info("Start searching for lego sets")
+        time.sleep(2)
+        system_logger.info(f'current url {driver.current_url}')
         search_element = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/input[2]")
         search_element.clear()
         search_element.send_keys(str(lego_set_id))
 
         search_button = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/button")
         search_button.click()
-
-        # time.sleep(self.waiting_time)
-
         try:
             lego_set_button = driver.find_element(By.XPATH, "/html/body/div[3]/div[4]/div/main/div[2]/div/div/div/div/div[1]/a/span")
             lego_set_button.click()
@@ -123,20 +122,22 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         except Exception as e:
             print(e)
 
-    async def format_lego_set_url(self, lego_set: LegoSet):
-        if lego_set.category_name == 'disney':
-            yield f"{self.url}/lego---{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
-            yield f"{self.url}/lego---{lego_set.category_name}-princess-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego--{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
+    async def format_lego_set_url(self, legoset: LegoSet):
+        legoset_theme = legoset.theme.lower().replace(' ', '-')
+        legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+        if legoset.theme == 'disney':
+            yield f"{self.url}/lego---{legoset_theme}-{legoset.id}-{legoset_url_name}"
+            yield f"{self.url}/lego---{legoset_theme}-princess-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}--{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego--{legoset_theme}--{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset.id}-{legoset_url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_price(self, legoset: LegoSet):
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, lego_set=legoset)
+            return await self.__get_legosets_price(session=session, legoset=legoset)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
@@ -145,10 +146,10 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             try:
                 async with rate_limiter:
                     tasks = [
-                        self.__get_lego_sets_price(
+                        self.__get_legosets_price(
                             session=session,
-                            lego_set=lego_set,
-                        ) for lego_set in legosets
+                            legoset=legoset,
+                        ) for legoset in legosets
                     ]
                     # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
@@ -161,9 +162,12 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
 
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, lego_set: LegoSet):
+    async def __get_legosets_price(self, session: aiohttp.ClientSession, legoset: LegoSet):
         start_time = datetime.now()
-        urls = self.format_lego_set_url(lego_set=lego_set)
+        # if legoset.extendedData.get('cz_url_name' == ""):
+        #     result = await self.parse_legosets_url(legoset_id=legoset.id)
+        #     legoset.extendedData['cz_url_name'] = result.get('url')
+        urls = self.format_lego_set_url(legoset=legoset)
 
         async for url in urls:
             page = await self.fetch_page(session=session, url=url)
@@ -180,8 +184,8 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
                     price = price_element.get_text(strip=True)
                     system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
                     return {
-                        "lego_set_id": lego_set.lego_set_id,
+                        "lego_set_id": legoset.lego_set_id,
                         "price": price.replace('\xa0', ' ')
                     }
                 else:
-                    system_logger.info(f'Lego set price not found')
+                    system_logger.info(f'Lego set price not found for url "{url}"')
