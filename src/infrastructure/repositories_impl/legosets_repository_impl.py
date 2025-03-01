@@ -23,6 +23,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             name=legoset_orm.name,
             year=legoset_orm.year,
             rating=legoset_orm.rating,
+            google_rating=legoset_orm.google_rating,
             theme=legoset_orm.theme,
             themeGroup=legoset_orm.themeGroup,
             subtheme=legoset_orm.subtheme,
@@ -48,6 +49,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             name=legoset_pydantic.name,
             year=legoset_pydantic.year,
             rating=legoset_pydantic.rating,
+            google_rating=legoset_pydantic.google_rating,
             theme=legoset_pydantic.theme,
             themeGroup=legoset_pydantic.themeGroup,
             subtheme=legoset_pydantic.subtheme,
@@ -103,7 +105,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         session = self.get_session()
         async with session.begin():
             query = await session.execute(
-                select(LegoSetsOrm).filter(LegoSetsOrm.rating.isnot(None)).order_by(LegoSetsOrm.rating.desc()).limit(20)
+                select(LegoSetsOrm).filter(LegoSetsOrm.rating.isnot(None)).order_by(LegoSetsOrm.rating.desc()).limit(legosets_count)
             )
             legosets_orm = query.scalars().all()
             # print(legosets_orm)
@@ -165,4 +167,9 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
-
+    async def update_google_rating(self, legoset_id: str, google_rating: float):
+        session = self.get_session()
+        async with session.begin():
+            query = update(LegoSetsOrm).where(LegoSetsOrm.id==legoset_id).values(google_rating=google_rating)
+            await session.execute(query)
+            await session.commit()

@@ -127,7 +127,7 @@ class LegoSetsService:
         lego_website_controller = await self.__get_website_use_case(store_id=1)
         await lego_website_controller.parse_legosets_price(legoset_id=legoset_id)
 
-    async def get_legosets_rating_list(self, legosets_count: int = 20):
+    async def get_legosets_rating_list(self, legosets_count: int):
         return await self.get_legoset_use_case.get_top_list(legosets_count=legosets_count)
 
     async def async_parse_sets(self, store: str):
@@ -169,7 +169,7 @@ class LegoSetsService:
         for legoset in legosets:
             if legoset.rating is None:
                 legosets_to_parse.append(legoset)
-                if len(legosets_to_parse) >= 2:
+                if len(legosets_to_parse) >= 60:
                     break
 
         for legoset in legosets_to_parse:

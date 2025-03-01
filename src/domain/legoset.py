@@ -7,7 +7,7 @@ class LegoSet(BaseModel):
     name:              str | None                   = Field(default='-')
     year:              int | None                   = Field(default=0)
     rating:          float | None                   = Field(default=0.0)
-    # google_rating:   float | None                   = Field(default=0.0)
+    google_rating:   float | None                   = Field(default=0.0)
 
     theme:             str | None                   = Field(default='-')
     themeGroup:        str | None                   = Field(default='-')

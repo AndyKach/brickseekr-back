@@ -32,13 +32,17 @@ class GetLegoSetsRatingUseCase:
         legosets_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
 
         # -------------------------------------------------------------------------------------------------------------
+        if legoset.google_rating is None:
+            google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
+            if google_rating is None:
+                system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
+                return await self.get_error_code(legoset_id=legoset.id)
+            else:
+                legoset.google_rating = google_rating
+        else:
+            google_rating = legoset.google_rating
 
-        google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
-        if google_rating is None:
-            system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
-
-            return await self.get_error_code(legoset_id=legoset.id)
-
+        await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
         system_logger.info(f"Legoset: {legoset.id} has a google rating: {google_rating}")
 
         # -------------------------------------------------------------------------------------------------------------
@@ -69,8 +73,6 @@ class GetLegoSetsRatingUseCase:
                         return await self.get_error_code(legoset_id=legoset.id)
 
                 else:
-                    system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str}")
-
                     initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
             else:
                 system_logger.debug(f"Legoset: {legoset.id} has no initial price")
