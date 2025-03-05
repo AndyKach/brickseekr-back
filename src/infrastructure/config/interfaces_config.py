@@ -1,3 +1,4 @@
+from infrastructure.interfaces_impl.google_interface import GoogleInterfaceImpl
 from infrastructure.interfaces_impl.scheduler_interface_impl import SchedulerInterfaceImpl
 from infrastructure.interfaces_impl.searchapi_interface_impl import SearchAPIInterfaceImpl
 from infrastructure.interfaces_impl.website_bricklick_interface import WebsiteBricklinkInterface
@@ -19,4 +20,5 @@ website_brickset_interface = WebsiteBricksetInterface()
 scheduler_interface = SchedulerInterfaceImpl()
 
 
+google_interface = GoogleInterfaceImpl()
 search_api_interface = SearchAPIInterfaceImpl()

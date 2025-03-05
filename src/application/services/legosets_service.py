@@ -1,5 +1,8 @@
 import asyncio
 import logging
+import time
+from random import random
+
 from icecream import ic
 
 from application.controllers.website_brickset_controller import WebsiteBricksetController
@@ -9,6 +12,7 @@ from application.controllers.website_kostickyshop_controller import WebsiteKosti
 from application.controllers.website_lego_controller import WebsiteLegoController
 from application.controllers.website_museum_of_bricks_controller import WebsiteMuseumOfBricksController
 from application.controllers.website_sparkys_controller import WebsiteSparkysController
+from application.interfaces.google_interface import GoogleInterface
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
@@ -34,10 +38,12 @@ class LegoSetsService:
             legosets_prices_repository: LegoSetsPricesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
             search_api_interface: SearchAPIInterface,
+            google_interface: GoogleInterface,
             ):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
         self.websites_interfaces_provider = websites_interfaces_provider
+        self.google_interface = google_interface
 
         self.website_lego_controller = WebsiteLegoController(
             legosets_repository=legosets_repository,
@@ -72,7 +78,8 @@ class LegoSetsService:
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
             search_api_interface=search_api_interface,
-            website_lego_interface=self.website_lego_interface
+            website_lego_interface=self.website_lego_interface,
+            google_interface=google_interface,
         )
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
@@ -164,22 +171,30 @@ class LegoSetsService:
 
     async def tmp_function(self):
         legosets = await self.legosets_repository.get_all()
+        await self.google_interface.open_driver()
         k = 0
         legosets_to_parse = []
-        for legoset in legosets:
-            if legoset.rating is None:
-                legosets_to_parse.append(legoset)
-                if len(legosets_to_parse) >= 60:
-                    break
+        try:
+            for legoset in legosets:
+                if legoset.rating is None:
+                    legosets_to_parse.append(legoset)
+                    if len(legosets_to_parse) >= 1000:
+                        break
 
-        for legoset in legosets_to_parse:
-            before = legoset.rating
-            result = await self.get_legoset_use_case.execute(legoset_id=legoset.id)
-            after = result.rating
-            system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}`")
+            for legoset in legosets_to_parse:
+                time.sleep(random()*10)
+                before = legoset.rating
+                result = await self.get_legoset_use_case.execute(legoset_id=legoset.id)
+                after = result.rating
+                system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}")
 
 
-        print('ITS TIME TO PARSE LEGO')
+            print('ITS TIME TO PARSE LEGO')
+        except Exception as e:
+            system_logger.error(f"Error by parsing legosets ratings: {e}")
+        finally:
+            await self.google_interface.close_driver()
+
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):

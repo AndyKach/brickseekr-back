@@ -5,6 +5,7 @@ from statistics import median
 
 from icecream import ic
 
+from application.interfaces.google_interface import GoogleInterface
 from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.repositories.legosets_repository import LegoSetsRepository
@@ -21,19 +22,22 @@ class GetLegoSetsRatingUseCase:
                  legosets_prices_repository: LegoSetsPricesRepository,
                  search_api_interface: SearchAPIInterface,
                  website_lego_interface: WebsiteDataSourceInterface, # TODO NEED TO DELETE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                 google_interface: GoogleInterface,
                  ):
         self.rating_calculation = RatingCalculation()
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
         self.search_api_interface = search_api_interface
         self.website_lego_interface=website_lego_interface
+        self.google_interface = google_interface
 
     async def execute(self, legoset: LegoSet):
         legosets_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
-            google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
+            google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
+            # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
             if google_rating is None:
                 system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
                 return await self.get_error_code(legoset_id=legoset.id)

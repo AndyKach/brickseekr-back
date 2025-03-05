@@ -31,7 +31,7 @@ async def get_selenium_driver() -> webdriver.Firefox:
         'dom.webnotifications.enabled': 1,
         'dom.push.enabled': 1,
         'intl.accept_languages': 'en-US',
-        "permissions.default.image": 2,  # Отключение загрузки изображений
+        # "permissions.default.image": 2,  # Отключение загрузки изображений
         "dom.disable_open_during_load": True, # Было добавлено только что
         "browser.helperApps.neverAsk.saveToDisk": "application/pdf", # Было добавлено только что
     }

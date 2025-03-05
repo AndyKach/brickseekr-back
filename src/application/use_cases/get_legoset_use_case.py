@@ -40,6 +40,7 @@ class GetLegoSetUseCase:
                 # system_logger.info(f"Legoset {legoset_id} has no yet official rating")
                 try:
                     result = await self.get_legosets_rating_use_case.execute(legoset=legoset)
+                    ic(result)
                     match result.get('status_code'):
                         case 200:
                             legoset.rating = result.get('rating')
