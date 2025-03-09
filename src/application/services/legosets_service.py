@@ -178,7 +178,7 @@ class LegoSetsService:
             for legoset in legosets:
                 if len(legoset.images.keys()) == 2 and legoset.rating != 0:
                     legosets_to_parse.append(legoset)
-                    if len(legosets_to_parse) >= 5:
+                    if len(legosets_to_parse) >= 2000:
                         break
 
             await self.website_lego_interface.parse_legosets_images(legosets=legosets_to_parse, legosets_repository=self.legosets_repository)
