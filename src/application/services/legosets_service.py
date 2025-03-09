@@ -171,29 +171,32 @@ class LegoSetsService:
 
     async def tmp_function(self):
         legosets = await self.legosets_repository.get_all()
-        await self.google_interface.open_driver()
+        # await self.google_interface.open_driver()
         k = 0
         legosets_to_parse = []
         try:
             for legoset in legosets:
-                if legoset.rating is None or legoset.rating <= 5:
+                if len(legoset.images.keys()) == 2 and legoset.rating != 0:
                     legosets_to_parse.append(legoset)
-                    if len(legosets_to_parse) >= 1000:
+                    if len(legosets_to_parse) >= 5:
                         break
 
-            for legoset in legosets_to_parse:
-                time.sleep(random()*10)
-                before = legoset.rating
-                result = await self.get_legoset_use_case.execute(legoset_id=legoset.id)
-                after = result.rating
-                system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}")
+            await self.website_lego_interface.parse_legosets_images(legosets=legosets_to_parse, legosets_repository=self.legosets_repository)
+            # for legoset in legosets_to_parse:
+            #     time.sleep(random()*10)
+            #     before = legoset.rating
+            #     result = await self.website_lego_interface.parse_legoset_images(legoset=legoset)
+            #     # result = await self.get_legoset_use_case.execute(legoset_id=legoset.id)
+            #     after = result.rating
+            #     system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}")
 
 
             print('ITS TIME TO PARSE LEGO')
         except Exception as e:
             system_logger.error(f"Error by parsing legosets ratings: {e}")
         finally:
-            await self.google_interface.close_driver()
+            pass
+            # await self.google_interface.close_driver()
 
         # ic(lego_sets)
 

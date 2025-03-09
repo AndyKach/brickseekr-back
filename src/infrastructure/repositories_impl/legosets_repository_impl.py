@@ -1,5 +1,6 @@
 import logging
 
+from icecream import ic
 from sqlalchemy.orm.attributes import flag_modified
 
 from infrastructure.db.models.legosets_orm import LegoSetsOrm
@@ -173,3 +174,27 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             query = update(LegoSetsOrm).where(LegoSetsOrm.id==legoset_id).values(google_rating=google_rating)
             await session.execute(query)
             await session.commit()
+
+    async def update_images(self, legoset_id: str, images: dict):
+        session = self.get_session()
+        async with session.begin():
+            query = (
+                select(LegoSetsOrm.images)
+                .where(LegoSetsOrm.id == legoset_id)
+            )
+            res = await session.execute(query)
+            new_images = res.scalars().first()
+            # ic(f"IMAGES LEGOSET({legoset_id}) BEFORE: {new_images}")
+            for image in images.keys():
+                new_images[image] = images[image]
+
+            # ic(f"IMAGES LEGOSET({legoset_id}) AFTER: {new_images}")
+
+            query = (
+                update(LegoSetsOrm)
+                .where(LegoSetsOrm.id == legoset_id)
+                .values(images=new_images)
+            )
+            await session.execute(query)
+            await session.commit()
+

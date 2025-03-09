@@ -28,17 +28,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             )
             res = await session.execute(query)
             prices = res.scalars().first()
-            # ic(prices)
             prices[website_id] = price
-            # new_prices = {}
-            # for i in range(1, 6):
-            #     if prices.get(str(i)):
-            #         new_prices[i] = prices.get(str(i))
-            # ic(prices)
-
-            # new_prices[website_id] = price
-            #
-            # ic(new_prices)
 
             query = (
                 update(LegoSetsPricesOrm)

@@ -41,7 +41,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
         self.legosets_prices_repository: LegoSetsPricesRepository | None = None
         self.website_id = "1"
 
-    async def set_repository(self, legosets_repository: LegoSetsRepository, legosets_prices_repository: LegoSetsPricesRepository):
+    async def set_repository(self, legosets_repository: LegoSetsRepository = None, legosets_prices_repository: LegoSetsPricesRepository = None):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
 
@@ -399,6 +399,113 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
             # system_logger.error(f"Legoset: {legoset.id} Value I not found")
 
 
+    async def parse_legosets_images(self, legosets: list[LegoSet], legosets_repository: LegoSetsRepository):
+        await self.set_repository(legosets_repository)
+        driver = await get_selenium_driver()
+        driver.get(self.url)
+
+        time.sleep(3)
+        system_logger.info("skip_first_button start")
+
+        skip_first_button = driver.find_element(By.CSS_SELECTOR, '#age-gate-grown-up-cta')
+        skip_first_button.click()
+
+        system_logger.info("skip_first_button click")
+        time.sleep(1)
+
+        cookies_button = driver.find_element(By.XPATH, '/html/body/div[5]/div/aside/div/div/div[3]/div[1]/button[1]')
+        cookies_button.click()
+
+        try:
+            for legoset in legosets:
+                await self.parse_legoset_images_part_2(legoset, driver)
+        except Exception as e:
+            system_logger.error(e)
+        finally:
+            driver.close()
+
+
+    async def parse_legoset_images_part_2(self, legoset: LegoSet, driver):
+        driver.get(f"{self.url}/product/{legoset.id}")
+        system_logger.info(f"Start parsings legoset {legoset.id} for images")
+        time.sleep(3)
+        #возраст, количество кусочков, минифигурки, размеры, фотки
+        # try:
+        system_logger.info("Try to find error button")
+        try:
+            error_message = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div/header')
+            if error_message:
+                system_logger.info(f"Legoset {legoset.id} new images NOT found")
+                return "Not found"
+        except Exception as e:
+            pass
+
+        images = {}
+        try:
+            small_size_params = "?format=webply&fit=bounds&quality=75&width=170&height=170&dpr=1"
+            big_size_params = "?format=webply&fit=bounds&quality=75&width=800&height=800&dpr=1"
+            image1_element = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div[1]/div/div[1]/section[1]/ul/li[1]/button/picture/source[1]')
+            image1_link = image1_element.get_attribute('srcset').split('?')[0]
+            image1_small_link = image1_link + small_size_params
+            image1_big_link = image1_link + big_size_params
+            system_logger.info(f"Image 1: {image1_small_link}, {image1_big_link}")
+            if image1_small_link:
+                # system_logger.info(f"Legoset: {legoset.id} Value IMAGES OLD: {legoset.images} ADD Image1: {image1_link}")
+                images['small_image1'] = image1_small_link
+                images['big_image1'] = image1_big_link
+
+            image2_element = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div[1]/div/div[1]/section[1]/ul/li[2]/button/picture/source[1]')
+            image2_link = image2_element.get_attribute('srcset').split('?')[0]
+            image2_small_link = image2_link + small_size_params
+            image2_big_link = image2_link + big_size_params
+            system_logger.info(f"Image 2: {image2_small_link}, {image2_big_link}")
+            if image2_link:
+                # system_logger.error(f"Legoset: {legoset.id} Value IMAGES OLD: {legoset.images} ADD Image2: {image2_link}")
+                images['small_image2'] = image2_small_link
+                images['big_image2'] = image2_big_link
+
+
+            image3_element = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div[1]/div/div[1]/section[1]/ul/li[4]/button/picture/source[1]')
+            image3_link = image3_element.get_attribute('srcset').split('?')[0]
+            image3_small_link = image3_link + small_size_params
+            image3_big_link = image3_link + big_size_params
+            system_logger.info(f"Image 3: {image3_small_link}, {image3_big_link}")
+            if image3_link:
+                # system_logger.error(f"Legoset: {legoset.id} Value IMAGES OLD: {legoset.images} ADD Image3: {image3_link}")
+                images['small_image3'] = image3_small_link
+                images['big_image3'] = image3_big_link
+
+
+            image4_element = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div[1]/div/div[1]/section[1]/ul/li[5]/button/picture/source[1]')
+            image4_link = image4_element.get_attribute('srcset').split('?')[0]
+            image4_small_link = image4_link + small_size_params
+            image4_big_link = image4_link + big_size_params
+            system_logger.info(f"Image 4: {image4_small_link}, {image4_big_link}")
+            if image4_link:
+                # system_logger.error(f"Legoset: {legoset.id} Value IMAGES OLD: {legoset.images} ADD Image4: {image4_link}")
+                images['small_image4'] = image4_small_link
+                images['big_image4'] = image4_big_link
+
+
+            image5_element = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div[1]/div/div[1]/section[1]/ul/li[6]/button/picture/source[1]')
+            image5_link = image5_element.get_attribute('srcset').split('?')[0]
+            image5_small_link = image5_link + small_size_params
+            image5_big_link = image5_link + big_size_params
+            system_logger.info(f"Image 5: {image5_small_link}, {image5_big_link}")
+            if image5_link:
+                # system_logger.error(f"Legoset: {legoset.id} Value IMAGES OLD: {legoset.images} ADD Image5: {image5_link}")
+                images['small_image5'] = image5_small_link
+                images['big_image5'] = image5_big_link
+
+            if images != {}:
+                await self.legosets_repository.update_images(legoset_id=legoset.id, images=images)
+                system_logger.info(f"Legoset {legoset.id} new images found")
+            else:
+                system_logger.info(f"Legoset {legoset.id} new images NOT found")
+
+        except Exception as e:
+            system_logger.info(f"Legoset {legoset.id} new images NOT found")
+            pass
 
 
 if __name__ == '__main__':
