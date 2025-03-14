@@ -136,8 +136,12 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             print(e)
 
     async def format_lego_set_url(self, legoset: LegoSet):
-        legoset_theme = legoset.theme.lower().replace(' ', '-')
-        legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+        legoset_theme = legoset.extendedData.get('cz_category_name')
+        if legoset_theme == "None":
+            legoset_theme = legoset.theme.lower().replace(' ', '-')
+        legoset_url_name = legoset.extendedData.get('cz_url_name')
+        if legoset_url_name == "None":
+            legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
         if legoset.theme == 'disney':
             yield f"{self.url}/lego---{legoset_theme}-{legoset.id}-{legoset_url_name}"
             yield f"{self.url}/lego---{legoset_theme}-princess-{legoset.id}-{legoset_url_name}"
@@ -197,7 +201,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
                     price = price_element.get_text(strip=True)
                     system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
                     return {
-                        "lego_set_id": legoset.lego_set_id,
+                        "legoset_id": legoset.id,
                         "price": price.replace('\xa0', ' ')
                     }
                 else:

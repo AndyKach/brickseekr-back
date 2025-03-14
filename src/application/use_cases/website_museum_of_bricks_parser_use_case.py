@@ -41,14 +41,16 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
 
     @log_decorator()
     async def parse_legosets_urls(self):
-        legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.year > 2018)]
+        # legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.year > 2018)]
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.extendedData.get('cz_url_name') != "None")]
         print(len(legosets))
         step = 150
+        # legosets = legosets.reverse()
 
-        for i in range(0, 6113, step):
-        # for i in range(0, 1, step):
-        #     break
-            results = await self.website_interface.parse_legosets_urls(legosets=legosets[i:i+step])
+        # for i in range(len(legosets), 0, -step):
+        for i in range(0, 1, step):
+            break
+            results = await self.website_interface.parse_legosets_urls(legosets=legosets[i-step:i])
             ic(results)
             for result in results:
                 if result.get('status') == 200:
@@ -87,12 +89,10 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
 
     @log_decorator()
     async def parse_legosets_prices(self):
-        legosets = await self.legosets_repository.get_all()
-        for legoset in legosets:
-            if legoset.extendedData.get('cz_url_name') == "None":
-                await self.parse_legosets_url(legoset_id=legoset.id)
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
+
         await self._parse_items(
-            legosets=legosets[4255:4700],
+            legosets=legosets,
             website_interface=self.website_interface,
             legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,

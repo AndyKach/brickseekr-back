@@ -46,11 +46,11 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
         self.legosets_prices_repository = legosets_prices_repository
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_price(self, legoset_id: str) -> dict:
-        url = f"{self.url}/product/{legoset_id}"
+    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
+        url = f"{self.url}/product/{legoset.id}"
         async with aiohttp.ClientSession() as session:
             return await self.__get_item_info_bs4(
-                session=session, url=url, item_id=legoset_id
+                session=session, url=url, item_id=legoset.id
             )
 
     @log_decorator(print_args=False, print_kwargs=False)
@@ -101,7 +101,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 # ic(legoset_price.get('content'))
 
                 if legoset_price:
-                    result['price'] = legoset_price.get('content')
+                    result['price'] = f"{legoset_price.get('content')} Kč"
                     return result
 
                 else:

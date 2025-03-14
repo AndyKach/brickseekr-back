@@ -28,17 +28,23 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
         }
         self.response = None
 
-    async def format_lego_set_url(self, lego_set: LegoSet):
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}"
-        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/{lego_set.url_name}"
+    async def format_lego_set_url(self, legoset: LegoSet):
+        legoset_theme = legoset.extendedData.get('cz_category_name')
+        if legoset_theme == "None":
+            legoset_theme = legoset.theme.lower().replace(' ', '-')
+        legoset_url_name = legoset.extendedData.get('cz_url_name')
+        if legoset_url_name == "None":
+            legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset_url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_price(self, legoset: LegoSet):
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, lego_set=legoset)
+            return await self.__get_lego_sets_price(session=session, legoset=legoset)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
@@ -49,7 +55,7 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
                     tasks = [
                         self.__get_lego_sets_price(
                             session=session,
-                            lego_set=lego_set
+                            legoset=lego_set
                         ) for lego_set in legosets
                     ]
                     # Параллельное выполнение всех задач
@@ -61,15 +67,15 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
 
             return None
 
-    async def __get_lego_sets_price(self, session, lego_set: LegoSet):
+    async def __get_lego_sets_price(self, session, legoset: LegoSet):
         """
         :param session: Async session
-        :param lego_set: LegoSet object
+        :param legoset: LegoSet object
         :return: {'lego_set_id': str, 'price': str} or None
         """
         start_time = datetime.now()
 
-        urls = self.format_lego_set_url(lego_set=lego_set)
+        urls = self.format_lego_set_url(legoset=legoset)
 
         async for url in urls:
             page = await self.fetch_page(session=session, url=url)
@@ -89,11 +95,11 @@ class WebsiteSparkysInterface(WebsiteInterface, StringsToolKit):
                     price = price_element.get_text(strip=True)
                     price = price.replace('&nbsp;', ' ')
                     price = price.replace(' ', '')
-                    system_logger.info(f'Lego set {lego_set.lego_set_id} exists, price: {price}')
+                    system_logger.info(f'Lego set {legoset.id} exists, price: {price}')
                     return {
-                        "lego_set_id": lego_set.lego_set_id,
+                        "legoset_id": legoset.id,
                         "price": price.replace('\xa0', ' ')
                     }
 
-        system_logger.info(f'Lego set {lego_set.lego_set_id} price not found')
+        system_logger.info(f'Lego set {legoset.id} price not found')
         return None

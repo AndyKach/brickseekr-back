@@ -35,8 +35,8 @@ class GetLegoSetUseCase:
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
-            if legoset.rating is None or legoset.rating <= 5:
-                legoset.rating = 0
+            if legoset.rating is None or legoset.rating <= 5 or True:
+                # legoset.rating = 0
                 # system_logger.info(f"Legoset {legoset_id} has no yet official rating")
                 try:
                     result = await self.get_legosets_rating_use_case.execute(legoset=legoset)

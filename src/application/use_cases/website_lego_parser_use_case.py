@@ -47,14 +47,14 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
         )
 
     async def parse_legosets_prices(self):
-        list_of_legosets_prices = await self.legosets_prices_repository.get_all_items()
-        # ic(list_of_legosets_prices)
-        legosets = []
-
-        for legosets_prices in list_of_legosets_prices[:]:
-            if legosets_prices.prices.get('1'):
-                if '€' in legosets_prices.prices.get('1'):
-                    legosets.append(await self.legosets_repository.get_set(set_id=legosets_prices.legoset_id))
+        # list_of_legosets_prices = await self.legosets_prices_repository.get_all_items()
+        # legosets = []
+        #
+        # for legosets_prices in list_of_legosets_prices[:]:
+        #     if legosets_prices.prices.get('1'):
+        #         if '€' in legosets_prices.prices.get('1'):
+        #             legosets.append(await self.legosets_repository.get_set(set_id=legosets_prices.legoset_id))
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
 
         # ic(legosets)
         # legosets = await self.legosets_repository.get_all()

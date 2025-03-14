@@ -25,15 +25,21 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
         }
         self.response = None
 
-    async def format_lego_set_url(self, lego_set: LegoSet):
-        yield f"{self.url}/lego-{lego_set.category_name}-{lego_set.lego_set_id}-{lego_set.url_name}"
-        yield f"{self.url}/lego-{lego_set.lego_set_id}-{lego_set.url_name}"
-        # return f"{self.url}/lego-{lego_set.category_name}--{lego_set.lego_set_id}-{lego_set.url_name}"
+    async def format_lego_set_url(self, legoset: LegoSet):
+        legoset_theme = legoset.extendedData.get('cz_category_name')
+        if legoset_theme == "None":
+            legoset_theme = legoset.theme.lower().replace(' ', '-')
+        legoset_url_name = legoset.extendedData.get('cz_url_name')
+        if legoset_url_name == "None":
+            legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset.id}-{legoset_url_name}"
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_price(self, legoset: LegoSet):
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, lego_set=legoset)
+            return await self.__get_lego_sets_price(session=session, legoset=legoset)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
@@ -44,7 +50,7 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
                     tasks = [
                         self.__get_lego_sets_price(
                             session=session,
-                            lego_set=lego_set
+                            legoset=lego_set
                         ) for lego_set in legosets
                     ]
                     # Параллельное выполнение всех задач
@@ -57,15 +63,12 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
             return None
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, lego_set: LegoSet):
+    async def __get_lego_sets_price(self, session: aiohttp.ClientSession, legoset: LegoSet):
         start_time = datetime.now()
-        urls = self.format_lego_set_url(lego_set=lego_set)
+        urls = self.format_lego_set_url(legoset=legoset)
         async for url in urls:
             page = await self.fetch_page(session=session, url=url)
-            # print(url)
-            # print(page)
             if page:
-                print('!!!!!!!!!!!!!!!!')
                 system_logger.info('-------------------------------------')
                 system_logger.info('Get page: ' + str(datetime.now() - start_time))
                 system_logger.info(f'URL: {url}')
@@ -79,9 +82,9 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
                     price = price_element.get_text(strip=True)
                     system_logger.info(f'Lego set {url[url.rfind("/") + 1:]} exists, price: {price}')
                     return {
-                        "lego_set_id": lego_set.lego_set_id,
+                        "legoset_id": legoset.id,
                         "price": price.replace('\xa0', ' ')
                     }
                 else:
-                    system_logger.info(f'Lego set price not found')
+                    system_logger.info(f'Legoset: {legoset.id} price not found')
 

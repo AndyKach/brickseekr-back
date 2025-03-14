@@ -36,7 +36,10 @@ class GetLegoSetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
+            await self.google_interface.open_driver()
             google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
+            await self.google_interface.close_driver()
+
             # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
             if google_rating is None:
                 system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
@@ -102,7 +105,8 @@ class GetLegoSetsRatingUseCase:
 
             prices_list = []
             for website_id in legosets_prices.prices.keys():
-                prices_list.append(await self.refactor_price_from_str_to_float(legosets_prices.prices.get(website_id)))
+                if website_id != "1":
+                    prices_list.append(await self.refactor_price_from_str_to_float(legosets_prices.prices.get(website_id)))
 
             system_logger.debug(f"Legoset: {legoset.id} has a prices_list: {prices_list}")
             system_logger.debug(f"Legoset: {legoset.id} has a median(prices_list): {median(prices_list)}")
@@ -116,9 +120,9 @@ class GetLegoSetsRatingUseCase:
 
             # -------------------------------------------------------------------------------------------------------------
 
-            years_since_release = datetime.now().year - legoset.year
-
-            system_logger.debug(f"Legoset: {legoset.id} has a years since release: {years_since_release}")
+            # years_since_release = datetime.now().year - legoset.year
+            #
+            # system_logger.debug(f"Legoset: {legoset.id} has a years since release: {years_since_release}")
 
             # -------------------------------------------------------------------------------------------------------------
 
@@ -142,21 +146,21 @@ class GetLegoSetsRatingUseCase:
 
             # -------------------------------------------------------------------------------------------------------------
 
-            best_ratio = min(prices_list)
-            worst_ratio = max(prices_list)
-            system_logger.debug(f"Legoset: {legoset.id} has a best ratio: {best_ratio}")
-            system_logger.debug(f"Legoset: {legoset.id} has a worst ratio: {worst_ratio}")
+            # best_ratio = min(prices_list)
+            # worst_ratio = max(prices_list)
+            # system_logger.debug(f"Legoset: {legoset.id} has a best ratio: {best_ratio}")
+            # system_logger.debug(f"Legoset: {legoset.id} has a worst ratio: {worst_ratio}")
 
             # -------------------------------------------------------------------------------------------------------------
 
             rating = await self.rating_calculation.calculate_rating(
                 final_price=final_price,
                 initial_price=initial_price,
-                years_since_release=years_since_release,
+                # years_since_release=years_since_release,
                 theme=theme,
                 pieces_count=pieces_count,
-                best_ratio=best_ratio,
-                worst_ratio=worst_ratio,
+                # best_ratio=best_ratio,
+                # worst_ratio=worst_ratio,
                 google_rating=google_rating,
             )
             result = {

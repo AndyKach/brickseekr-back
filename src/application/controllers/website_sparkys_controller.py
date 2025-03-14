@@ -16,8 +16,8 @@ class WebsiteSparkysController(WebsiteController):
         self.website_interface = website_interface
 
         self.website_parser_use_case = WebsiteSparkysParserUseCase(
-            lego_sets_repository=lego_sets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            legosets_repository=lego_sets_repository,
+            legosets_prices_repository=lego_sets_prices_repository,
             website_interface=self.website_interface
         )
 

@@ -51,8 +51,8 @@ class LegoSetsService:
             website_interface=self.website_lego_interface
         )
         self.website_capi_cap_controller = WebsiteCapiCapController(
-            lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=legosets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_capi_cap_interface
         )
         self.website_museum_of_bricks_controller = WebsiteMuseumOfBricksController(
@@ -152,11 +152,11 @@ class LegoSetsService:
     async def async_parse_set(self, set_id: str):
         await self.website_lego_controller.parse_set(lego_set_id=set_id)
 
-    async def parse_set_in_store(self, set_id: str, store_id: int):
+    async def parse_set_in_store(self, set_id: str, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
         return await website_controller.parse_legosets_price(legoset_id=set_id)
 
-    async def parse_all_sets_in_store(self, store_id: int):
+    async def parse_all_sets_in_store(self, store_id: str):
         website_controller = await self.__get_website_use_case(store_id=store_id)
         await website_controller.parse_legosets_prices()
 
@@ -210,6 +210,11 @@ class LegoSetsService:
         await self.website_lego_controller.parse_legosets()
         system_logger.warning('END')
 
+    async def recalculate_rating(self):
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
+        system_logger.info(f"Count legosets to recalculate rating: {len(legosets)}")
+        for legoset in legosets:
+            await self.get_legoset_use_case.execute(legoset_id=legoset.id)
 
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:

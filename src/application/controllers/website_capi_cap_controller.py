@@ -8,17 +8,17 @@ from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCa
 class WebsiteCapiCapController(WebsiteController):
 
     def __init__(self,
-                 lego_sets_repository: LegoSetsRepository,
-                 lego_sets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegoSetsRepository,
+                 legosets_prices_repository: LegoSetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
-        self.lego_sets_repository = lego_sets_repository,
-        self.lego_sets_prices_repository = lego_sets_prices_repository,
+        self.legosets_repository = legosets_repository,
+        self.legosets_prices_repository = legosets_prices_repository,
         self.website_interface = website_interface
 
         self.website_parser_use_case = WebsiteCapiCapParserUseCase(
-            lego_sets_repository=lego_sets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_interface
         )
 
