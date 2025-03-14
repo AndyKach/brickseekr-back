@@ -36,4 +36,11 @@ class LegoSetsRepository(ABC):
     async def update_google_rating(self, legoset_id: str, google_rating: float) -> None:
         pass
 
+    @abstractmethod
+    async def update_extended_data(self, legoset_id: str, extended_data: dict) -> None:
+        """
+        extended_data: {"cz_url_name": str, "cz_category_name": str}
+        """
+        pass
+
 

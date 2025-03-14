@@ -198,3 +198,30 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
+    async def update_extended_data(self, legoset_id: str, extended_data: dict) -> None:
+        """
+        extended_data: {"cz_url_name": str, "cz_category_name": str}
+        """
+        session = self.get_session()
+        async with session.begin():
+            query = (
+                select(LegoSetsOrm.extendedData)
+                .where(LegoSetsOrm.id == legoset_id)
+            )
+            res = await session.execute(query)
+            data = res.scalars().first()
+            system_logger.info(f"extended_data: {extended_data}")
+            system_logger.info(f"data before: {data}")
+            data['cz_url_name'] = extended_data['cz_url_name']
+            data['cz_category_name'] = extended_data['cz_category_name']
+            system_logger.info(f"data after: {data}")
+            query = (
+                update(LegoSetsOrm)
+                .where(LegoSetsOrm.id == legoset_id)
+                .values(extendedData=data)
+            )
+            await session.execute(query)
+            await session.commit()
+
+
+

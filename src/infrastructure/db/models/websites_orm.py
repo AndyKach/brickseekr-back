@@ -11,5 +11,6 @@ class WebsitesOrm(Base):
 
     id: Mapped[int]                = mapped_column(Integer, primary_key=True)
     name: Mapped[str]              = mapped_column(String, nullable=False)
+    link: Mapped[str]              = mapped_column(String, nullable=True)
     created_at: Mapped[datetime]   = mapped_column(server_default=text("TIMEZONE('utc', now())"))
 

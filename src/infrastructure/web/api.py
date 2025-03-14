@@ -122,7 +122,7 @@ async def get_rating_top_list(
 
 
 
-@app.get('/sets/{set_id}/calculateRating', tags=['Sets'])
+@app.get('/sets/{set_id}/calculateRating', tags=['Experimental'])
 @log_api_decorator
 async def calculate_rating(
         response: Response, background_tasks: BackgroundTasks,
@@ -136,19 +136,6 @@ async def calculate_rating(
         )
     else:
         return await get_success_json_response(data={"result": data})
-
-# @app.get('/sets/{set_id}/parseAllStores')
-
-# @app.get('/sets/{set_id}/{store_id}/parseSet')
-
-# @app.get('/store/{store_id}/parseAllSets')
-# ''
-
-
-
-
-
-
 
 
 
@@ -198,14 +185,6 @@ async def parse_sets_from_lego(
 
 
 
-
-
-
-
-
-
-
-
 # @app.post("/sets/{set_id}/parse")
 # @log_api_decorator
 # async def parse_sets(
@@ -240,7 +219,7 @@ async def parse_set_in_store(
 
 
 
-@app.get("/sets/parseSetsUrls", tags=['Experimental'])
+@app.post("/sets/parseSetsUrls", tags=['Experimental'])
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,

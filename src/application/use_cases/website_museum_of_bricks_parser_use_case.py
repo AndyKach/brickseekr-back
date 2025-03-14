@@ -1,5 +1,7 @@
 import logging
 
+from icecream import ic
+
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
@@ -39,14 +41,36 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
 
     @log_decorator()
     async def parse_legosets_urls(self):
-        legosets = await self.legosets_repository.get_all()
-        for i in range(120, 5745, 100):
-            result = await self.website_interface.parse_legosets_urls(lego_sets=legosets[i:i+100])
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.year > 2018)]
+        print(len(legosets))
+        step = 150
+
+        for i in range(0, 6113, step):
+        # for i in range(0, 1, step):
+        #     break
+            results = await self.website_interface.parse_legosets_urls(legosets=legosets[i:i+step])
+            ic(results)
+            for result in results:
+                if result.get('status') == 200:
+                    system_logger.info(f"Legoset {result.get('id')} has cz_url: {result.get('url')} cz_category: {result.get('category')}")
+                    try:
+                        await self.legosets_repository.update_extended_data(
+                            legoset_id=result.get('id'),
+                            extended_data={
+                                'cz_url_name': result.get('url'),
+                                'cz_category_name': result.get('category')
+                            },
+                        )
+                    except Exception as e:
+                        system_logger.error(e)
+
+                elif result.get('status') == 404:
+                    system_logger.info(f"Legoset {result.get('id')} was not found")
         # print('!!!!!!!\n{result}\n!!!!!!!'.format(result=result))
-            for lego_set in result:
-                await self.legosets_repository.update_url_name(
-                    lego_set_id=lego_set["id"], url_name=lego_set['url']
-                )
+        #     for lego_set in result:
+                # await self.legosets_repository.update_url_name(
+                #     lego_set_id=lego_set["id"], url_name=lego_set['url']
+                # )
 
     @log_decorator()
     async def parse_legosets_price(self, legoset_id: str):

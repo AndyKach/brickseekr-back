@@ -170,18 +170,19 @@ class LegoSetsService:
     #     return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
 
     async def tmp_function(self):
-        legosets = await self.legosets_repository.get_all()
+        print('ITS TIME TO PARSE LEGO')
+        # legosets = await self.legosets_repository.get_all()
         # await self.google_interface.open_driver()
         k = 0
         legosets_to_parse = []
-        try:
-            for legoset in legosets:
-                if len(legoset.images.keys()) == 2 and legoset.rating != 0:
-                    legosets_to_parse.append(legoset)
-                    if len(legosets_to_parse) >= 2000:
-                        break
-
-            await self.website_lego_interface.parse_legosets_images(legosets=legosets_to_parse, legosets_repository=self.legosets_repository)
+        # try:
+        #     for legoset in legosets:
+        #         if len(legoset.images.keys()) == 2 and legoset.rating != 0:
+        #             legosets_to_parse.append(legoset)
+        #             if len(legosets_to_parse) >= 2000:
+        #                 break
+        #
+        #     await self.website_lego_interface.parse_legosets_images(legosets=legosets_to_parse, legosets_repository=self.legosets_repository)
             # for legoset in legosets_to_parse:
             #     time.sleep(random()*10)
             #     before = legoset.rating
@@ -191,12 +192,12 @@ class LegoSetsService:
             #     system_logger.info(f"Legoset: {legoset.id} RATING BEFORE: {before} AFTER: {after}")
 
 
-            print('ITS TIME TO PARSE LEGO')
-        except Exception as e:
-            system_logger.error(f"Error by parsing legosets ratings: {e}")
-        finally:
-            pass
-            # await self.google_interface.close_driver()
+        #     print('ITS TIME TO PARSE LEGO')
+        # except Exception as e:
+        #     system_logger.error(f"Error by parsing legosets ratings: {e}")
+        # finally:
+        #     pass
+        #     # await self.google_interface.close_driver()
 
         # ic(lego_sets)
 

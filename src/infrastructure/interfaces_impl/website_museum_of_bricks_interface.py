@@ -38,15 +38,18 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         result = []
         start_time_all = datetime.now()
         driver = None
+        system_logger.info('Start parsing')
         try:
             driver = await get_selenium_driver()
             driver.get(self.url)
             await self.close_cookies(driver=driver)
             for legoset in legosets:
                 start_time = datetime.now()
-
-                result.append(await self.open_website(lego_set_id=legoset.lego_set_id, driver=driver))
-
+                try:
+                    result.append(await self.open_website(legoset_id=legoset.id, driver=driver))
+                except Exception as e:
+                    if "Unable to locate element:" not in str(e):
+                        system_logger.error(e)
                 # system_logger.info(f"Result: {result}")
                 system_logger.info(f"One lego set time: {datetime.now() - start_time}")
                 system_logger.info('=======================')
@@ -71,7 +74,7 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
             driver = await get_selenium_driver()
             driver.get(self.url)
             await self.close_cookies(driver=driver)
-            result = await self.open_website(lego_set_id=legoset_id, driver=driver)
+            result = await self.open_website(legoset_id=legoset_id, driver=driver)
 
         except Exception as e:
             pass
@@ -85,30 +88,40 @@ class WebsiteMuseumOfBricksInterface(WebsiteInterface):
         return result
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def open_website(self, lego_set_id: str, driver):
+    async def open_website(self, legoset_id: str, driver):
         system_logger.info("Start searching for lego sets")
         time.sleep(2)
         system_logger.info(f'current url {driver.current_url}')
-        search_element = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/input[2]")
-        search_element.clear()
-        search_element.send_keys(str(lego_set_id))
+        # search_element = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/input[2]")
+        search_element = driver.find_element(By.CSS_SELECTOR, "input[data-testid='searchInput']")
 
-        search_button = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/button")
+
+        search_element.clear()
+        search_element.send_keys(str(legoset_id))
+
+        # search_button = driver.find_element(By.XPATH, "/html/body/div[3]/header/div/div[1]/div[2]/form/fieldset/button")
+        search_button = driver.find_element(By.CSS_SELECTOR, "button[data-testid='searchBtn']")
         search_button.click()
         try:
-            lego_set_button = driver.find_element(By.XPATH, "/html/body/div[3]/div[4]/div/main/div[2]/div/div/div/div/div[1]/a/span")
-            lego_set_button.click()
-            lego_set_url = driver.current_url
-            system_logger.info(f"\nLego set: {lego_set_id}\nCurent url: {lego_set_url}\n===============")
+            # legoset_button = driver.find_element(By.XPATH, "/html/body/div[3]/div[4]/div/main/div[2]/div/div/div/div/div[1]/a/span")
+            legoset_button = driver.find_element(By.CSS_SELECTOR, "span[data-testid='productCardName']")
+            legoset_button.click()
+            legoset_url = driver.current_url
+            system_logger.info(f"\nLego set: {legoset_id}\nCurent url: {legoset_url}\n===============")
             return {
-                "id": lego_set_id,
-                "url": lego_set_url[lego_set_url.find(lego_set_id) + 6:-1]
+                "id": legoset_id,
+                "url": legoset_url[legoset_url.find(legoset_id) + 6:-1],
+                "category": legoset_url[legoset_url.find('lego') + 5 : legoset_url.find(legoset_id) - 1],
+                "status": 200,
             }
-        except:
-            system_logger.info(f"\nLego set: {lego_set_id}\nSet not found\n===============")
+        except Exception as e:
+            system_logger.error(e)
+            system_logger.info(f"\nLego set: {legoset_id}\nSet not found\n===============")
             return {
-                "id": lego_set_id,
-                "url": "no_url"
+                "id": legoset_id,
+                "url": "-",
+                "category": "-",
+                "status": 404
             }
 
     @log_decorator(print_args=False, print_kwargs=False)
