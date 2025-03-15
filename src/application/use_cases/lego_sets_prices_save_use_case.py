@@ -11,7 +11,7 @@ class LegoSetsPricesSaveUseCase:
                  ):
         self.legosets_prices_repository = legosets_prices_repository
 
-    async def save_lego_sets_price(self, legosets_price: LegoSetsPrice):
+    async def save_legosets_price(self, legosets_price: LegoSetsPrice):
         log_text = f"\n==================\n"\
                    f"ID: {legosets_price.legoset_id} \n"\
                    f"Price: {legosets_price.price}\n"
@@ -41,4 +41,12 @@ class LegoSetsPricesSaveUseCase:
                 system_logger.error(log_text + f"Error by add new lego set price {e}")
 
         system_logger.info(log_text)
+
+    async def delete_legosets_price(self, legoset_id: str, website_id: str):
+        log_text = f"\n==================\n"\
+                   f"ID: {legoset_id} \n"\
+                   f"Not more available"
+        system_logger.info(log_text)
+        if await self.legosets_prices_repository.get_item(legoset_id=legoset_id) is not None:
+            await self.legosets_prices_repository.delete_price(legoset_id=legoset_id, website_id=website_id)
 

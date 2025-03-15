@@ -39,9 +39,20 @@
 # print(str({"1": 15, "2":40}), len(str({"1": 15, "2":40})))
 # print(str([1, '3', (2.5, 18)]), len(str([1, '3', (2.5, 18)])))
 
-url = "https://eshop.museumofbricks.cz/lego-star-wars--75257-millennium-falcon/"
+# url = "https://eshop.museumofbricks.cz/lego-star-wars--75257-millennium-falcon/"
+#
+# print(url[url.find('75257')+6:-1])
 
-print(url[url.find('75257')+6:-1])
 
+def test_function(website_id: str):
+    x = {'1': 4.99, '2': 10.99, '3': 11.99}
+    new_x = {}
+    for key in x.keys():
+        if key != website_id:
+            new_x[key] = x[key]
+    return new_x
+
+
+print(test_function("3"))
 
 

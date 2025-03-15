@@ -39,20 +39,22 @@ class WebsiteParserUseCase(ABC):
         for i in range(0, len(legosets), 50):
             system_logger.info(f'Start parse sets from {i} bis {i+50}')
             results = await website_interface.parse_legosets_prices(legosets=legosets[i:i + 50])
-            if results is not None:
+            if results:
                 ic(results)
                 for result in results:
                     try:
-                        if result is not None:
+                        if result:
                             count_valuable += 1
+                            if result.get('available') == "Retired product":
+                                await legosets_prices_save_use_case.delete_legosets_price(legoset_id=result.get('legoset_id'), website_id=website_id)
                             if result.get('price'):
-                                await legosets_prices_save_use_case.save_lego_sets_price(
+                                await legosets_prices_save_use_case.save_legosets_price(
                                     LegoSetsPrice(
                                         legoset_id=result.get('legoset_id'),
                                         price=result.get('price'),
                                         website_id=website_id
-                                    )
-                                )
+                                            )
+                                        )
                             # Needed to be deleted dann
                             # legoset = await legosets_repository.get_set(set_id=result.get('legoset_id'))
                             # for i in range(1, 6):
@@ -81,13 +83,28 @@ class WebsiteParserUseCase(ABC):
         result = await website_interface.parse_legosets_price(legoset=legoset)
         system_logger.info(f"Lego set {legoset.id} - {result}")
         if result:
-            await legosets_prices_save_use_case.save_lego_sets_price(
-                LegoSetsPrice(
-                    legoset_id=legoset.id,
-                    price=result.get('price'),
-                    website_id=website_id
+            # return None
+            if result.get('available') == "Retired product":
+                await legosets_prices_save_use_case.delete_legosets_price(legoset_id=legoset.id, website_id=website_id)
+            if result.get('price'):
+                await legosets_prices_save_use_case.save_legosets_price(
+                    LegoSetsPrice(
+                        legoset_id=legoset.id,
+                        price=result.get('price'),
+                        website_id=website_id
+                    )
                 )
-            )
+
+
+
+
+
+
+
+
+
+
+
             # Needed to be deleted dann
             # for i in range(1, 6):
             #     if result.get(f'small_image{i}'):

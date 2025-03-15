@@ -47,11 +47,15 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_price(self, legoset: LegoSet) -> dict:
+        name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+        # url = f"{self.url}/product/{name}-{legoset.id}"
         url = f"{self.url}/product/{legoset.id}"
-        async with aiohttp.ClientSession() as session:
-            return await self.__get_item_info_bs4(
-                session=session, url=url, item_id=legoset.id
-            )
+        try:
+            async with aiohttp.ClientSession() as session:
+                # return await self.__get_legosets_price_selenium(url=url, legoset_id=legoset.id)
+                return await self.__get_item_info_bs4(session=session, url=url, legoset_id=legoset.id)
+        except Exception as e:
+            system_logger.error(e)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
@@ -63,7 +67,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                         self.__get_item_info_bs4(
                             session,
                             url=f"{self.url}/product/{legoset.id}",
-                            item_id=legoset.id
+                            legoset_id=legoset.id
                         ) for legoset in legosets
                     ]
                     # Параллельное выполнение всех задач
@@ -75,10 +79,44 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
 
             return None
 
-    async def __get_item_info_bs4(self, session, url: str, item_id: str):
+    async def __get_legosets_price_selenium(self, url: str, legoset_id: str) -> dict:
         last_datetime = datetime.now()
         ic(url)
-        result = {"legoset_id": item_id}
+        result = {"legoset_id": legoset_id}
+        try:
+            self.driver.get(url)
+            time.sleep(3)
+            system_logger.info("skip_first_button start")
+
+            skip_first_button = self.driver.find_element(By.CSS_SELECTOR, '#age-gate-grown-up-cta')
+            skip_first_button.click()
+
+            system_logger.info("skip_first_button click")
+            time.sleep(1)
+
+            cookies_button = self.driver.find_element(By.XPATH,
+                                                 '/html/body/div[5]/div/aside/div/div/div[3]/div[1]/button[1]')
+            cookies_button.click()
+            system_logger.info('=================================================================================')
+            legoset_price = self.driver.find_element(By.CSS_SELECTOR, "span[data-test='product-price']")
+            ic(legoset_price)
+            if legoset_price:
+                result['legoset_price'] = legoset_price.text
+                result['website_id'] = self.website_id
+            system_logger.info(f'Time for parsing this item: {datetime.now()-last_datetime}')
+
+            system_logger.info('=================================================================================')
+
+
+        except Exception as e:
+            system_logger.error(e)
+        finally:
+            pass
+        return result
+
+    async def __get_item_info_bs4(self, session, url: str, legoset_id: str):
+        last_datetime = datetime.now()
+        result = {"legoset_id": legoset_id}
         try:
             page = await self.fetch_page(session=session, url=url)
             # with open('test1.txt', 'w') as f:
@@ -90,8 +128,8 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
 
                 soup = BeautifulSoup(page, 'lxml')
-                # with open('test2.txt', 'w') as f:
-                #     f.write(str(page))
+                with open('test2.txt', 'w') as f:
+                    f.write(str(page))
                 # ic(soup)
                 # legoset_price = soup.find('span',
                 #                           class_='ds-heading-lg  ProductPrice_priceText__ndJDK',
@@ -100,12 +138,28 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 legoset_price = soup.find('meta', {'property': 'product:price:amount'})
                 # ic(legoset_price.get('content'))
 
+                # legoset_available = soup.find('p[data-test="product-overview-availability"]')
+                legoset_available = soup.find("p", attrs={"data-test": "product-overview-availability"})
+                # ic(legoset_available.text.strip())
+                # legoset_price = soup.find('span',
+                                          # class_='ds-heading-lg  ProductPrice_priceText__ndJDK',
+                                          # attrs={'data-test': 'product-price'})
+
+                # legoset_price = soup.select_one("span[data-test='product-price']")
+                # system_logger.info('Get legoset price: ' + str(legoset_price))
+
+                system_logger.info(f"Legoset: {legoset_id}, price: {legoset_price.get('content')}, available: {legoset_available.text.strip()}")
                 if legoset_price:
-                    result['price'] = f"{legoset_price.get('content')} Kč"
+                    if legoset_available.text.strip() != "Retired product":
+                        result['price'] = f"{legoset_price.get('content')} Kč"
+                    else:
+                        result['available'] = legoset_available.text.strip()
+
                     return result
 
-                else:
-                    system_logger.info(f'Lego set {item_id} not found')
+
+                # else:
+                #     system_logger.info(f'Lego set {legoset_id} official not found')
 
                 # import re
                 # text_element = soup.find(string=re.compile("8999,00"))
@@ -125,23 +179,23 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 # legoset_price_sale =
 
 
-                legoset_price_sale = soup.find('span',
-                                          class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
-                                          attrs={'data-test': 'product-price-sale'})
-
-
-
-                for price_element in [legoset_price, legoset_price_sale]:
-                    if price_element:
-                        price = price_element.get_text(strip=True)
-                        system_logger.info(f'Lego set {item_id} exists, price: {price}')
-                        # result['legoset_id'] = item_id
-                        result['price'] = price.replace('\xa0', ' ')
-                        return result
-
-                    else:
-                        system_logger.info(f'Lego set {item_id} not found')
-                return result
+                # legoset_price_sale = soup.find('span',
+                #                           class_='ProductPrice_salePrice__L9pb9 ds-heading-lg ProductPrice_priceText__ndJDK',
+                #                           attrs={'data-test': 'product-price-sale'})
+                #
+                #
+                #
+                # for price_element in [legoset_price, legoset_price_sale]:
+                #     if price_element:
+                #         price = price_element.get_text(strip=True)
+                #         system_logger.info(f'Lego set {legoset_id} exists, price: {price}')
+                #         # result['legoset_id'] = item_id
+                #         result['price'] = price.replace('\xa0', ' ')
+                #         return result
+                #
+                #     else:
+                #         system_logger.info(f'Lego set {legoset_id} not found')
+                # return result
         except Exception as e:
             system_logger.error(f"Error: {e}")
 
@@ -171,17 +225,9 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                     result[f'big_image{i}'] = image_big_link
 
 
-    async def get_legosets_price_bs4(self, legoset_id: str):
-        self.response = requests.get(self.url + "/product/" + legoset_id)
-        ic(self.url + "/product/" + legoset_id)
-        soup = BeautifulSoup(self.response.content, 'lxml')
-        price_element = soup.find('span',
-                                  class_='ds-heading-lg ProductPrice_priceText__ndJDK',
-                                  attrs={'data-test': 'product-price'})
-        ic(price_element)
-
     async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
         async with session.get(url, headers=self.headers) as response:
+            # response.html.render(timeout=10)
             return await response.text()
 
     @log_decorator(print_args=False, print_kwargs=False)

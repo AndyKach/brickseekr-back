@@ -133,6 +133,30 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             session.add(legosets_prices_orm)
             await session.commit()
 
+    @log_decorator()
+    async def delete_price(self, legoset_id: str, website_id: str):
+        session = self.get_session()
+        async with session.begin():
+            query = select(LegoSetsPricesOrm.prices).where(LegoSetsPricesOrm.legoset_id == legoset_id)
+            res = await session.execute(query)
+            old_prices = res.scalars().first()
+            ic(old_prices)
+            new_prices = {}
+            for key in old_prices.keys():
+                if key != website_id:
+                    new_prices[key] = old_prices[key]
+            ic(new_prices)
+            query = (
+                update(LegoSetsPricesOrm)
+                .where(LegoSetsPricesOrm.legoset_id == legoset_id)
+                .values(prices=new_prices)
+            )
+            await session.execute(query)
+            await session.commit()
+            # if res:
+            #     legoset_price = res.scalars().first()
+            #     return legoset_price
+
 
 
 
