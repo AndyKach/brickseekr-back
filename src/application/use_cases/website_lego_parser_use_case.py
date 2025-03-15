@@ -97,7 +97,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
                 new_images[f'big_image{i}'] = data.get(f'big_image{i}')
             except Exception as e:
                 system_logger.error(e)
-        ic(new_images)
+        # ic(new_images)
         await self.legosets_repository.update_images(legoset_id=data.get('legoset_id'), images=new_images)
 
     # async def parse_known_sets(self):
