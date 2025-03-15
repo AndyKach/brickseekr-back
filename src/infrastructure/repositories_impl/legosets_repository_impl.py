@@ -125,18 +125,6 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
-    async def update_url_name(self, lego_set_id: str, url_name: str):
-        session = self.get_session()
-        async with session.begin():
-            # row = select(LegoSetsOrm).where(LegoSetsOrm.lego_set_id==lego_set_id)
-            # print("Befor", row)
-            # row.url_name = url_name
-            # print("After", row)
-            query = update(LegoSetsOrm).where(LegoSetsOrm.id==lego_set_id).values(url_name=url_name)
-            await session.execute(query)
-            await session.commit()
-
-
     async def update_set(self, legoset: LegoSet) -> None:
         session = self.get_session()
         async with session.begin():
@@ -175,7 +163,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
-    async def update_images(self, legoset_id: str, images: dict):
+    async def update_images(self, legoset_id: str, images: dict) -> None:
         session = self.get_session()
         async with session.begin():
             query = (
@@ -183,17 +171,13 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 .where(LegoSetsOrm.id == legoset_id)
             )
             res = await session.execute(query)
-            new_images = res.scalars().first()
-            # ic(f"IMAGES LEGOSET({legoset_id}) BEFORE: {new_images}")
+            legoset_images = res.scalars().first()
             for image in images.keys():
-                new_images[image] = images[image]
-
-            # ic(f"IMAGES LEGOSET({legoset_id}) AFTER: {new_images}")
-
+                legoset_images[image] = images[image]
             query = (
                 update(LegoSetsOrm)
                 .where(LegoSetsOrm.id == legoset_id)
-                .values(images=new_images)
+                .values(images=legoset_images)
             )
             await session.execute(query)
             await session.commit()
@@ -222,6 +206,16 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             )
             await session.execute(query)
             await session.commit()
+
+    # async def update_images(self, legoset_id: str, images: dict) -> None:
+    #     session = self.get_session()
+    #     async with session.begin():
+    #         query = (
+    #             select(LegoSetsOrm.extendedData)
+    #             .where(LegoSetsOrm.id == legoset_id)
+    #         )
+    #         res = await session.execute(query)
+    #         data = res.scalars().first()
 
 
 

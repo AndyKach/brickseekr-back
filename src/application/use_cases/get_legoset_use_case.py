@@ -98,7 +98,7 @@ class GetLegoSetUseCase:
 
             website_link = (await self.get_website_use_case.get_website(website_id=website_id)).link
             if website_id == "1":
-                website_link += f'/products/{legoset_id}'
+                website_link += f'products/{legoset_id}'
             result[website_id]['link'] = website_link
 
         return result

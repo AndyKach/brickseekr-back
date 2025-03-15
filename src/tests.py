@@ -44,15 +44,22 @@
 # print(url[url.find('75257')+6:-1])
 
 
-def test_function(website_id: str):
-    x = {'1': 4.99, '2': 10.99, '3': 11.99}
-    new_x = {}
-    for key in x.keys():
-        if key != website_id:
-            new_x[key] = x[key]
-    return new_x
+# def test_function(website_id: str):
+#     x = {'1': 4.99, '2': 10.99, '3': 11.99}
+#     new_x = {}
+#     for key in x.keys():
+#         if key != website_id:
+#             new_x[key] = x[key]
+#     return new_x
+#
+#
+# print(test_function("3"))
+#
 
-
-print(test_function("3"))
+x = ['dfsf', 'sdfsd', 'fsdfsd']
+for value, item in enumerate(x):
+    print('=======================')
+    print(value)
+    print(item)
 
 

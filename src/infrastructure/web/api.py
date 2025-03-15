@@ -11,7 +11,7 @@ from domain.legosets_price import LegoSetsPrice
 from domain.legosets_prices import LegoSetsPrices
 # from application.services.scheduler_service import SchedulerService
 from infrastructure.config.logs_config import log_api_decorator
-from infrastructure.config.services_config import get_lego_sets_service
+from infrastructure.config.services_config import get_legosets_service
 from infrastructure.config.fastapi_app_config import app
 from infrastructure.web.setup import setup
 
@@ -63,7 +63,7 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 @app.get("/sets/{set_id}/getData", tags=['Sets'], response_model=LegoSet)
 @log_api_decorator
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
-                  legosets_service: LegoSetsService = Depends(get_lego_sets_service)):
+                  legosets_service: LegoSetsService = Depends(get_legosets_service)):
     data = await legosets_service.get_legoset_info(legoset_id=set_id)
     # print(f"data: {data}")
     if data is None:
@@ -78,7 +78,7 @@ async def get_set(set_id: str, response: Response, background_tasks: BackgroundT
 @log_api_decorator
 async def get_sets_prices(
         set_id: str, response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service)
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
     ):
     data = await legosets_service.get_sets_prices(set_id=set_id)
     if data is None:
@@ -93,7 +93,7 @@ async def get_sets_prices(
 @log_api_decorator
 async def get_sets_prices_from_website(
         set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service)
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
     ):
     data = await legosets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
     if data is None:
@@ -109,7 +109,7 @@ async def get_sets_prices_from_website(
 @log_api_decorator
 async def get_rating_top_list(
         legosets_count: int, response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service)
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
     ):
     data = await legosets_service.get_legosets_rating_list(legosets_count=legosets_count)
     if data is None:
@@ -126,9 +126,43 @@ async def get_rating_top_list(
 @log_api_decorator
 async def calculate_rating(
         response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service)
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
     ):
     data = await legosets_service.recalculate_rating()
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data={"result": data})
+
+
+
+@app.post('/sets/{set_id}/parseImages', tags=['Experimental'])
+@log_api_decorator
+async def parse_legoset_images(
+        set_id: str,
+        response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
+    ):
+    data = await legosets_service.parse_legoset_images(legoset_id=set_id)
+    if data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found"
+        )
+    else:
+        return await get_success_json_response(data={"result": data})
+
+
+@app.post('/sets/parseImages', tags=['Experimental'])
+@log_api_decorator
+async def parse_legosets_images(
+        response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
+    ):
+    data = await legosets_service.parse_legosets_images()
     if data is None:
         raise HTTPException(
             status_code=404,
@@ -165,7 +199,7 @@ async def calculate_rating(
 @log_api_decorator
 async def parse_sets_from_brickset(
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     background_tasks.add_task(lego_sets_service.parse_sets_from_brickset)
     # data = await lego_sets_service.parse_all_sets()
@@ -176,7 +210,7 @@ async def parse_sets_from_brickset(
 @log_api_decorator
 async def parse_sets_from_lego(
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     background_tasks.add_task(lego_sets_service.parse_legosets_from_lego)
     # data = await lego_sets_service.parse_all_sets()
@@ -212,7 +246,7 @@ async def parse_sets_from_lego(
 async def parse_set_in_store(
         set_id: str, store_id: str,
         response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service),
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     result = await legosets_service.parse_set_in_store(set_id=set_id, store_id=store_id)
     return await get_success_json_response(data={'lego_set_id': set_id, 'price': result})
@@ -223,7 +257,7 @@ async def parse_set_in_store(
 @log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_lego_sets_service),
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     background_tasks.add_task(legosets_service.parse_lego_sets_urls)
     # data = await lego_sets_service.parse_all_sets()
@@ -236,7 +270,7 @@ async def parse_sets(
 async def parse_all_sets_in_store(
         store_id: str,
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
+        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     background_tasks.add_task(lego_sets_service.parse_all_sets_in_store, store_id=store_id)
     # data = await lego_sets_service.parse_all_sets()

@@ -17,6 +17,7 @@ from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
+from application.interfaces.website_lego_interface import WebsiteLegoInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
@@ -106,7 +107,7 @@ class LegoSetsService:
 
 
     @property
-    def website_lego_interface(self) -> WebsiteDataSourceInterface:
+    def website_lego_interface(self) -> WebsiteLegoInterface:
         return self.websites_interfaces_provider.get_website_lego_interface()
 
     @property
@@ -214,6 +215,12 @@ class LegoSetsService:
 
     async def parse_sets_from_brickset(self):
         return await self.website_brickset_controller.parse_legosets()
+
+    async def parse_legoset_images(self, legoset_id: str):
+        await self.website_lego_controller.parse_legoset_images(legoset_id=legoset_id)
+
+    async def parse_legosets_images(self):
+        await self.website_lego_controller.parse_legosets_images()
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets_from_lego(self):

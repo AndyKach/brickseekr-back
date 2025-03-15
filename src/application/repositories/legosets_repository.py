@@ -17,10 +17,6 @@ class LegoSetsRepository(ABC):
         pass
 
     @abstractmethod
-    async def update_url_name(self, lego_set_id: str, url_name: str) -> None:
-        pass
-
-    @abstractmethod
     async def set_set(self, legoset: LegoSet) -> None:
         pass
 
@@ -41,6 +37,10 @@ class LegoSetsRepository(ABC):
         """
         extended_data: {"cz_url_name": str, "cz_category_name": str}
         """
+        pass
+
+    @abstractmethod
+    async def update_images(self, legoset_id: str, images: dict) -> None:
         pass
 
 

@@ -6,7 +6,7 @@ from infrastructure.config.repositories_config import lego_sets_repository, lego
     websites_repository
 
 
-def get_lego_sets_service():
+def get_legosets_service():
     return LegoSetsService(
         legosets_repository=lego_sets_repository,
         legosets_prices_repository=lego_sets_prices_repository,
@@ -19,5 +19,5 @@ def get_lego_sets_service():
 def get_scheduler_service() -> SchedulerService:
     return SchedulerService(
         scheduler_interface=scheduler_interface,
-        lego_sets_service=get_lego_sets_service()
+        legosets_service=get_legosets_service()
     )

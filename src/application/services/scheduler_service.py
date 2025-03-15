@@ -17,13 +17,13 @@ from application.use_cases.set_website_lego_scheduler_jobs_use_case import SetWe
 class SchedulerService:
     def __init__(self,
                  scheduler_interface: SchedulerInterface,
-                 lego_sets_service: LegoSetsService
+                 legosets_service: LegoSetsService
                  ):
         self.scheduler_interface = scheduler_interface
 
         self.set_website_lego_scheduler_jobs_use_case = SetWebsiteLegoSchedulerJobsUseCase(
             scheduler_interface=scheduler_interface,
-            lego_sets_service=lego_sets_service
+            lego_sets_service=legosets_service
         )
 
         self.set_all_schedulers_jobs = SetAllSchedulerJobsUseCase(
