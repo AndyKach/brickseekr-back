@@ -8,34 +8,52 @@ from application.controllers.website_brickset_controller import WebsiteBricksetC
 from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.websites_repository import WebsitesRepository
+from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
 from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
+from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from domain.legoset import LegoSet
 from domain.rating_calculation import RatingCalculation
 from infrastructure.config.logs_config import log_decorator
+from infrastructure.config.repositories_config import websites_repository
 
 system_logger = logging.getLogger('system_logger')
 class GetLegoSetUseCase:
     def __init__(self,
                  legosets_repository: LegoSetsRepository,
                  legosets_prices_repository: LegoSetsPricesRepository,
+                 websites_repository: WebsitesRepository,
                  website_brickset_controller: WebsiteBricksetController,
                  # search_api_interface: SearchAPIInterface,
                  get_legosets_rating_use_case: GetLegoSetsRatingUseCase,
+                 get_legosets_prices_use_case: GetLegoSetsPricesUseCase,
+                 get_website_use_case: GetWebsiteUseCase,
                  ):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
+        self.websites_repository = websites_repository
         self.website_brickset_controller = website_brickset_controller
 
         self.rating_calculation = RatingCalculation()
 
         self.get_legosets_rating_use_case = get_legosets_rating_use_case
+        self.get_legosets_prices_use_case = get_legosets_prices_use_case
+        self.get_website_use_case = get_website_use_case
 
     @log_decorator(print_kwargs=True)
     async def execute(self, legoset_id: str):
+        result = {}
+        result['legoset'] = await self.get_legoset(legoset_id=legoset_id)
+        result['prices'] = await self.get_legosets_prices(legoset_id=legoset_id)
+
+        ic(result)
+        return result
+
+    async def get_legoset(self, legoset_id: str):
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
-            if legoset.rating is None or legoset.rating <= 5 or True:
+            if legoset.rating is None or legoset.rating <= 5:
                 # legoset.rating = 0
                 # system_logger.info(f"Legoset {legoset_id} has no yet official rating")
                 try:
@@ -50,7 +68,6 @@ class GetLegoSetUseCase:
                         case 500:
                             system_logger.error(f"Legoset {legoset_id} rating can't be calculated")
 
-
                     await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
                     # await self.get_rating(legoset=legoset)
                 # except AttributeError:
@@ -58,6 +75,7 @@ class GetLegoSetUseCase:
 
                 except Exception as e:
                     system_logger.error(f"Legoset {legoset_id} has an error: {e}")
+
             else:
                 system_logger.info(f"Legoset {legoset_id} has rating: {legoset.rating}")
         else:
@@ -66,6 +84,24 @@ class GetLegoSetUseCase:
             #  1. спарсить, сохранить, вернуть
             # await self.website_brickset_parser_use_case.parse
         return legoset
+
+    async def get_legosets_prices(self, legoset_id: str):
+        result = {}
+        legoset_prices = await self.get_legosets_prices_use_case.get_all_prices(legoset_id=legoset_id)
+
+        for website_id in legoset_prices.prices.keys():
+            result[website_id] = {}
+            price: str = legoset_prices.prices.get(website_id)
+            if price.count(' ') > 1:
+                price = price.replace(' ', '', price.count(' ')-1)
+            result[website_id]['price'] = price
+
+            website_link = (await self.get_website_use_case.get_website(website_id=website_id)).link
+            if website_id == "1":
+                website_link += f'/products/{legoset_id}'
+            result[website_id]['link'] = website_link
+
+        return result
 
     @log_decorator(print_kwargs=True)
     async def get_top_list(self, legosets_count: int):

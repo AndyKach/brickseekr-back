@@ -128,8 +128,8 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 system_logger.info('Get page: ' + str(datetime.now() - last_datetime) + ' for legoset: ' + legoset_id)
 
                 soup = BeautifulSoup(page, 'lxml')
-                with open('test2.txt', 'w') as f:
-                    f.write(str(page))
+                # with open('test2.txt', 'w') as f:
+                #     f.write(str(page))
                 # ic(soup)
                 # legoset_price = soup.find('span',
                 #                           class_='ds-heading-lg  ProductPrice_priceText__ndJDK',
@@ -445,8 +445,8 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
             # system_logger.error(f"Legoset: {legoset.id} Value I not found")
 
 
-    async def parse_legosets_images(self, legosets: list[LegoSet], legosets_repository: LegoSetsRepository):
-        await self.set_repository(legosets_repository)
+    async def parse_legosets_images(self, legosets: list[LegoSet], legosets_repository: LegoSetsRepository = None):
+        # await self.set_repository(legosets_repository)
         driver = await get_selenium_driver()
         driver.get(self.url)
 
@@ -471,9 +471,10 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
             driver.close()
 
 
-    async def parse_legoset_images_part_2(self, legoset: LegoSet, driver):
-        driver.get(f"{self.url}/product/{legoset.id}")
-        system_logger.info(f"Start parsings legoset {legoset.id} for images")
+    async def parse_legoset_images_part_2(self, legoset_id: str):
+        driver = await get_selenium_driver()
+        driver.get(f"{self.url}/product/{legoset_id}")
+        system_logger.info(f"Start parsings legoset {legoset_id} for images")
         time.sleep(3)
         #возраст, количество кусочков, минифигурки, размеры, фотки
         # try:
@@ -481,7 +482,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
         try:
             error_message = driver.find_element(By.XPATH, '/html/body/div[2]/div/main/div/div/header')
             if error_message:
-                system_logger.info(f"Legoset {legoset.id} new images NOT found")
+                system_logger.info(f"Legoset {legoset_id} new images NOT found")
                 return "Not found"
         except Exception as e:
             pass
@@ -544,21 +545,23 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
                 images['big_image5'] = image5_big_link
 
             if images != {}:
-                await self.legosets_repository.update_images(legoset_id=legoset.id, images=images)
-                system_logger.info(f"Legoset {legoset.id} new images found")
+                ic(images)
+                # await self.legosets_repository.update_images(legoset_id=legoset.id, images=images)
+                system_logger.info(f"Legoset {legoset_id} new images found")
             else:
-                system_logger.info(f"Legoset {legoset.id} new images NOT found")
+                system_logger.info(f"Legoset {legoset_id} new images NOT found")
 
         except Exception as e:
-            system_logger.info(f"Legoset {legoset.id} new images NOT found")
+            system_logger.info(f"Legoset {legoset_id} new images NOT found")
             pass
 
 
 if __name__ == '__main__':
     lego_parser = WebsiteLegoInterface()
-    # asyncio.run(lego_parser.parse_item(item_id='60431'))
-    asyncio.run(lego_parser.get_all_info_about_item_bs4(item_id='60431'))
-    asyncio.run(lego_parser.get_all_info_about_item_bs4(item_id='61505'))
+    asyncio.run(lego_parser.parse_legoset_images_part_2(legoset_id="75375"))
+#     # asyncio.run(lego_parser.parse_item(item_id='60431'))
+#     # asyncio.run(lego_parser.get_all_info_about_item_bs4(item_id='60431'))
+#     asyncio.run(lego_parser.get_all_info_about_item_bs4(item_id='61505'))
 
 
 

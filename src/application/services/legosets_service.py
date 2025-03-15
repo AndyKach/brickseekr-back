@@ -20,9 +20,11 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
-from application.use_cases.get_legoset_price_use_case import GetLegoSetPriceUseCase
+from application.repositories.websites_repository import WebsitesRepository
+from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
 from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
 from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
+from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
@@ -36,12 +38,14 @@ class LegoSetsService:
             self,
             legosets_repository: LegoSetsRepository,
             legosets_prices_repository: LegoSetsPricesRepository,
+            websites_repository: WebsitesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
             search_api_interface: SearchAPIInterface,
             google_interface: GoogleInterface,
             ):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
+        self.websites_repository = websites_repository
         self.websites_interfaces_provider = websites_interfaces_provider
         self.google_interface = google_interface
 
@@ -81,15 +85,22 @@ class LegoSetsService:
             website_lego_interface=self.website_lego_interface,
             google_interface=google_interface,
         )
+        self.get_legosets_prices_use_case = GetLegoSetsPricesUseCase(
+            legosets_prices_repository=legosets_prices_repository,
+            website_lego_interface=self.website_lego_interface
+        )
+        self.get_website_use_case = GetWebsiteUseCase(
+            websites_repository=websites_repository
+        )
+
         self.get_legoset_use_case = GetLegoSetUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
+            websites_repository=websites_repository,
             website_brickset_controller=self.website_brickset_controller,
             get_legosets_rating_use_case=self.get_legosets_rating_use_case,
-        )
-        self.get_legoset_prices_use_case = GetLegoSetPriceUseCase(
-            legosets_prices_repository=legosets_prices_repository,
-            website_lego_interface=self.website_lego_interface
+            get_legosets_prices_use_case=self.get_legosets_prices_use_case,
+            get_website_use_case=self.get_website_use_case,
         )
 
 
