@@ -16,7 +16,7 @@ class WebsiteDataSourceInterface(WebsiteInterface):
     #     pass
 
     @abstractmethod
-    async def parse_legosets_price(self, legoset_id: str) -> dict:
+    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
         pass
 
     @abstractmethod

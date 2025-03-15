@@ -50,6 +50,7 @@ class RatingCalculation:
         for key in rating_values.keys():
             result += rating_values.get(key, 0)
         result = round(result, 2)
+        result = result if result <= 100 else 100
         ic(f"result: {result}")
         return result
 
@@ -58,7 +59,7 @@ class RatingCalculation:
         if buying_opportunity_score <= 0:
             rating_values["investment_potential"] = 0
         else:
-            system_logger.info(f"Investment potential CAGR: {buying_opportunity_score}")
+            system_logger.info(f"Investment potential score: {(buying_opportunity_score/100) * self.investment_potential_weight}")
             rating_values["investment_potential"] = (buying_opportunity_score/100) * self.investment_potential_weight
 
 

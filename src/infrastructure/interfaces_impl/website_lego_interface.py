@@ -125,7 +125,7 @@ class WebsiteLegoInterface(WebsiteDataSourceInterface, StringsToolKit):
             # ic(page)
             if page:
                 system_logger.info('-------------------------------------')
-                system_logger.info('Get page: ' + str(datetime.now() - last_datetime))
+                system_logger.info('Get page: ' + str(datetime.now() - last_datetime) + ' for legoset: ' + legoset_id)
 
                 soup = BeautifulSoup(page, 'lxml')
                 with open('test2.txt', 'w') as f:

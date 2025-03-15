@@ -38,11 +38,11 @@ class WebsiteParserUseCase(ABC):
         system_logger.info(f'Count Lego sets: {len(legosets)}')
         for i in range(0, len(legosets), 50):
             system_logger.info(f'Start parse sets from {i} bis {i+50}')
-            results = await website_interface.parse_legosets_prices(legosets=legosets[i:i + 50])
-            if results:
-                ic(results)
-                for result in results:
-                    try:
+            try:
+                results = await website_interface.parse_legosets_prices(legosets=legosets[i:i + 50])
+                if results:
+                    ic(results)
+                    for result in results:
                         if result:
                             count_valuable += 1
                             if result.get('available') == "Retired product":
@@ -63,8 +63,8 @@ class WebsiteParserUseCase(ABC):
                             #     if result.get(f'big_image{i}'):
                             #         legoset.images[f'big_image{i}'] = result.get(f'big_image{i}')
                             #     await legosets_repository.update_set(legoset=legoset)
-                    except Exception as e:
-                        system_logger.error(e)
+            except Exception as e:
+                system_logger.error(e)
 
             system_logger.info(f'Start pause 15s')
             await asyncio.sleep(15)

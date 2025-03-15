@@ -36,9 +36,11 @@ class GetLegoSetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
-            await self.google_interface.open_driver()
+            # if 0 < legoset.rating <= 5:
+            #     legoset.google_rating = legoset.rating
+            # await self.google_interface.open_driver()
             google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
-            await self.google_interface.close_driver()
+            # await self.google_interface.close_driver()
 
             # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
             if google_rating is None:
@@ -55,23 +57,18 @@ class GetLegoSetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
 
-        if legosets_prices is not None and legoset.theme is not None and legoset.pieces is not None:
-            final_price = 0
-            prices_count = 0
-            initial_price = 0
-            prices = []
-            theme = ''
-            # -------------------------------------------------------------------------------------------------------------
+        if legosets_prices is not None and legoset.theme is not None and legoset.pieces is not None and legosets_prices.prices.get("1"):
+            # ic(legosets_prices)
             initial_price_str = legosets_prices.prices.get("1")
-            if initial_price_str is not None: # legoset have price
+            if initial_price_str: # legoset have price
                 if "€" in initial_price_str or "\u20ac" in initial_price_str or "valid" in initial_price_str: # legoset price is specific
                     # system_logger.error(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but it is in Euro")
                     system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but its not valid")
 
-                    new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
+                    new_value = await self.website_lego_interface.parse_legosets_price(legoset=legoset)
                     system_logger.debug(new_value)
                     new_price = new_value.get('price')
-                    if new_price is not None: # found new price
+                    if new_price: # found new price
                         initial_price = await self.refactor_price_from_str_to_float(new_price)
                         legosets_prices.prices["1"] = new_price
                         await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč", website_id="1")
@@ -86,9 +83,9 @@ class GetLegoSetsRatingUseCase:
                     initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
             else: # legoset has no price
                 system_logger.debug(f"Legoset: {legoset.id} has no initial price")
-                new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset.id)
-                system_logger.debug(new_value)
+                new_value = await self.website_lego_interface.parse_legosets_price(legoset=legoset)
                 new_price = new_value.get('price')
+
                 if new_price is not None: # # found new price
                     initial_price = await self.refactor_price_from_str_to_float(new_price)
                     legosets_prices.prices["1"] = new_price
@@ -96,7 +93,7 @@ class GetLegoSetsRatingUseCase:
                                                                      website_id="1")
                     system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
                 else:
-                    system_logger.debug(f"Legoset: {legoset.id} after parse has no new price: {legosets_prices.prices["1"]}")
+                    system_logger.debug(f"Legoset: {legoset.id} after parse has no new price")
                     return await self.get_error_code(legoset_id=legoset.id)
 
             system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price}")

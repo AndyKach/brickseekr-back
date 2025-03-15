@@ -78,7 +78,7 @@ class GetLegoSetPriceUseCase:
 
 
     async def get_legoset_new_initial_price(self, legoset_id: str):
-        new_value = await self.website_lego_interface.parse_legosets_price(legoset_id=legoset_id)
+        new_value = await self.website_lego_interface.parse_legosets_price(legoset=legoset_id)
         system_logger.info(new_value)
         return new_value.get('price')
 

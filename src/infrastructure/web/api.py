@@ -122,7 +122,7 @@ async def get_rating_top_list(
 
 
 
-@app.post('/sets/{set_id}/calculateRating', tags=['Experimental'])
+@app.post('/sets/calculateRating', tags=['Experimental'])
 @log_api_decorator
 async def calculate_rating(
         response: Response, background_tasks: BackgroundTasks,

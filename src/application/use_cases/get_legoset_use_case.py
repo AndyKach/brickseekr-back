@@ -50,6 +50,7 @@ class GetLegoSetUseCase:
                         case 500:
                             system_logger.error(f"Legoset {legoset_id} rating can't be calculated")
 
+
                     await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
                     # await self.get_rating(legoset=legoset)
                 # except AttributeError:

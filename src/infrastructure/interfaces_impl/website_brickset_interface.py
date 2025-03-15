@@ -109,10 +109,10 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             # break
 
     @log_decorator(print_args=False, print_kwargs=True)
-    async def parse_legoset(self, legoset_id: str):
+    async def parse_legoset(self, legoset: LegoSet):
         start_datetime = datetime.now()
         async with aiohttp.ClientSession() as session:
-            result = await self.request_get_legoset(session=session, legoset_id=legoset_id)
+            result = await self.request_get_legoset(session=session, legoset_id=legoset.id)
             if result:
                 if result.get('status') == "success" and result.get('matches') != 0:
                     legoset_json = result.get('sets')
@@ -177,7 +177,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             updated_at=legoset_json.get('updated_at'),
         )
 
-    async def parse_legosets_price(self, legoset_id: LegoSet) -> dict:
+    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
         pass
 
     async def parse_legosets_prices(self, legosets: list[LegoSet]):
