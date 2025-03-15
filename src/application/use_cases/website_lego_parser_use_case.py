@@ -60,7 +60,7 @@ class WebsiteLegoParserUseCase(WebsiteParserUseCase):
         # legosets = await self.legosets_repository.get_all()
         system_logger.info(f"Count of legosets for parse: {len(legosets)}")
         await self._parse_items(
-            legosets=legosets[:5],
+            legosets=legosets,
             website_interface=self.website_interface,
             legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             legosets_repository=self.legosets_repository,
