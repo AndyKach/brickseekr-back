@@ -42,6 +42,9 @@ class GetLegoSetUseCase:
 
     @log_decorator(print_kwargs=True)
     async def execute(self, legoset_id: str):
+        """
+        Функция ищет лего набор в базе данных и его цены, и затем сохраняет их особым способом, чтобы было читаемо при запросе API
+        """
         result = {}
         legoset = await self.get_legoset(legoset_id=legoset_id)
         if legoset:
@@ -53,50 +56,32 @@ class GetLegoSetUseCase:
             return None
 
     async def get_legoset(self, legoset_id: str):
+        """
+        Функция ищет легонабор в БД и проверяет нужно ли пересчитать рейтинг
+        """
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
             if legoset.rating is None or legoset.rating <= 5:
-                # legoset.rating = 0
-                # system_logger.info(f"Legoset {legoset_id} has no yet official rating")
-                try:
-                    result = await self.get_legosets_rating_use_case.execute(legoset=legoset)
-                    ic(result)
-                    match result.get('status_code'):
-                        case 200:
-                            legoset.rating = result.get('rating')
-                        case 206:
-                            legoset.rating = result.get('google_rating') * -1
-                            system_logger.info(result.get('message'))
-                        case 500:
-                            system_logger.error(f"Legoset {legoset_id} rating can't be calculated")
-
-                    await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
-                    # await self.get_rating(legoset=legoset)
-                # except AttributeError:
-                #     system_logger.error(f"Legoset {legoset_id} has no google rating")
-
-                except Exception as e:
-                    system_logger.error(f"Legoset {legoset_id} has an error: {e}")
-
+                await self.__recalculate_legosets_rating(legoset=legoset)
             else:
                 system_logger.info(f"Legoset {legoset_id} has rating: {legoset.rating}")
+            return legoset
         else:
-            pass
-            # TODO Если нет информации чекнуть на brickset о информации
-            #  1. спарсить, сохранить, вернуть
-            # await self.website_brickset_parser_use_case.parse
-        return legoset
+            return None
+
 
     async def get_legosets_prices(self, legoset_id: str):
+        """
+        Функция ищет цены на легонабор в БД и рефакторит их в читаемый одинаковый стиль
+        и также добавляет в возвращаемые данные ссылки на магазины
+        """
         result = {}
         legoset_prices = await self.get_legosets_prices_use_case.get_all_prices(legoset_id=legoset_id)
 
         for website_id in legoset_prices.prices.keys():
             result[website_id] = {}
-            price: str = legoset_prices.prices.get(website_id)
-            if price.count(' ') > 1:
-                price = price.replace(' ', '', price.count(' ')-1)
+            price = self.refactor_price_from_str_to_float(legoset_prices.prices.get(website_id))
             result[website_id]['price'] = price
 
             website_link = (await self.get_website_use_case.get_website(website_id=website_id)).link
@@ -108,6 +93,9 @@ class GetLegoSetUseCase:
 
     @log_decorator(print_kwargs=True)
     async def get_top_list(self, legosets_count: int):
+        """
+        Функция запрашивает у ДБ рейтинг легонаборов по убывания
+        """
         legosets = await self.legosets_repository.get_top_rating(legosets_count=legosets_count)
         # ic(legosets)
         for legoset in legosets:
@@ -117,6 +105,9 @@ class GetLegoSetUseCase:
 
     @staticmethod
     async def validate_datetime_values(legoset: LegoSet):
+        """
+        Так как в БД формат данных для дней и времени отличается от текста, эта функция переводит даты в текст
+        """
         if legoset.launchDate:
             legoset.launchDate = legoset.launchDate.isoformat()
         if legoset.exitDate:
@@ -127,96 +118,29 @@ class GetLegoSetUseCase:
             legoset.created_at = legoset.created_at.isoformat()
         return legoset
 
+    @staticmethod
+    def refactor_price_from_str_to_float(price: str) -> str:
+        if price.count(' ') > 1:
+            price = price.replace(' ', '', price.count(' ') - 1)
+        return price
 
-    # async def get_rating(self, legoset: LegoSet):
-    #     legoset_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
-    #
-    #     if legoset_prices.prices.get('1') is not None:
-    #         initial_price = self.refactor_price_from_str_to_float(legoset_prices.prices.get('1'))
-    #     else:
-    #         system_logger.info(f"Legoset: {legoset.id} has no INITIAL PRICE. Rating calculation is not possible")
-    #         return -1
-    #
-    #     system_logger.info(f"Legoset: {legoset.id} has a initial price: {initial_price}")
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     final_price = 0.0
-    #     prices_list = []
-    #     for website_id in legoset_prices.prices.keys():
-    #         prices_list.append(self.refactor_price_from_str_to_float(legoset_prices.prices.get(website_id)))
-    #         # final_price += prices_list[-1]
-    #         # prices_list
-    #         # median(prices_list)
-    #
-    #     final_price = median(prices_list) / len(legoset_prices.prices.keys())
-    #     if final_price == 0.0:
-    #         system_logger.info(f"Legoset: {legoset.id} has no PRICES. Rating calculation is not possible")
-    #         return -1
-    #
-    #     system_logger.info(f"Legoset: {legoset.id} has a final price: {final_price}")
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     years_since_release = datetime.now().year - legoset.year
-    #
-    #     system_logger.info(f"Legoset: {legoset.id} has a years since release: {years_since_release}")
-    #
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     theme = legoset.theme
-    #     if theme is None:
-    #         system_logger.info(f"Legoset: {legoset.id} has no THEME. Rating calculation is not possible")
-    #         return -1
-    #
-    #     system_logger.info(f"Legoset: {legoset.id} has a theme: {theme}")
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     pieces_count = legoset.pieces
-    #     if pieces_count is None:
-    #         system_logger.info(f"Legoset: {legoset.id} has no PIECES COUNT. Rating calculation is not possible")
-    #         return -1
-    #
-    #     system_logger.info(f"Legoset: {legoset.id} has a pieces count: {pieces_count}")
-    #
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     best_ratio = min(prices_list)
-    #     worst_ratio = max(prices_list)
-    #     system_logger.info(f"Legoset: {legoset.id} has a best ratio: {best_ratio}")
-    #     system_logger.info(f"Legoset: {legoset.id} has a worst ratio: {worst_ratio}")
-    #
-    #
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     rarity_type = "Regular Set"
-    #     system_logger.info(f"Legoset: {legoset.id} has a final price: {rarity_type}")
-    #
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     google_rating = self.search_api_interface.get_rating(legoset_id=legoset.id)
-    #     system_logger.info(f"Legoset: {legoset.id} has a google rating: {google_rating}")
-    #
-    #
-    #     # -------------------------------------------------------------------------------------------------------------
-    #
-    #     await self.rating_calculation.calculate_rating(
-    #         final_price=final_price,
-    #         initial_price=initial_price,
-    #         years_since_release=years_since_release,
-    #         theme=theme,
-    #         pieces_count=pieces_count,
-    #         best_ratio=best_ratio,
-    #         worst_ratio=worst_ratio,
-    #         rarity_type=rarity_type,
-    #         google_rating=google_rating,
-    #     )
+    async def __recalculate_legosets_rating(self, legoset):
+        """
+        Пересчитывет рейтинг набора и в зависимости от результата сохраняет данные
+        """
+        try:
+            result = await self.get_legosets_rating_use_case.execute(legoset=legoset)
+            ic(result)
+            match result.get('status_code'):
+                case 200:
+                    legoset.rating = result.get('rating')
+                case 206:
+                    legoset.rating = result.get('google_rating') * -1
+                    system_logger.info(result.get('message'))
+                case 500:
+                    system_logger.error(f"Legoset {legoset.id} rating can't be calculated")
 
-    def refactor_price_from_str_to_float(self, price: str) -> float:
-        return float(price[:price.find(' ')].replace(',', '.'))
+            await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
 
+        except Exception as e:
+            system_logger.error(f"Legoset {legoset.id} has an error: {e}")

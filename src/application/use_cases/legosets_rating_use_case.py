@@ -22,14 +22,12 @@ class LegoSetsRatingUseCase:
                  legosets_repository: LegoSetsRepository,
                  legosets_prices_repository: LegoSetsPricesRepository,
                  search_api_interface: SearchAPIInterface,
-                 website_lego_interface: WebsiteDataSourceInterface, # TODO NEED TO DELETE  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                  google_interface: GoogleInterface,
                  ):
         self.rating_calculation = RatingCalculation()
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
         self.search_api_interface = search_api_interface
-        self.website_lego_interface=website_lego_interface
         self.google_interface = google_interface
 
     async def execute(self, legoset: LegoSet):
@@ -43,13 +41,12 @@ class LegoSetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
-            # if 0 < legoset.rating <= 5:
-            #     legoset.google_rating = legoset.rating
             await self.google_interface.open_driver()
             google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
+            # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
+
             await self.google_interface.close_driver()
 
-            # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
             if google_rating is None:
                 system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
                 return await self.get_error_code(legoset_id=legoset.id)
@@ -66,43 +63,11 @@ class LegoSetsRatingUseCase:
 
         if (legoset.theme is not None and legoset.pieces is not None and
                 legosets_prices is not None and legosets_prices.prices.get("1") and len(legosets_prices.prices) > 1 ):
-            # ic(legosets_prices)
             initial_price_str = legosets_prices.prices.get("1")
             if initial_price_str: # legoset have price
-                if "€" in initial_price_str or "\u20ac" in initial_price_str or "valid" in initial_price_str: # legoset price is specific
-                    # system_logger.error(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but it is in Euro")
-                    system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price_str} but its not valid")
-
-                    new_value = await self.website_lego_interface.parse_legosets_price(legoset=legoset)
-                    system_logger.debug(new_value)
-                    new_price = new_value.get('price')
-                    if new_price: # found new price
-                        initial_price = await self.refactor_price_from_str_to_float(new_price)
-                        legosets_prices.prices["1"] = new_price
-                        await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč", website_id="1")
-                        system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
-
-                    else: # not found new price
-                        system_logger.debug(f"Legoset: {legoset.id} after parse has no new price: {legosets_prices.prices["1"]}")
-
-                        return await self.get_error_code(legoset_id=legoset.id)
-
-                else: # legoset price is gut
-                    initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
+                initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
             else: # legoset has no price
-                system_logger.debug(f"Legoset: {legoset.id} has no initial price")
-                new_value = await self.website_lego_interface.parse_legosets_price(legoset=legoset)
-                new_price = new_value.get('price')
-
-                if new_price is not None: # # found new price
-                    initial_price = await self.refactor_price_from_str_to_float(new_price)
-                    legosets_prices.prices["1"] = new_price
-                    await self.legosets_prices_repository.save_price(legoset_id=legoset.id, price=f"{new_price} Kč",
-                                                                     website_id="1")
-                    system_logger.debug(f"Legoset: {legoset.id} new valid price: {legosets_prices.prices["1"]}")
-                else:
-                    system_logger.debug(f"Legoset: {legoset.id} after parse has no new price")
-                    return await self.get_error_code(legoset_id=legoset.id)
+                return await self.get_error_code(legoset_id=legoset.id)
 
             system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price}")
 
@@ -158,7 +123,8 @@ class LegoSetsRatingUseCase:
             result = {
                 "status_code": 200,
                 "message": f"Legoset {legoset.id} have rating {rating}",
-                "rating": rating
+                "rating": rating,
+                "legoset_id": legoset.id,
             }
             return result
 
@@ -169,6 +135,7 @@ class LegoSetsRatingUseCase:
                 "status_code": 206,
                 "message": f"Legoset {legoset.id} can't be calculated because it's not enough data but google rating can be send back",
                 "google_rating": google_rating,
+                "legoset_id": legoset.id,
 
             }
             return result
@@ -181,29 +148,42 @@ class LegoSetsRatingUseCase:
     async def get_error_code(legoset_id: str) -> dict:
         return {
             "status_code": 500,
-            "message": f"Legoset {legoset_id} can't be calculated because it's not enough data"
+            "message": f"Legoset {legoset_id} can't be calculated because it's not enough data",
+            "legoset_id": legoset_id,
         }
 
     @log_decorator()
     async def recalculate_all_legosets(self):
-        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
+        """
+        Функция пересчитывает все лего наборы
+        """
+        # legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
+        legosets = [legoset for legoset in await self.legosets_repository.get_all()]
         system_logger.info(f"Legosets count to recalculate: {len(legosets)}")
-        for legoset in legosets[:]:
-            result = await self.execute(legoset=legoset)
-            ic(result)
-            match result.get('status_code'):
-                case 200:
-                    system_logger.info(result.get('message'))
-                    await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=result.get("rating"))
-                case 206:
-                    system_logger.info(result.get('message'))
-                    await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=0.0)
-                    await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=result.get("google_rating"))
-                case 500:
-                    system_logger.info(result.get('message'))
-                    await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=0.0)
+        for legoset in legosets:
+            await self.recalculate_legoset(legoset=legoset)
 
+    @log_decorator()
+    async def recalculate_legoset(self, legoset: LegoSet):
+        system_logger.info(f"Start recalculating legoset: {legoset.id}")
+        result = await self.execute(legoset=legoset)
+        if result:
+            await self.__save_new_rating(result=result)
 
+    @log_decorator()
+    async def __save_new_rating(self, result: dict):
+        match result.get('status_code'):
+            case 200:
+                system_logger.info(result.get('message'))
+                await self.legosets_repository.update_rating(legoset_id=result.get("legoset_id"), rating=result.get("rating"))
+            case 206:
+                system_logger.info(result.get('message'))
+                await self.legosets_repository.update_rating(legoset_id=result.get("legoset_id"), rating=0.0)
+                await self.legosets_repository.update_google_rating(legoset_id=result.get("legoset_id"),
+                                                                    google_rating=result.get("google_rating"))
+            case 500:
+                system_logger.info(result.get('message'))
+                await self.legosets_repository.update_rating(legoset_id=result.get("legoset_id"), rating=0.0)
 
 
 

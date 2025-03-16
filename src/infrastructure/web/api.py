@@ -62,11 +62,11 @@ async def empty(response: Response, background_tasks: BackgroundTasks):
 
 
 # @app.get('/sets/parseAllSetsAllStores')
+@log_api_decorator()
 @app.get("/sets/{set_id}/getData", tags=['Sets'], response_model=GetDataResponseModel,
          responses={'422': {"model": ResponseModel, 'description': "Validation Error"},
                     '404': {"model": ResponseModel, 'description': "Not Found"},
                     '500': {"model": ResponseModel, 'description': "Internal Server Error"},})
-@log_api_decorator()
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   legosets_service: LegoSetsService = Depends(get_legosets_service)):
     if await validate_legoset_id(legoset_id=set_id):
@@ -83,11 +83,12 @@ async def get_set(set_id: str, response: Response, background_tasks: BackgroundT
             return await get_success_json_response(data=data)
     else:
         await raise_validation_error(detail="Legoset ID is not valid")
+
+@log_api_decorator()
 @app.get('/sets/{set_id}/getLegosetsTopRating', tags=['Sets'], response_model=GetLegosetsTopRatingResponseModel,
          responses={'422': {"model": ResponseModel, 'description': "Validation Error"},
                     '404': {"model": ResponseModel, 'description': "Not Found"},
                     '500': {"model": ResponseModel, 'description': "Internal Server Error"},})
-@log_api_decorator()
 async def get_rating_top_list(
         legosets_count: int, response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service)
@@ -98,20 +99,32 @@ async def get_rating_top_list(
             data = await legosets_service.get_legosets_rating_list(legosets_count=legosets_count)
         except Exception as e:
             system_logger.error(f"Error by API /getLegosetsTopRating: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail="Internal Server Error"
-            )
+            await raise_internal_server_error()
 
         if data is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Item not found"
-            )
+            await raise_item_not_found()
         else:
             return await get_success_json_response(data=data)
     else:
         raise HTTPException(500)
+
+@log_api_decorator()
+@app.post('/sets/calculateRating', tags=['Experimental'])
+async def calculate_rating(
+        response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
+):
+    data = None
+    try:
+        data = await legosets_service.recalculate_rating()
+    except Exception as e:
+        system_logger.error(f"Error by API /calculateRating: {e}")
+        await raise_internal_server_error()
+
+    if data is None:
+        await raise_item_not_found()
+    else:
+        return await get_success_json_response(data={"result": data})
 
 
 # @app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
@@ -149,25 +162,9 @@ async def get_rating_top_list(
 
 
 
-@app.post('/sets/calculateRating', tags=['Experimental'])
-@log_api_decorator
-async def calculate_rating(
-        response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_legosets_service)
-    ):
-    data = await legosets_service.recalculate_rating()
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
-    else:
-        return await get_success_json_response(data={"result": data})
 
-
-
+@log_api_decorator()
 @app.post('/sets/{set_id}/parseImages', tags=['Experimental'])
-@log_api_decorator
 async def parse_legoset_images(
         set_id: str,
         response: Response, background_tasks: BackgroundTasks,
@@ -182,9 +179,8 @@ async def parse_legoset_images(
     else:
         return await get_success_json_response(data={"result": data})
 
-
+@log_api_decorator()
 @app.post('/sets/parseImages', tags=['Experimental'])
-@log_api_decorator
 async def parse_legosets_images(
         response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service)
@@ -221,9 +217,8 @@ async def parse_legosets_images(
 #     background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
 #     # data = await lego_sets_service.parse_all_sets()
 #     return await get_success_json_response(data={'status': 'parse start'})
-
+@log_api_decorator()
 @app.post("/parseSetsFromBrickSet", tags=['Experimental'])
-@log_api_decorator
 async def parse_sets_from_brickset(
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_legosets_service),
@@ -232,9 +227,8 @@ async def parse_sets_from_brickset(
     # data = await lego_sets_service.parse_all_sets()
     return await get_success_json_response(data={'status': 'parse start'})
 
-
+@log_api_decorator()
 @app.post("/parseLegoSetFromLego", tags=['Experimental'])
-@log_api_decorator
 async def parse_sets_from_lego(
         response: Response, background_tasks: BackgroundTasks,
         lego_sets_service: LegoSetsService = Depends(get_legosets_service),
@@ -268,7 +262,7 @@ async def parse_sets_from_lego(
 #     background_tasks.add_task(lego_sets_service.async_parse_sets, store=store)
 #     # data = await lego_sets_service.parse_all_sets()
 #     return await get_success_json_response(data={'status': 'parse start'})
-
+@log_api_decorator()
 @app.post("/sets/{set_id}/stores/{store_id}/parseSet", tags=['Experimental'])
 async def parse_set_in_store(
         set_id: str, store_id: str,
@@ -279,9 +273,8 @@ async def parse_set_in_store(
     return await get_success_json_response(data={'lego_set_id': set_id, 'price': result})
 
 
-
+@log_api_decorator()
 @app.post("/sets/parseSetsUrls", tags=['Experimental'])
-@log_api_decorator
 async def parse_sets(
         response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service),
@@ -291,9 +284,8 @@ async def parse_sets(
 
     return await get_success_json_response(data={'status': 'parse start'})
 
-
+@log_api_decorator()
 @app.post("/stores/{store_id}/parseAllSets", tags=['Experimental'])
-@log_api_decorator
 async def parse_all_sets_in_store(
         store_id: str,
         response: Response, background_tasks: BackgroundTasks,

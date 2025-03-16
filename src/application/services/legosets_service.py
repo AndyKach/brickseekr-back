@@ -83,7 +83,6 @@ class LegoSetsService:
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
             search_api_interface=search_api_interface,
-            website_lego_interface=self.website_lego_interface,
             google_interface=google_interface,
         )
         self.get_legosets_prices_use_case = GetLegoSetsPricesUseCase(
