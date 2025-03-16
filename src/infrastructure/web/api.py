@@ -1,5 +1,6 @@
+import logging
 from typing import Any, Dict
-
+import re
 from fastapi import Depends, APIRouter, Path, Response, status, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -13,10 +14,11 @@ from domain.legosets_prices import LegoSetsPrices
 from infrastructure.config.logs_config import log_api_decorator
 from infrastructure.config.services_config import get_legosets_service
 from infrastructure.config.fastapi_app_config import app
-from infrastructure.web.setup import setup
-
-setup()
-
+from infrastructure.web.response_models import GetDataResponseModel, GetLegosetsTopRatingResponseModel
+# from infrastructure.web.setup import setup
+#
+# setup()
+system_logger = logging.getLogger("system_logger")
 # router = APIRouter()
 
 class Meta(BaseModel):
@@ -54,71 +56,96 @@ async def custom_http_exception_handler(request, exc: HTTPException):
     return JSONResponse(content=response.model_dump(), status_code=exc.status_code)
 
 @app.get("/")
-@log_api_decorator
+@log_api_decorator()
 async def empty(response: Response, background_tasks: BackgroundTasks):
     return await get_success_json_response(data={'message': "API is working"})
 
 
 # @app.get('/sets/parseAllSetsAllStores')
-@app.get("/sets/{set_id}/getData", tags=['Sets'], response_model=LegoSet)
-@log_api_decorator
+@app.get("/sets/{set_id}/getData", tags=['Sets'], response_model=GetDataResponseModel,
+         responses={'422': {"model": ResponseModel, 'description': "Validation Error"},
+                    '404': {"model": ResponseModel, 'description': "Not Found"},
+                    '500': {"model": ResponseModel, 'description': "Internal Server Error"},})
+@log_api_decorator()
 async def get_set(set_id: str, response: Response, background_tasks: BackgroundTasks,
                   legosets_service: LegoSetsService = Depends(get_legosets_service)):
-    data = await legosets_service.get_legoset_info(legoset_id=set_id)
-    # print(f"data: {data}")
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
+    if await validate_legoset_id(legoset_id=set_id):
+        data = None
+        try:
+            data = await legosets_service.get_legoset_info(legoset_id=set_id)
+        except Exception as e:
+            system_logger.error(f"Error by API /getData: {e}")
+            await raise_internal_server_error()
+
+        if data is None:
+            await raise_item_not_found()
+        else:
+            return await get_success_json_response(data=data)
     else:
-        return await get_success_json_response(data=data)
-
-@app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
-@log_api_decorator
-async def get_sets_prices(
-        set_id: str, response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_legosets_service)
-    ):
-    data = await legosets_service.get_sets_prices(set_id=set_id)
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
-    else:
-        return await get_success_json_response(data=data)
-
-@app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
-@log_api_decorator
-async def get_sets_prices_from_website(
-        set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
-        legosets_service: LegoSetsService = Depends(get_legosets_service)
-    ):
-    data = await legosets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
-    else:
-        return await get_success_json_response(data=data)
-
-
-@app.get('/sets/{set_id}/getLegosetsTopRating', tags=['Sets'])
-@log_api_decorator
+        await raise_validation_error(detail="Legoset ID is not valid")
+@app.get('/sets/{set_id}/getLegosetsTopRating', tags=['Sets'], response_model=GetLegosetsTopRatingResponseModel,
+         responses={'422': {"model": ResponseModel, 'description': "Validation Error"},
+                    '404': {"model": ResponseModel, 'description': "Not Found"},
+                    '500': {"model": ResponseModel, 'description': "Internal Server Error"},})
+@log_api_decorator()
 async def get_rating_top_list(
         legosets_count: int, response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service)
     ):
-    data = await legosets_service.get_legosets_rating_list(legosets_count=legosets_count)
-    if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
+    if legosets_count > 0:
+        data = None
+        try:
+            data = await legosets_service.get_legosets_rating_list(legosets_count=legosets_count)
+        except Exception as e:
+            system_logger.error(f"Error by API /getLegosetsTopRating: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail="Internal Server Error"
+            )
+
+        if data is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Item not found"
+            )
+        else:
+            return await get_success_json_response(data=data)
     else:
-        return await get_success_json_response(data={"result": data})
+        raise HTTPException(500)
+
+
+# @app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
+# @log_api_decorator
+# async def get_sets_prices(
+#         set_id: str, response: Response, background_tasks: BackgroundTasks,
+#         legosets_service: LegoSetsService = Depends(get_legosets_service)
+#     ):
+#     data = await legosets_service.get_sets_prices(set_id=set_id)
+#     if data is None:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Item not found"
+#         )
+#     else:
+#         return await get_success_json_response(data=data)
+#
+# @app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
+# @log_api_decorator
+# async def get_sets_prices_from_website(
+#         set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
+#         legosets_service: LegoSetsService = Depends(get_legosets_service)
+#     ):
+#     data = await legosets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
+#     if data is None:
+#         raise HTTPException(
+#             status_code=404,
+#             detail="Item not found"
+#         )
+#     else:
+#         return await get_success_json_response(data=data)
+
+
+
 
 
 
@@ -277,3 +304,25 @@ async def parse_all_sets_in_store(
     return await get_success_json_response(data={'status': 'parse start'})
 
 
+async def validate_legoset_id(legoset_id: str) -> bool:
+    pattern = r'^(?!0{5})\d{5}$'
+    return bool(re.fullmatch(pattern, legoset_id))
+
+
+async def raise_internal_server_error() -> None:
+    raise HTTPException(
+        status_code=500,
+        detail="Internal server error"
+    )
+
+async def raise_item_not_found() -> None:
+    raise HTTPException(
+        status_code=404,
+        detail="Item not found"
+    )
+
+async def raise_validation_error(detail: str = "") -> None:
+    raise HTTPException(
+        status_code=422,
+        detail="Validation error" + ("" if detail == "" else f": {detail}")
+    )

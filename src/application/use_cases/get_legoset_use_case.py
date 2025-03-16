@@ -43,11 +43,14 @@ class GetLegoSetUseCase:
     @log_decorator(print_kwargs=True)
     async def execute(self, legoset_id: str):
         result = {}
-        result['legoset'] = await self.get_legoset(legoset_id=legoset_id)
-        result['prices'] = await self.get_legosets_prices(legoset_id=legoset_id)
-
-        ic(result)
-        return result
+        legoset = await self.get_legoset(legoset_id=legoset_id)
+        if legoset:
+            result['legoset'] = legoset
+            result['prices'] = await self.get_legosets_prices(legoset_id=legoset_id)
+            # ic(result)
+            return result
+        else:
+            return None
 
     async def get_legoset(self, legoset_id: str):
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
