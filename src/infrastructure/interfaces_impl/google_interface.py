@@ -18,7 +18,7 @@ class GoogleInterfaceImpl(GoogleInterface):
     def __init__(self):
         self.driver = None
 
-        self.url = "https://www.google.com/search?q=lego+"
+        # self.url = "https://www.google.com/search?q=lego+"
         self.url = 'https://www.lego.com/en-cz'
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',

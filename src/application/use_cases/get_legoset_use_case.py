@@ -10,7 +10,7 @@ from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.repositories.websites_repository import WebsitesRepository
 from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
-from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
+from application.use_cases.legosets_rating_use_case import LegoSetsRatingUseCase
 from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from domain.legoset import LegoSet
 from domain.rating_calculation import RatingCalculation
@@ -25,7 +25,7 @@ class GetLegoSetUseCase:
                  websites_repository: WebsitesRepository,
                  website_brickset_controller: WebsiteBricksetController,
                  # search_api_interface: SearchAPIInterface,
-                 get_legosets_rating_use_case: GetLegoSetsRatingUseCase,
+                 get_legosets_rating_use_case: LegoSetsRatingUseCase,
                  get_legosets_prices_use_case: GetLegoSetsPricesUseCase,
                  get_website_use_case: GetWebsiteUseCase,
                  ):

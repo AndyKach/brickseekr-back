@@ -24,7 +24,7 @@ from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.repositories.websites_repository import WebsitesRepository
 from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
 from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
-from application.use_cases.get_legosets_rating_use_case import GetLegoSetsRatingUseCase
+from application.use_cases.legosets_rating_use_case import LegoSetsRatingUseCase
 from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
@@ -79,7 +79,7 @@ class LegoSetsService:
             website_interface=self.website_brickset_interface,
             legosets_repository=legosets_repository
         )
-        self.get_legosets_rating_use_case = GetLegoSetsRatingUseCase(
+        self.legosets_rating_use_case = LegoSetsRatingUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
             search_api_interface=search_api_interface,
@@ -99,7 +99,7 @@ class LegoSetsService:
             legosets_prices_repository=legosets_prices_repository,
             websites_repository=websites_repository,
             website_brickset_controller=self.website_brickset_controller,
-            get_legosets_rating_use_case=self.get_legosets_rating_use_case,
+            get_legosets_rating_use_case=self.legosets_rating_use_case,
             get_legosets_prices_use_case=self.get_legosets_prices_use_case,
             get_website_use_case=self.get_website_use_case,
         )
@@ -229,10 +229,11 @@ class LegoSetsService:
         system_logger.warning('END')
 
     async def recalculate_rating(self):
-        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
-        system_logger.info(f"Count legosets to recalculate rating: {len(legosets)}")
-        for legoset in legosets:
-            await self.get_legoset_use_case.execute(legoset_id=legoset.id)
+        await self.legosets_rating_use_case.recalculate_all_legosets()
+        # legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
+        # system_logger.info(f"Count legosets to recalculate rating: {len(legosets)}")
+        # for legoset in legosets:
+        #     await self.get_legoset_use_case.execute(legoset_id=legoset.id)
 
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:
