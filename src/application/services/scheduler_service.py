@@ -6,7 +6,7 @@ from application.services.legosets_service import LegosetsService
 from application.use_cases.set_all_scheduler_jobs_use_case import SetAllSchedulerJobsUseCase
 from domain.job import Job
 
-from application.use_cases.set_website_lego_scheduler_jobs_use_case import SetWebsiteLegoSchedulerJobsUseCase
+from application.use_cases.set_website_lego_scheduler_jobs_use_case import SetLegoSchedulerJobsUseCase
 
 
 # from application.scheduler.interfaces.scheduler_interface import SchedulerInterface
@@ -21,7 +21,7 @@ class SchedulerService:
                  ):
         self.scheduler_interface = scheduler_interface
 
-        self.set_website_lego_scheduler_jobs_use_case = SetWebsiteLegoSchedulerJobsUseCase(
+        self.set_website_lego_scheduler_jobs_use_case = SetLegoSchedulerJobsUseCase(
             scheduler_interface=scheduler_interface,
             legosets_service=legosets_service
         )

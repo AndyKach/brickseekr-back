@@ -8,6 +8,7 @@ class Job(BaseModel):
     func: Callable = Field(default=None)
     trigger: str = Field(default=None)
     run_date: datetime = Field(default=None)
+    day: int | None = Field(default=None)
     hour: int | None = Field(default=None)
     minute: int | None = Field(default=None)
     day_of_week: str | None = Field(default=None)

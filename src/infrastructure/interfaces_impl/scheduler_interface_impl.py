@@ -15,6 +15,7 @@ class SchedulerInterfaceImpl(SchedulerInterface):
         scheduler.add_job(
             func=job.func,
             trigger=job.trigger,
+            day=job.day,
             hour=job.hour,
             minute=job.minute,
             args=job.args,
