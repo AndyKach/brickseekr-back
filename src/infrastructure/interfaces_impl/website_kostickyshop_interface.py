@@ -111,6 +111,7 @@ class WebsiteKostickyshopInterface(WebsiteInterface):
             legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
 
         yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}{legoset.id}-{legoset_url_name}"
         yield f"{self.url}/lego-{legoset.id}-{legoset_url_name}"
 
 

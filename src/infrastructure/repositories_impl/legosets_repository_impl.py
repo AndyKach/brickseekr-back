@@ -3,8 +3,8 @@ import logging
 from icecream import ic
 from sqlalchemy.orm.attributes import flag_modified
 
-from infrastructure.db.models.legosets_orm import LegoSetsOrm
-from application.repositories.legosets_repository import LegoSetsRepository
+from infrastructure.db.models.legosets_orm import LegosetsOrm
+from application.repositories.legosets_repository import LegosetsRepository
 from domain.legoset import Legoset
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update
@@ -13,13 +13,13 @@ from infrastructure.db.base import async_engine
 
 system_logger = logging.getLogger("system_logger")
 
-class LegoSetsRepositoryImpl(LegoSetsRepository):
+class LegosetsRepositoryImpl(LegosetsRepository):
     @staticmethod
     def get_session() :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
 
     @staticmethod
-    async def orm_to_pydantic(legoset_orm: LegoSetsOrm):
+    async def orm_to_pydantic(legoset_orm: LegosetsOrm):
         return Legoset(
             id=legoset_orm.id,
             name=legoset_orm.name,
@@ -46,7 +46,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
 
     @staticmethod
     async def pydantic_to_orm(legoset_pydantic: Legoset):
-        return LegoSetsOrm(
+        return LegosetsOrm(
             id=legoset_pydantic.id,
             name=legoset_pydantic.name,
             year=legoset_pydantic.year,
@@ -74,8 +74,8 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         session = self.get_session()
         async with session.begin():
             query = (
-                select(LegoSetsOrm)
-                .where(LegoSetsOrm.id==set_id)
+                select(LegosetsOrm)
+                .where(LegosetsOrm.id == set_id)
             )
             result = await session.execute(query)
             legoset_orm = result.scalars().first()
@@ -94,7 +94,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
     async def get_all(self) -> [Legoset]:
         session = self.get_session()
         async with session.begin():
-            query = await session.execute(select(LegoSetsOrm))
+            query = await session.execute(select(LegosetsOrm))
             legosets_orm = query.scalars().all()
             # print(legosets_orm)
             legosets = []
@@ -107,7 +107,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         session = self.get_session()
         async with session.begin():
             query = await session.execute(
-                select(LegoSetsOrm).filter(LegoSetsOrm.rating.isnot(None)).order_by(LegoSetsOrm.rating.desc()).limit(legosets_count)
+                select(LegosetsOrm).filter(LegosetsOrm.rating.isnot(None)).order_by(LegosetsOrm.rating.desc()).limit(legosets_count)
             )
             legosets_orm = query.scalars().all()
             # print(legosets_orm)
@@ -121,7 +121,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
     async def delete_set(self, legoset_id):
         session = self.get_session()
         async with session.begin():
-            query = delete(LegoSetsOrm).where(LegoSetsOrm.id == legoset_id)
+            query = delete(LegosetsOrm).where(LegosetsOrm.id == legoset_id)
 
             await session.execute(query)
             await session.commit()
@@ -129,7 +129,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
     async def update_set(self, legoset: Legoset) -> None:
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsOrm).where(LegoSetsOrm.id==legoset.id)
+            query = select(LegosetsOrm).where(LegosetsOrm.id == legoset.id)
             result = await session.execute(query)
             legoset_orm = result.scalars().first()
 
@@ -153,14 +153,14 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
     async def update_rating(self, legoset_id: str, rating: float):
         session = self.get_session()
         async with session.begin():
-            query = update(LegoSetsOrm).where(LegoSetsOrm.id==legoset_id).values(rating=rating)
+            query = update(LegosetsOrm).where(LegosetsOrm.id == legoset_id).values(rating=rating)
             await session.execute(query)
             await session.commit()
 
     async def update_google_rating(self, legoset_id: str, google_rating: float):
         session = self.get_session()
         async with session.begin():
-            query = update(LegoSetsOrm).where(LegoSetsOrm.id==legoset_id).values(google_rating=google_rating)
+            query = update(LegosetsOrm).where(LegosetsOrm.id == legoset_id).values(google_rating=google_rating)
             await session.execute(query)
             await session.commit()
 
@@ -168,16 +168,16 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         session = self.get_session()
         async with session.begin():
             query = (
-                select(LegoSetsOrm.images)
-                .where(LegoSetsOrm.id == legoset_id)
+                select(LegosetsOrm.images)
+                .where(LegosetsOrm.id == legoset_id)
             )
             res = await session.execute(query)
             legoset_images = res.scalars().first()
             for image in images.keys():
                 legoset_images[image] = images[image]
             query = (
-                update(LegoSetsOrm)
-                .where(LegoSetsOrm.id == legoset_id)
+                update(LegosetsOrm)
+                .where(LegosetsOrm.id == legoset_id)
                 .values(images=legoset_images)
             )
             await session.execute(query)
@@ -190,8 +190,8 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         session = self.get_session()
         async with session.begin():
             query = (
-                select(LegoSetsOrm.extendedData)
-                .where(LegoSetsOrm.id == legoset_id)
+                select(LegosetsOrm.extendedData)
+                .where(LegosetsOrm.id == legoset_id)
             )
             res = await session.execute(query)
             data = res.scalars().first()
@@ -201,22 +201,12 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             data['cz_category_name'] = extended_data['cz_category_name']
             system_logger.info(f"data after: {data}")
             query = (
-                update(LegoSetsOrm)
-                .where(LegoSetsOrm.id == legoset_id)
+                update(LegosetsOrm)
+                .where(LegosetsOrm.id == legoset_id)
                 .values(extendedData=data)
             )
             await session.execute(query)
             await session.commit()
-
-    # async def update_images(self, legoset_id: str, images: dict) -> None:
-    #     session = self.get_session()
-    #     async with session.begin():
-    #         query = (
-    #             select(LegoSetsOrm.extendedData)
-    #             .where(LegoSetsOrm.id == legoset_id)
-    #         )
-    #         res = await session.execute(query)
-    #         data = res.scalars().first()
 
 
 

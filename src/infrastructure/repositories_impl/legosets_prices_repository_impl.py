@@ -4,16 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update, func, cast
 from sqlalchemy.dialects.postgresql import JSONB
 
-from application.repositories.prices_repository import LegoSetsPricesRepository
-from domain.legosets_price import LegoSetsPrice
-from domain.legosets_prices import LegoSetsPrices
+from application.repositories.prices_repository import LegosetsPricesRepository
+from domain.legosets_price import LegosetsPrice
+from domain.legosets_prices import LegosetsPrices
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.db.base import async_engine
-from infrastructure.db.models.legosets_orm import LegoSetsOrm
-from infrastructure.db.models.legosets_prices_orm import LegoSetsPricesOrm
+from infrastructure.db.models.legosets_orm import LegosetsOrm
+from infrastructure.db.models.legosets_prices_orm import LegosetsPricesOrm
 
 
-class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
+class LegosetsPricesRepositoryImpl(LegosetsPricesRepository):
     @staticmethod
     def get_session() :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
@@ -23,46 +23,46 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
         session = self.get_session()
         async with session.begin():
             query = (
-                select(LegoSetsPricesOrm.prices)
-                .where(LegoSetsPricesOrm.legoset_id == legoset_id)
+                select(LegosetsPricesOrm.prices)
+                .where(LegosetsPricesOrm.legoset_id == legoset_id)
             )
             res = await session.execute(query)
             prices = res.scalars().first()
             prices[website_id] = price
 
             query = (
-                update(LegoSetsPricesOrm)
-                .where(LegoSetsPricesOrm.legoset_id == legoset_id)
+                update(LegosetsPricesOrm)
+                .where(LegosetsPricesOrm.legoset_id == legoset_id)
                 .values(prices=prices)
             )
             await session.execute(query)
             await session.commit()
 
     @log_decorator(print_args=False)
-    async def get_item_all_prices(self, legoset_id: str) -> LegoSetsPrices | None:
+    async def get_item_all_prices(self, legoset_id: str) -> LegosetsPrices | None:
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsPricesOrm).where(LegoSetsPricesOrm.legoset_id == legoset_id)
+            query = select(LegosetsPricesOrm).where(LegosetsPricesOrm.legoset_id == legoset_id)
             res = await session.execute(query)
             if res:
                 legoset_prices_orm = res.scalars().first()
                 if legoset_prices_orm:
-                    return LegoSetsPrices(
+                    return LegosetsPrices(
                         legoset_id=legoset_prices_orm.legoset_id,
                         prices=legoset_prices_orm.prices,
                         created_at=legoset_prices_orm.created_at,
                     )
 
     @log_decorator(print_args=False)
-    async def get_item_price(self, legoset_id: str, website_id: str) -> LegoSetsPrice | None:
+    async def get_item_price(self, legoset_id: str, website_id: str) -> LegosetsPrice | None:
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsPricesOrm).where(LegoSetsPricesOrm.legoset_id == legoset_id)
+            query = select(LegosetsPricesOrm).where(LegosetsPricesOrm.legoset_id == legoset_id)
             res = await session.execute(query)
             if res:
                 legoset_price_orm = res.scalars().first()
                 if legoset_price_orm:
-                    legoset_price = LegoSetsPrice(
+                    legoset_price = LegosetsPrice(
                         legoset_id=legoset_price_orm.legoset_id,
                         price=legoset_price_orm.prices.get(str(website_id), '-'),
                         website_id=website_id,
@@ -71,10 +71,10 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
                     return legoset_price
 
     @log_decorator(print_args=False)
-    async def get_item(self, legoset_id: str) -> LegoSetsPrices | None:
+    async def get_item(self, legoset_id: str) -> LegosetsPrices | None:
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsPricesOrm.prices).where(LegoSetsPricesOrm.legoset_id == legoset_id)
+            query = select(LegosetsPricesOrm.prices).where(LegosetsPricesOrm.legoset_id == legoset_id)
             res = await session.execute(query)
             if res:
                 legoset_price = res.scalars().first()
@@ -84,12 +84,12 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
     async def get_all_items(self) -> list | None:
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsPricesOrm)
+            query = select(LegosetsPricesOrm)
             res = await session.execute(query)
             legosets_prices_orm = res.scalars().all()
             if legosets_prices_orm:
                 legosets_prices = [
-                    LegoSetsPrices(
+                    LegosetsPrices(
                         legoset_id=legoset_price.legoset_id,
                         prices=legoset_price.prices,
                         created_at=legoset_price.created_at
@@ -97,9 +97,9 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
                 return legosets_prices
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def add_items(self, legosets_prices: LegoSetsPrices):
+    async def add_items(self, legosets_prices: LegosetsPrices):
         session = self.get_session()
-        legosets_prices_orm = LegoSetsPricesOrm(
+        legosets_prices_orm = LegosetsPricesOrm(
             legoset_id=legosets_prices.legoset_id,
             prices=legosets_prices.prices,
         )
@@ -108,9 +108,9 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
             await session.commit()
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def add_item(self, legosets_price: LegoSetsPrice):
+    async def add_item(self, legosets_price: LegosetsPrice):
         session = self.get_session()
-        legosets_prices_orm = LegoSetsPricesOrm(
+        legosets_prices_orm = LegosetsPricesOrm(
             legoset_id=legosets_price.legoset_id,
             prices={legosets_price.website_id: legosets_price.price}
         )
@@ -122,7 +122,7 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
     async def delete_price(self, legoset_id: str, website_id: str):
         session = self.get_session()
         async with session.begin():
-            query = select(LegoSetsPricesOrm.prices).where(LegoSetsPricesOrm.legoset_id == legoset_id)
+            query = select(LegosetsPricesOrm.prices).where(LegosetsPricesOrm.legoset_id == legoset_id)
             res = await session.execute(query)
             old_prices = res.scalars().first()
             new_prices = {}
@@ -130,14 +130,14 @@ class LegoSetsPricesRepositoryImpl(LegoSetsPricesRepository):
                 if key != website_id:
                     new_prices[key] = old_prices[key]
             query = (
-                update(LegoSetsPricesOrm)
-                .where(LegoSetsPricesOrm.legoset_id == legoset_id)
+                update(LegosetsPricesOrm)
+                .where(LegosetsPricesOrm.legoset_id == legoset_id)
                 .values(prices=new_prices)
             )
             await session.execute(query)
             await session.commit()
 
 if __name__ == '__main__':
-    price_repository = LegoSetsPricesRepositoryImpl()
+    price_repository = LegosetsPricesRepositoryImpl()
 
 

@@ -6,27 +6,26 @@ from icecream import ic
 
 from application.controllers.website_brickset_controller import WebsiteBricksetController
 from application.interfaces.searchapi_interface import SearchAPIInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.repositories.websites_repository import WebsitesRepository
-from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
-from application.use_cases.legosets_rating_use_case import LegoSetsRatingUseCase
+from application.use_cases.get_legoset_price_use_case import GetLegosetsPricesUseCase
+from application.use_cases.legosets_rating_use_case import LegosetsRatingUseCase
 from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from domain.legoset import Legoset
 from domain.rating_calculation import RatingCalculation
 from infrastructure.config.logs_config import log_decorator
-from infrastructure.config.repositories_config import websites_repository
 
 system_logger = logging.getLogger('system_logger')
-class GetLegoSetUseCase:
+class GetLegosetUseCase:
     def __init__(self,
-                 legosets_repository: LegoSetsRepository,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  websites_repository: WebsitesRepository,
                  website_brickset_controller: WebsiteBricksetController,
                  # search_api_interface: SearchAPIInterface,
-                 get_legosets_rating_use_case: LegoSetsRatingUseCase,
-                 get_legosets_prices_use_case: GetLegoSetsPricesUseCase,
+                 get_legosets_rating_use_case: LegosetsRatingUseCase,
+                 get_legosets_prices_use_case: GetLegosetsPricesUseCase,
                  get_website_use_case: GetWebsiteUseCase,
                  ):
         self.legosets_repository = legosets_repository

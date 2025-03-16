@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-class LegoSetsPrice(BaseModel):
+class LegosetsPrice(BaseModel):
     legoset_id: str              = Field(default='')
     price: str                   = Field(default='-')
     website_id: str              = Field(default='0')

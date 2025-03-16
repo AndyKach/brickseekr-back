@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.db.base import Base
 
-class LegoSetsPricesOrm(Base):
+class LegosetsPricesOrm(Base):
     __tablename__ = 'legosets_prices'
 
     legoset_id: Mapped[str]        = mapped_column(String, primary_key=True)

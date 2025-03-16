@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from domain.legoset import Legoset
 
 
-class LegoSetsRepository(ABC):
+class LegosetsRepository(ABC):
     @abstractmethod
     async def get_set(self, set_id: str) -> Legoset:
         pass

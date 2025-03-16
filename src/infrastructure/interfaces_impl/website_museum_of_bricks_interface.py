@@ -2,9 +2,10 @@ import time
 import logging
 from datetime import datetime
 from application.interfaces.website_interface import WebsiteInterface
+from application.interfaces.website_museum_of_bricks_interface import WebsiteMuseumOfBricksInterface
 from domain.legoset import Legoset
 from infrastructure.config.logs_config import log_decorator
-from infrastructure.config.repositories_config import lego_sets_repository
+from infrastructure.config.repositories_config import legosets_repository
 from infrastructure.config.selenium_config import get_selenium_driver
 import asyncio
 import aiohttp
@@ -19,7 +20,7 @@ from selenium.webdriver.common.by import By
 
 system_logger = logging.getLogger('system_logger')
 
-class WebsiteMuseumOfBricksInterface(WebsiteInterface):
+class WebsiteMuseumOfBricksInterfaceImpl(WebsiteMuseumOfBricksInterface):
 
     def __init__(self):
         super().__init__()

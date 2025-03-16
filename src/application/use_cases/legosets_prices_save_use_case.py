@@ -1,17 +1,17 @@
-from application.repositories.prices_repository import LegoSetsPricesRepository
-from domain.legosets_price import LegoSetsPrice
-from domain.legosets_prices import LegoSetsPrices
+from application.repositories.prices_repository import LegosetsPricesRepository
+from domain.legosets_price import LegosetsPrice
+from domain.legosets_prices import LegosetsPrices
 
 import logging
 system_logger = logging.getLogger('system_logger')
 
-class LegoSetsPricesSaveUseCase:
+class LegosetsPricesSaveUseCase:
     def __init__(self,
-                 legosets_prices_repository: LegoSetsPricesRepository
+                 legosets_prices_repository: LegosetsPricesRepository
                  ):
         self.legosets_prices_repository = legosets_prices_repository
 
-    async def save_legosets_price(self, legosets_price: LegoSetsPrice):
+    async def save_legosets_price(self, legosets_price: LegosetsPrice):
         """
         Функция сохраняет новую цену на лего набор и в зависимости от того, существует ли на набор уже другие цены
         или нет, сохраняет новую цену или создает новый объект в бд
@@ -35,7 +35,7 @@ class LegoSetsPricesSaveUseCase:
         else:
             try:
                 await self.legosets_prices_repository.add_items(
-                    LegoSetsPrices(
+                    LegosetsPrices(
                         legoset_id=legosets_price.legoset_id,
                         prices={legosets_price.website_id: legosets_price.price}
                     )

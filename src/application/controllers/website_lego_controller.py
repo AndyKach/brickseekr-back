@@ -2,8 +2,8 @@ from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.interfaces.website_lego_interface import WebsiteLegoInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from infrastructure.config.logs_config import log_decorator
 
@@ -11,8 +11,8 @@ from infrastructure.config.logs_config import log_decorator
 class WebsiteLegoController(WebsiteController):
 
     def __init__(self,
-                 legosets_repository: LegoSetsRepository,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteLegoInterface,
                  ):
         self.website_parser = WebsiteLegoParserUseCase(

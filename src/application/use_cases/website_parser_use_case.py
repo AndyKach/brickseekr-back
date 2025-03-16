@@ -7,12 +7,12 @@ from datetime import datetime
 from icecream import ic
 
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.prices_repository import LegoSetsPricesRepository
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
+from application.repositories.prices_repository import LegosetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.use_cases.legosets_prices_save_use_case import LegosetsPricesSaveUseCase
 from domain.legoset import Legoset
-from domain.legosets_price import LegoSetsPrice
-from domain.legosets_prices import LegoSetsPrices
+from domain.legosets_price import LegosetsPrice
+from domain.legosets_prices import LegosetsPrices
 
 system_logger = logging.getLogger('system_logger')
 
@@ -28,7 +28,7 @@ class WebsiteParserUseCase(ABC):
 
     async def _parse_items(
         self, legosets: list[Legoset], website_id: str,
-        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
+        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegosetsPricesSaveUseCase,
         ):
         """
         Функция парсит цены для всех переданных наборов с шагом 50 наборов в 15 секунд, чтобы сайт не заблокировал за DDOS
@@ -57,7 +57,7 @@ class WebsiteParserUseCase(ABC):
 
     async def _parse_item(
         self, legoset: Legoset, website_id: str,
-        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
+        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegosetsPricesSaveUseCase,
         ):
         """
         Функция парсит цены для конкретного переданного набора
@@ -71,7 +71,7 @@ class WebsiteParserUseCase(ABC):
 
 
     @staticmethod
-    async def __save_new_price(result: dict, website_id: str, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase):
+    async def __save_new_price(result: dict, website_id: str, legosets_prices_save_use_case: LegosetsPricesSaveUseCase):
         """
         Функция смотрит доступен ли набор еще в магазине или нет, и если не доступен, то удаляет его цену из ДБ
         """
@@ -79,7 +79,7 @@ class WebsiteParserUseCase(ABC):
             await legosets_prices_save_use_case.delete_legosets_price(legoset_id=result.get('legoset_id'), website_id=website_id)
         if result.get('price'):
             await legosets_prices_save_use_case.save_legosets_price(
-                LegoSetsPrice(
+                LegosetsPrice(
                     legoset_id=result.get('legoset_id'),
                     price=result.get('price'),
                     website_id=website_id

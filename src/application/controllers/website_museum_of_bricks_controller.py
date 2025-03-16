@@ -1,20 +1,20 @@
 from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
 
 
 class WebsiteMuseumOfBricksController(WebsiteController):
 
     def __init__(self,
-                 lego_sets_repository: LegoSetsRepository,
-                 lego_sets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
         self.website_parser_use_case = WebsiteMuseumOfBricksParserUseCase(
-            lego_sets_repository=lego_sets_repository,
-            lego_sets_prices_repository=lego_sets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=website_interface
         )
 
@@ -24,8 +24,8 @@ class WebsiteMuseumOfBricksController(WebsiteController):
     async def parse_legosets_price(self, legoset_id: str):
         await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)
 
-    async def parse_lego_sets_url(self, legoset_id: str):
+    async def parse_legosets_url(self, legoset_id: str):
         await self.website_parser_use_case.parse_legosets_url(legoset_id=legoset_id)
 
-    async def parse_lego_sets_urls(self):
+    async def parse_legosets_urls(self):
         await self.website_parser_use_case.parse_legosets_urls()

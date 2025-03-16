@@ -15,10 +15,10 @@ from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.interfaces.website_lego_interface import WebsiteLegoInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from domain.legoset import Legoset
-from domain.legosets_price import LegoSetsPrice
+from domain.legosets_price import LegosetsPrice
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.config.selenium_config import get_selenium_driver
@@ -38,11 +38,11 @@ class WebsiteLegoInterfaceImpl(WebsiteLegoInterface, StringsToolKit):
             'Accept-Language': 'de-DE,de;q=0.9',
         }
         self.response = None
-        self.legosets_repository: LegoSetsRepository | None = None
-        self.legosets_prices_repository: LegoSetsPricesRepository | None = None
+        self.legosets_repository: LegosetsRepository | None = None
+        self.legosets_prices_repository: LegosetsPricesRepository | None = None
         self.website_id = "1"
 
-    async def set_repository(self, legosets_repository: LegoSetsRepository = None, legosets_prices_repository: LegoSetsPricesRepository = None):
+    async def set_repository(self, legosets_repository: LegosetsRepository = None, legosets_prices_repository: LegosetsPricesRepository = None):
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
 

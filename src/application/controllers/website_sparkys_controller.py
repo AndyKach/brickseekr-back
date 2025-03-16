@@ -1,20 +1,20 @@
 from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.use_cases.website_sparkys_parser_use_case import WebsiteSparkysParserUseCase
 
 
 class WebsiteSparkysController(WebsiteController):
     def __init__(self,
-                 lego_sets_repository: LegoSetsRepository,
-                 lego_sets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
 
         self.website_parser_use_case = WebsiteSparkysParserUseCase(
-            legosets_repository=lego_sets_repository,
-            legosets_prices_repository=lego_sets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=website_interface
         )
 

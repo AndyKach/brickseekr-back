@@ -27,8 +27,8 @@ config.set_main_option("sqlalchemy.url", os.getenv("DB_URL"))
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from infrastructure.db.base import Base
-from infrastructure.db.models.legosets_orm import LegoSetsOrm
-from infrastructure.db.models.legosets_prices_orm import LegoSetsPricesOrm
+from infrastructure.db.models.legosets_orm import LegosetsOrm
+from infrastructure.db.models.legosets_prices_orm import LegosetsPricesOrm
 from infrastructure.db.models.websites_orm import WebsitesOrm
 from infrastructure.db.models.minifigures_orm import MinifiguresOrm
 target_metadata = Base.metadata

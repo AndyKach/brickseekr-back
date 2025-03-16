@@ -34,7 +34,7 @@ class Legoset(BaseModel):
 
 """
 
-lego_set_id=,
+legoset_id=,
 images=,
 name=,
 year=,

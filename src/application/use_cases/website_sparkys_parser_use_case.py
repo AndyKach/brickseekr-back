@@ -1,10 +1,10 @@
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 
 import logging
 
-from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
+from application.use_cases.legosets_prices_save_use_case import LegosetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 
 system_logger = logging.getLogger('system_logger')
@@ -12,8 +12,8 @@ system_logger = logging.getLogger('system_logger')
 
 class WebsiteSparkysParserUseCase(WebsiteParserUseCase):
     def __init__(self,
-                 legosets_repository: LegoSetsRepository,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
         self.legosets_repository = legosets_repository
@@ -21,7 +21,7 @@ class WebsiteSparkysParserUseCase(WebsiteParserUseCase):
         self.website_interface = website_interface
 
 
-        self.lego_sets_prices_save_use_case = LegoSetsPricesSaveUseCase(
+        self.legosets_prices_save_use_case = LegosetsPricesSaveUseCase(
             legosets_prices_repository=self.legosets_prices_repository
         )
 
@@ -32,7 +32,7 @@ class WebsiteSparkysParserUseCase(WebsiteParserUseCase):
         await self._parse_item(
             legoset=legoset,
             website_interface=self.website_interface,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )
 
@@ -42,6 +42,6 @@ class WebsiteSparkysParserUseCase(WebsiteParserUseCase):
         await self._parse_items(
             legosets=legosets,
             website_interface=self.website_interface,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )

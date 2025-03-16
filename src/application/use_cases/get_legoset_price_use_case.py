@@ -4,23 +4,23 @@ from icecream import ic
 
 from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 from domain.legoset import Legoset
-from domain.legosets_prices import LegoSetsPrices
-from domain.legosets_price import LegoSetsPrice
+from domain.legosets_prices import LegosetsPrices
+from domain.legosets_price import LegosetsPrice
 from infrastructure.config.logs_config import log_decorator
 
 system_logger = logging.getLogger('system_logger')
 
-class GetLegoSetsPricesUseCase:
+class GetLegosetsPricesUseCase:
     def __init__(self,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  ):
         self.legosets_prices_repository = legosets_prices_repository
 
     @log_decorator(print_kwargs=True)
-    async def get_all_prices(self, legoset_id: str) -> LegoSetsPrices:
+    async def get_all_prices(self, legoset_id: str) -> LegosetsPrices:
         """
         Функция возвращает все цены на набор
         """

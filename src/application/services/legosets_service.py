@@ -15,30 +15,30 @@ from application.controllers.website_sparkys_controller import WebsiteSparkysCon
 from application.interfaces.google_interface import GoogleInterface
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.searchapi_interface import SearchAPIInterface
+from application.interfaces.website_brickset_interface import WebsiteBrickSetInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
 from application.interfaces.website_lego_interface import WebsiteLegoInterface
 from application.providers.websites_interfaces_provider import WebsitesInterfacesProvider
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.repositories.websites_repository import WebsitesRepository
-from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
-from application.use_cases.get_legoset_use_case import GetLegoSetUseCase
-from application.use_cases.legosets_rating_use_case import LegoSetsRatingUseCase
+from application.use_cases.get_legoset_price_use_case import GetLegosetsPricesUseCase
+from application.use_cases.get_legoset_use_case import GetLegosetUseCase
+from application.use_cases.legosets_rating_use_case import LegosetsRatingUseCase
 from application.use_cases.get_website_use_case import GetWebsiteUseCase
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 from application.use_cases.website_lego_parser_use_case import WebsiteLegoParserUseCase
 from application.use_cases.website_museum_of_bricks_parser_use_case import WebsiteMuseumOfBricksParserUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
-from domain.legosets_prices import LegoSetsPrices
-from infrastructure.config.logs_config import log_decorator
+from domain.legosets_prices import LegosetsPrices
 
 system_logger = logging.getLogger('system_logger')
-class LegoSetsService:
+class LegosetsService:
     def __init__(
             self,
-            legosets_repository: LegoSetsRepository,
-            legosets_prices_repository: LegoSetsPricesRepository,
+            legosets_repository: LegosetsRepository,
+            legosets_prices_repository: LegosetsPricesRepository,
             websites_repository: WebsitesRepository,
             websites_interfaces_provider: WebsitesInterfacesProvider,
             search_api_interface: SearchAPIInterface,
@@ -65,38 +65,38 @@ class LegoSetsService:
             website_interface=self.website_capi_cap_interface
         )
         self.website_museum_of_bricks_controller = WebsiteMuseumOfBricksController(
-            lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=legosets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_museum_of_bricks_interface
         )
         self.website_sparkys_controller = WebsiteSparkysController(
-            lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=legosets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_sparkys_interface
         )
         self.website_kostickyshop_controller = WebsiteKostikyShopController(
-            lego_sets_repository=legosets_repository,
-            lego_sets_prices_repository=legosets_prices_repository,
+            legosets_repository=legosets_repository,
+            legosets_prices_repository=legosets_prices_repository,
             website_interface=self.website_kostickyshop_interface
         )
         self.website_brickset_controller = WebsiteBricksetController(
             website_interface=self.website_brickset_interface,
             legosets_repository=legosets_repository
         )
-        self.legosets_rating_use_case = LegoSetsRatingUseCase(
+        self.legosets_rating_use_case = LegosetsRatingUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
             search_api_interface=search_api_interface,
             google_interface=google_interface,
         )
-        self.get_legosets_prices_use_case = GetLegoSetsPricesUseCase(
+        self.get_legosets_prices_use_case = GetLegosetsPricesUseCase(
             legosets_prices_repository=legosets_prices_repository,
         )
         self.get_website_use_case = GetWebsiteUseCase(
             websites_repository=websites_repository
         )
 
-        self.get_legoset_use_case = GetLegoSetUseCase(
+        self.get_legoset_use_case = GetLegosetUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
             websites_repository=websites_repository,
@@ -127,7 +127,7 @@ class LegoSetsService:
         return self.websites_interfaces_provider.get_website_kostickyshop_interface()
 
     @property
-    def website_brickset_interface(self) -> WebsiteDataSourceInterface:
+    def website_brickset_interface(self) -> WebsiteBrickSetInterface:
         return self.websites_interfaces_provider.get_website_brickset_interface()
 
     async def get_legoset_info(self, legoset_id: str):
@@ -154,17 +154,17 @@ class LegoSetsService:
         """
         return await self.get_legoset_use_case.get_top_list(legosets_count=legosets_count)
 
-    async def parse_lego_sets_url(self, legoset_id: str):
+    async def parse_legosets_url(self, legoset_id: str):
         """
         Вызывается от API /sets/parseSetsUrl
         """
-        await self.website_museum_of_bricks_controller.parse_lego_sets_url(legoset_id=legoset_id)
+        await self.website_museum_of_bricks_controller.parse_legosets_url(legoset_id=legoset_id)
 
-    async def parse_lego_sets_urls(self):
+    async def parse_legosets_urls(self):
         """
         Вызывается от API /sets/parseSetsUrls
         """
-        await self.website_museum_of_bricks_controller.parse_lego_sets_urls()
+        await self.website_museum_of_bricks_controller.parse_legosets_urls()
 
 
     async def parse_legosets_price_in_store(self, set_id: str, store_id: str):

@@ -8,19 +8,19 @@ from icecream import ic
 from application.interfaces.google_interface import GoogleInterface
 from application.interfaces.searchapi_interface import SearchAPIInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from domain.legoset import Legoset
-from domain.legosets_prices import LegoSetsPrices
+from domain.legosets_prices import LegosetsPrices
 from domain.rating_calculation import RatingCalculation
 from infrastructure.config.logs_config import log_decorator
 
 system_logger = logging.getLogger('system_logger')
 
-class LegoSetsRatingUseCase:
+class LegosetsRatingUseCase:
     def __init__(self,
-                 legosets_repository: LegoSetsRepository,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  search_api_interface: SearchAPIInterface,
                  google_interface: GoogleInterface,
                  ):

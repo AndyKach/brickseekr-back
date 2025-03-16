@@ -1,15 +1,15 @@
 from application.controllers.website_controller import WebsiteController
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
 from application.use_cases.website_capi_cap_parser_use_case import WebsiteCapiCapParserUseCase
 
 
 class WebsiteCapiCapController(WebsiteController):
 
     def __init__(self,
-                 legosets_repository: LegoSetsRepository,
-                 legosets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
         self.website_parser_use_case = WebsiteCapiCapParserUseCase(

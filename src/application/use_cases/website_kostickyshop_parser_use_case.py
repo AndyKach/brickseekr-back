@@ -1,34 +1,34 @@
 import logging
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
-from application.repositories.prices_repository import LegoSetsPricesRepository
-from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
+from application.repositories.legosets_repository import LegosetsRepository
+from application.repositories.prices_repository import LegosetsPricesRepository
+from application.use_cases.legosets_prices_save_use_case import LegosetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 
 system_logger = logging.getLogger('system_logger')
 
 class WebsiteKostickyShopParserUseCase(WebsiteParserUseCase):
     def __init__(self,
-                 lego_sets_repository: LegoSetsRepository,
-                 lego_sets_prices_repository: LegoSetsPricesRepository,
+                 legosets_repository: LegosetsRepository,
+                 legosets_prices_repository: LegosetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
-        self.legosets_repository = lego_sets_repository
-        self.legosets_prices_repository = lego_sets_prices_repository
+        self.legosets_repository = legosets_repository
+        self.legosets_prices_repository = legosets_prices_repository
         self.website_interface = website_interface
 
-        self.lego_sets_prices_save_use_case = LegoSetsPricesSaveUseCase(
+        self.legosets_prices_save_use_case = LegosetsPricesSaveUseCase(
             legosets_prices_repository=self.legosets_prices_repository
         )
         self.website_id = "5"
 
 
     async def parse_legosets_price(self, legoset_id: str):
-        lego_set = await self.legosets_repository.get_set(set_id=legoset_id)
+        legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         await self._parse_item(
-            legoset=lego_set,
+            legoset=legoset,
             website_interface=self.website_interface,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )
 
@@ -38,6 +38,6 @@ class WebsiteKostickyShopParserUseCase(WebsiteParserUseCase):
         await self._parse_items(
             legosets=legosets,
             website_interface=self.website_interface,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )

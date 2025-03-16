@@ -8,9 +8,11 @@ from icecream import ic
 from dotenv import load_dotenv
 
 import logging
+
+from application.interfaces.website_brickset_interface import WebsiteBrickSetInterface
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.interfaces.website_interface import WebsiteInterface
-from application.repositories.legosets_repository import LegoSetsRepository
+from application.repositories.legosets_repository import LegosetsRepository
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator
 from domain.legoset import Legoset
@@ -20,7 +22,7 @@ load_dotenv()
 system_logger = logging.getLogger('system_logger')
 
 
-class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
+class WebsiteBricksetInterfaceImpl(WebsiteBrickSetInterface, StringsToolKit):
 
     def __init__(self):
         super().__init__()
@@ -52,7 +54,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
                     return legoset
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets(self, legosets_repository: LegoSetsRepository):
+    async def parse_legosets(self, legosets_repository: LegosetsRepository):
         """
         Функция парсит легонаборы с сайта brickset
 

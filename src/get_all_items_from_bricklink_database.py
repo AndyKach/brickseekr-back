@@ -9,7 +9,7 @@ from icecream import ic
 from sqlalchemy.exc import IntegrityError
 
 from infrastructure.config.gateways_config import bricklink_gateway
-from infrastructure.config.repositories_config import lego_sets_repository
+from infrastructure.config.repositories_config import legosets_repository
 from domain.legoset import Legoset
 
 async def get_category_name(category_id: int):
@@ -65,11 +65,11 @@ async def get_set_items():
                         # print(lego_set)
                         # print('!!!!!!!!!')
                         try:
-                            if await lego_sets_repository.get_set(set_id=lego_set.lego_set_id) is None:
-                                await lego_sets_repository.set_set(legoset=lego_set)
+                            if await legosets_repository.get_set(set_id=lego_set.lego_set_id) is None:
+                                await legosets_repository.set_set(legoset=lego_set)
                             else:
-                                await lego_sets_repository.delete_set(legoset_id=lego_set.lego_set_id)
-                                await lego_sets_repository.set_set(legoset=lego_set)
+                                await legosets_repository.delete_set(legoset_id=lego_set.lego_set_id)
+                                await legosets_repository.set_set(legoset=lego_set)
                         # except IntegrityError as e:
                         except Exception as e:
                             print(f"ERROR: {str(e)[str(e).find('\n')+1:str(e).find('\n', str(e).find('\n')+1)]}")
