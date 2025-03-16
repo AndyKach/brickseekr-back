@@ -12,21 +12,17 @@ class WebsiteMuseumOfBricksController(WebsiteController):
                  lego_sets_prices_repository: LegoSetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
-        self.lego_sets_repository = lego_sets_repository,
-        self.lego_sets_prices_repository = lego_sets_prices_repository,
-        self.website_interface = website_interface
         self.website_parser_use_case = WebsiteMuseumOfBricksParserUseCase(
             lego_sets_repository=lego_sets_repository,
             lego_sets_prices_repository=lego_sets_prices_repository,
-            website_interface=self.website_interface
+            website_interface=website_interface
         )
 
-        
     async def parse_legosets_prices(self):
         await self.website_parser_use_case.parse_legosets_prices()
 
     async def parse_legosets_price(self, legoset_id: str):
-        return await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)
+        await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)
 
     async def parse_lego_sets_url(self, legoset_id: str):
         await self.website_parser_use_case.parse_legosets_url(legoset_id=legoset_id)

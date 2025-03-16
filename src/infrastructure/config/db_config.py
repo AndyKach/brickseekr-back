@@ -7,7 +7,7 @@ from infrastructure.config.logs_config import error_logger, system_logger
 
 
 def find_src_folder(start_path: Path) -> Path:
-    """Рекурсивно ищет директорию 'src' начиная с указанного пути и поднимаясь вверх."""
+    """Рекурсивно ищет директорию 'src' начиная с указанного пути и поднимаясь."""
     current_path = start_path.resolve()
     while current_path != current_path.parent:  # Пока не достигнем корня файловой системы
         src_path = current_path / "src"
@@ -17,9 +17,12 @@ def find_src_folder(start_path: Path) -> Path:
     raise FileNotFoundError("Папка 'src' не найдена в иерархии директорий.")
 
 def get_env_path():
+    """
+    Эти функции нужны для того, чтобы корректно находить .env
+    вне зависимости откуда была начата программа
+    """
     env_path = ".env"
     try:
-        # Найти папку src и путь к .env
         src_folder = find_src_folder(Path(__file__).parent)
         env_path = src_folder / ".env"
     except Exception as e:
@@ -29,12 +32,6 @@ def get_env_path():
     return env_path
 
 class DBSettings(BaseSettings):
-    # model_config = SettingsConfigDict(env_file="../.env", extra="ignore")
-    # model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    # current_path = os.getcwd()
-    # print(f"Текущая рабочая директория: {current_path}")
-
-
     model_config = SettingsConfigDict(
         env_file=get_env_path(),
         extra="ignore")
@@ -55,8 +52,6 @@ class DBSettings(BaseSettings):
     @property
     def DATABASE_URL_psycopg(self):
         return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
-
 
 db_settings = DBSettings()
 

@@ -15,14 +15,10 @@ class WebsiteLegoController(WebsiteController):
                  legosets_prices_repository: LegoSetsPricesRepository,
                  website_interface: WebsiteLegoInterface,
                  ):
-        self.legosets_repository = legosets_repository
-        self.legosets_prices_repository = legosets_prices_repository
-        self.website_interface = website_interface
-
         self.website_parser = WebsiteLegoParserUseCase(
-            legosets_prices_repository=self.legosets_prices_repository,
-            legosets_repository=self.legosets_repository,
-            website_interface=self.website_interface
+            legosets_prices_repository=legosets_prices_repository,
+            legosets_repository=legosets_repository,
+            website_interface=website_interface
         )
 
     async def parse_legosets_price(self, legoset_id: str):
@@ -36,7 +32,3 @@ class WebsiteLegoController(WebsiteController):
 
     async def parse_legosets_images(self):
         await self.website_parser.parse_legosets_images()
-
-    @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets(self):
-        await self.website_parser.parse_legosets()

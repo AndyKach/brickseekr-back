@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 
 class LegoSetsRepository(ABC):
     @abstractmethod
-    async def get_set(self, set_id: str) -> LegoSet:
+    async def get_set(self, set_id: str) -> Legoset:
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[LegoSet]:
+    async def get_all(self) -> list[Legoset]:
         pass
 
     @abstractmethod
@@ -17,11 +17,11 @@ class LegoSetsRepository(ABC):
         pass
 
     @abstractmethod
-    async def set_set(self, legoset: LegoSet) -> None:
+    async def set_set(self, legoset: Legoset) -> None:
         pass
 
     @abstractmethod
-    async def update_set(self, legoset: LegoSet) -> None:
+    async def update_set(self, legoset: Legoset) -> None:
         pass
 
     @abstractmethod

@@ -12,18 +12,14 @@ class WebsiteCapiCapController(WebsiteController):
                  legosets_prices_repository: LegoSetsPricesRepository,
                  website_interface: WebsiteInterface,
                  ):
-        self.legosets_repository = legosets_repository,
-        self.legosets_prices_repository = legosets_prices_repository,
-        self.website_interface = website_interface
-
         self.website_parser_use_case = WebsiteCapiCapParserUseCase(
             legosets_repository=legosets_repository,
             legosets_prices_repository=legosets_prices_repository,
-            website_interface=self.website_interface
+            website_interface=website_interface
         )
 
     async def parse_legosets_prices(self):
         await self.website_parser_use_case.parse_legosets_prices()
 
     async def parse_legosets_price(self, legoset_id: str):
-        return await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)
+        await self.website_parser_use_case.parse_legosets_price(legoset_id=legoset_id)

@@ -18,7 +18,6 @@ class WebsiteBricklinkInterface(WebsiteInterface):
     async def parse_legosets_price(self, legoset: str):
         url = self.url + f"/items/set/{legoset}-1"
         response = requests.get(auth=bricklink_auth, url=url)
-        # ic(response.json())
         return response.json()
 
     async def parse_legosets_prices(self, legosets: list):
@@ -26,7 +25,6 @@ class WebsiteBricklinkInterface(WebsiteInterface):
         for item_id in legosets:
             url = self.url + f"/items/set/{item_id}-1"
             response = requests.get(auth=bricklink_auth, url=url)
-            # ic(response.json())
             results.append(response.json())
 
         return results
@@ -45,7 +43,7 @@ class WebsiteBricklinkInterface(WebsiteInterface):
     async def get_item_async(self, session, item_type: str, item_id: str):
         url = self.url + f"/items/{item_type}/{item_id}-1"
         headers = self.headers.copy()
-        headers['Authorization'] = create_oauth_headers(url, bricklink_auth)
+        headers['Authorization'] = self.create_oauth_headers(url, bricklink_auth)
 
         try:
             async with session.get(url, headers=headers) as response:
@@ -55,11 +53,11 @@ class WebsiteBricklinkInterface(WebsiteInterface):
         except Exception as e:
             print(e)
 
-
-def create_oauth_headers(url, oauth):
-    req = Request('GET', url, auth=oauth)
-    prepped = req.prepare()
-    headers = prepped.headers['Authorization']
-    # Возвращаем заголовок Authorization
-    return headers.decode('utf-8')
+    @staticmethod
+    def create_oauth_headers(url, oauth):
+        req = Request('GET', url, auth=oauth)
+        prepped = req.prepare()
+        headers = prepped.headers['Authorization']
+        # Возвращаем заголовок Authorization
+        return headers.decode('utf-8')
 

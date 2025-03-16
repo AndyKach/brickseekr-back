@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class LegoSet(BaseModel):
+class Legoset(BaseModel):
     id:                str                          = Field()
     name:              str | None                   = Field(default='-')
     year:              int | None                   = Field(default=0)

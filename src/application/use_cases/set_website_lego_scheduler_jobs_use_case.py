@@ -12,6 +12,9 @@ class SetWebsiteLegoSchedulerJobsUseCase:
         self.lego_sets_service = lego_sets_service
 
     async def execute(self):
+        """
+        Функция ставит scheduler работы для парсинга наборов лего
+        """
         await self.scheduler_interface.add_job(
             Job(
                 func=self.lego_sets_service.tmp_function,

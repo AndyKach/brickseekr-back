@@ -44,6 +44,10 @@ class LegoSetsService:
             search_api_interface: SearchAPIInterface,
             google_interface: GoogleInterface,
             ):
+        """
+        Класс, который управляет всеми взаимосвязями, тут инициализируются все основные Use Case классы
+        и вызываются нужные функции от API
+        """
         self.legosets_repository = legosets_repository
         self.legosets_prices_repository = legosets_prices_repository
         self.websites_repository = websites_repository
@@ -87,7 +91,6 @@ class LegoSetsService:
         )
         self.get_legosets_prices_use_case = GetLegoSetsPricesUseCase(
             legosets_prices_repository=legosets_prices_repository,
-            website_lego_interface=self.website_lego_interface
         )
         self.get_website_use_case = GetWebsiteUseCase(
             websites_repository=websites_repository
@@ -102,8 +105,6 @@ class LegoSetsService:
             get_legosets_prices_use_case=self.get_legosets_prices_use_case,
             get_website_use_case=self.get_website_use_case,
         )
-
-
 
     @property
     def website_lego_interface(self) -> WebsiteLegoInterface:
@@ -130,55 +131,55 @@ class LegoSetsService:
         return self.websites_interfaces_provider.get_website_brickset_interface()
 
     async def get_legoset_info(self, legoset_id: str):
+        """
+        Вызызывается от API /sets/{set_id}/getData
+        """
         return await self.get_legoset_use_case.execute(legoset_id=legoset_id)
 
     async def get_sets_prices(self, set_id: str):
-        return await self.get_legoset_prices_use_case.get_all_prices(legoset_id=set_id)
-        # return await self.legosets_prices_repository.get_item_all_prices(lego_set_id=set_id)
+        """
+        Вызызывается от API /sets/{set_id}/getPrices
+        """
+        return await self.get_legosets_prices_use_case.get_all_prices(legoset_id=set_id)
 
     async def get_sets_prices_from_website(self, set_id: str, website_id: str):
-        return await self.get_legoset_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id,
-                                                                        website_controller=await self.__get_website_use_case(website_id))
-        # return await self.legosets_prices_repository.get_item_price(lego_set_id=set_id, website_id=website_id)
-
-    async def get_legoset_from_lego_website(self, legoset_id: str):
-        lego_website_controller = await self.__get_website_use_case(store_id=1)
-        await lego_website_controller.parse_legosets_price(legoset_id=legoset_id)
+        """
+        Вызызывается от API /sets/{set_id}/stores/{store_id}/getPrice
+        """
+        return await self.get_legosets_prices_use_case.get_website_price(legoset_id=set_id, website_id=website_id)
 
     async def get_legosets_rating_list(self, legosets_count: int):
+        """
+        Вызывается от API /sets/{set_id}/getLegosetsTopRating
+        """
         return await self.get_legoset_use_case.get_top_list(legosets_count=legosets_count)
 
-    async def async_parse_sets(self, store: str):
-        website_controller = await self.__get_website_use_case(store=store)
-        print(website_controller)
-        await website_controller.parse_legosets_prices()
-
-    async def parse_lego_sets_url(self):
-        await self.website_museum_of_bricks_controller.parse_lego_sets_url()
+    async def parse_lego_sets_url(self, legoset_id: str):
+        """
+        Вызывается от API /sets/parseSetsUrl
+        """
+        await self.website_museum_of_bricks_controller.parse_lego_sets_url(legoset_id=legoset_id)
 
     async def parse_lego_sets_urls(self):
+        """
+        Вызывается от API /sets/parseSetsUrls
+        """
         await self.website_museum_of_bricks_controller.parse_lego_sets_urls()
 
 
-    async def async_parse_set(self, set_id: str):
-        await self.website_lego_controller.parse_set(lego_set_id=set_id)
-
-    async def parse_set_in_store(self, set_id: str, store_id: str):
+    async def parse_legosets_price_in_store(self, set_id: str, store_id: str):
+        """
+        Вызывается от API /sets/{set_id}/stores/{store_id}/parseSetsPrice
+        """
         website_controller = await self.__get_website_use_case(store_id=store_id)
         return await website_controller.parse_legosets_price(legoset_id=set_id)
 
-    async def parse_all_sets_in_store(self, store_id: str):
+    async def parse_all_legosets_in_store(self, store_id: str):
+        """
+        Вызывается от API /stores/{store_id}/parseAllSetsPrices
+        """
         website_controller = await self.__get_website_use_case(store_id=store_id)
         await website_controller.parse_legosets_prices()
-
-    # async def async_parse_all_known_sets(self):
-    #     await self.website_lego_controller.parse_known_sets()
-    #
-    # async def async_parse_all_unknown_sets(self):
-    #     await self.website_lego_controller.parse_all_sets()
-
-    # async def get_legosets_rating(self, legoset_id: str):
-    #     return await self.get_legosets_rating_use_case.execute(legoset_id=legoset_id)
 
     async def tmp_function(self):
         print('ITS TIME TO PARSE LEGO')
@@ -213,26 +214,28 @@ class LegoSetsService:
         # ic(lego_sets)
 
     async def parse_sets_from_brickset(self):
+        """
+        Вызывается от API /parseSetsFromBrickSet
+        """
         return await self.website_brickset_controller.parse_legosets()
 
     async def parse_legoset_images(self, legoset_id: str):
+        """
+        Вызывается от API /sets/{set_id}/parseImages
+        """
         await self.website_lego_controller.parse_legoset_images(legoset_id=legoset_id)
 
     async def parse_legosets_images(self):
+        """
+        Вызывается от API /sets/parseImages
+        """
         await self.website_lego_controller.parse_legosets_images()
 
-    @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_from_lego(self):
-        system_logger.warning('START')
-        await self.website_lego_controller.parse_legosets()
-        system_logger.warning('END')
-
     async def recalculate_rating(self):
+        """
+        Вызывается от API /sets/calculateRating
+        """
         await self.legosets_rating_use_case.recalculate_all_legosets()
-        # legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.rating > 5]
-        # system_logger.info(f"Count legosets to recalculate rating: {len(legosets)}")
-        # for legoset in legosets:
-        #     await self.get_legoset_use_case.execute(legoset_id=legoset.id)
 
 
     async def __get_website_use_case(self, store_id: str) -> WebsiteController:

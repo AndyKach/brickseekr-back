@@ -1,9 +1,11 @@
+import logging
 from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
 
+system_logger = logging.getLogger('system_logger')
 
 class WebsiteKostickyShopParserUseCase(WebsiteParserUseCase):
     def __init__(self,
@@ -26,17 +28,16 @@ class WebsiteKostickyShopParserUseCase(WebsiteParserUseCase):
         await self._parse_item(
             legoset=lego_set,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )
 
     async def parse_legosets_prices(self):
         legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
+        system_logger.info(f"Count of legosets for parse: {len(legosets)}")
         await self._parse_items(
             legosets=legosets,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )

@@ -12,7 +12,7 @@ from application.repositories.websites_repository import WebsitesRepository
 from application.use_cases.get_legoset_price_use_case import GetLegoSetsPricesUseCase
 from application.use_cases.legosets_rating_use_case import LegoSetsRatingUseCase
 from application.use_cases.get_website_use_case import GetWebsiteUseCase
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from domain.rating_calculation import RatingCalculation
 from infrastructure.config.logs_config import log_decorator
 from infrastructure.config.repositories_config import websites_repository
@@ -100,11 +100,11 @@ class GetLegoSetUseCase:
         # ic(legosets)
         for legoset in legosets:
             await self.validate_datetime_values(legoset)
-            system_logger.info(f"Legoset {legoset.id} has {legoset.rating} rating")
+            # system_logger.info(f"Legoset {legoset.id} has {legoset.rating} rating")
         return legosets
 
     @staticmethod
-    async def validate_datetime_values(legoset: LegoSet):
+    async def validate_datetime_values(legoset: Legoset):
         """
         Так как в БД формат данных для дней и времени отличается от текста, эта функция переводит даты в текст
         """
@@ -126,7 +126,7 @@ class GetLegoSetUseCase:
 
     async def __recalculate_legosets_rating(self, legoset):
         """
-        Пересчитывет рейтинг набора и в зависимости от результата сохраняет данные
+        Пересчитывает рейтинг набора и в зависимости от результата сохраняет данные
         """
         try:
             result = await self.get_legosets_rating_use_case.execute(legoset=legoset)

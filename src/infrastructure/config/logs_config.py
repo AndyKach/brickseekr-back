@@ -54,6 +54,9 @@ def config():
 
 
 def log_decorator(log_level=logging.DEBUG, print_args: bool = False, print_kwargs: bool = False):
+    """
+    Декоратор, который выводит информацию о вызванной функции
+    """
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -81,6 +84,9 @@ def log_decorator(log_level=logging.DEBUG, print_args: bool = False, print_kwarg
     return decorator
 
 def log_api_decorator(log_level=logging.INFO):
+    """
+    Декоратор, который выводит информацию о вызванной API функции
+    """
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):

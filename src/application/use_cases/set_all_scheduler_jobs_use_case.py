@@ -13,6 +13,9 @@ class SetAllSchedulerJobsUseCase:
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def execute(self):
+        """
+        Функция ставит scheduler работы для всех типов задач
+        """
         await self.set_website_lego_scheduler_jobs_use_case.execute()
 
         await self.scheduler_interface.start()

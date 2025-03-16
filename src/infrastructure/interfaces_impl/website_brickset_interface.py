@@ -13,7 +13,7 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from domain.strings_tool_kit import StringsToolKit
 from infrastructure.config.logs_config import log_decorator
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 load_dotenv()
 
@@ -38,19 +38,41 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
         }
         self.response = None
 
+    @log_decorator(print_args=False, print_kwargs=True)
+    async def parse_legoset(self, legoset_id: str):
+        """
+        Функция парсит конкретный набор
+        """
+        async with aiohttp.ClientSession() as session:
+            result = await self.request_get_legoset(session=session, legoset_id=legoset_id)
+            if result:
+                if result.get('status') == "success" and result.get('matches') != 0:
+                    legoset_json = result.get('sets')
+                    legoset = await self.legoset_json_to_legoset(legoset_json=legoset_json)
+                    return legoset
+
     @log_decorator(print_args=False, print_kwargs=False)
     async def parse_legosets(self, legosets_repository: LegoSetsRepository):
+        """
+        Функция парсит легонаборы с сайта brickset
+
+        чтобы делать минимально возможно количество запросов, код запрашивает все наборы выпущенные в определенный год
+        и потом анализируя каждый отдельный набор, преобразует данные в нужный формат и так как API возвращает
+        по +- 500 наборов за страницу приходится делать два запроса task1 и task2
+
+        Для более удобного вывода инфомрации о текущем состоянии парсинга есть переменная log_text в которую
+        записываются логи за каждые 15 наборов и потом выводятся 1 раз, Это сделано для того, чтобы система не тратила
+        ресурсы на отображение логов, и делала парсинг быстрее
+
+        """
         last_datetime = datetime.now()
         log_text = ""
         count_saves_legosets = 0
         count_to_parse = 2
         results = []
         for year in range(2025, 2009, -count_to_parse):
-            # time.sleep(2)
             system_logger.info(f"Year {year} is started")
             async with aiohttp.ClientSession() as session:
-
-                # tasks = [self.request_get_legoset(session=session, legoset_id=k) for k in range(year, year + count_to_parse)]
                 tasks1 = [self.request_get_legosets_per_year(session=session, year=k) for k in
                           range(year, year - count_to_parse, -1)]
                 tasks2 = [self.request_get_legosets_per_year(session, year=k, page_number=2) for k in
@@ -96,7 +118,7 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
 
                                     count_saves_legosets += 1
                             except ValueError:
-                                system_logger.error(f'error in set {legoset_json.get('number')}')
+                                system_logger.error(f'Error in set {legoset_json.get('number')}')
                                 break
 
 
@@ -106,20 +128,12 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
                     system_logger.error(f"Result Error: {result}")
 
             system_logger.info(f"Year {year} is ended")
-            # break
-
-    @log_decorator(print_args=False, print_kwargs=True)
-    async def parse_legoset(self, legoset: LegoSet):
-        start_datetime = datetime.now()
-        async with aiohttp.ClientSession() as session:
-            result = await self.request_get_legoset(session=session, legoset_id=legoset.id)
-            if result:
-                if result.get('status') == "success" and result.get('matches') != 0:
-                    legoset_json = result.get('sets')
-                    legoset = await self.legoset_json_to_legoset(legoset_json=legoset_json)
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def request_get_legoset(self, session: aiohttp.ClientSession, legoset_id):
+        """
+        Функция запрашивает по API информацию о конкретном наборе
+        """
         url = f"{self.url_api}/getSets"
         params = self.params.copy()
         params['params'] = json.dumps({'setNumber': f"{legoset_id}-1"})
@@ -133,19 +147,14 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
 
     @log_decorator(print_args=False, print_kwargs=False)
     async def request_get_legosets_per_year(
-            self,
-            session: aiohttp.ClientSession,
-            year: int,
-            page_size: int = 500, page_number: int = 1
-    ):
+            self, session: aiohttp.ClientSession,
+            year: int, page_size: int = 500, page_number: int = 1):
+        """
+        Функция запрашивает по API информацию о лего наборах за определенный год
+        """
         url = f"{self.url_api}/getSets"
         params = self.params.copy()
         params['params'] = json.dumps({'year': year, "pageSize": page_size, "pageNumber": page_number})
-        # params = {
-        #     'apiKey': os.getenv("BRICKSET_API_TOKEN"),
-        #     'userHash': os.getenv("BRICKSET_USER_HASH"),
-        #     'params': json.dumps({'year': year, "pageSize": page_size, "pageNumber": page_number})
-        # }
         async with session.get(url=url, headers=self.headers, params=params) as response:
             response_text = await response.text()
             response_json = json.loads(response_text)
@@ -153,7 +162,10 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
 
     @staticmethod
     async def legoset_json_to_legoset(legoset_json: dict):
-        return LegoSet(
+        """
+        Функция преобразует данные полученные по API в модель LegoSet
+        """
+        return Legoset(
             id=legoset_json.get('number'),
             images={"normalSize": legoset_json.get('image', {}).get('imageURL'),
                     "smallSize": legoset_json.get('image', {}).get('thumbnailURL')},
@@ -176,9 +188,3 @@ class WebsiteBricksetInterface(WebsiteDataSourceInterface, StringsToolKit):
             exitDate=legoset_json.get('exitDate'),
             updated_at=legoset_json.get('updated_at'),
         )
-
-    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
-        pass
-
-    async def parse_legosets_prices(self, legosets: list[LegoSet]):
-        pass

@@ -34,13 +34,36 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
         self.website_id = "4"
 
     @log_decorator()
+    async def parse_legosets_price(self, legoset_id: str):
+        legoset = await self.legosets_repository.get_set(set_id=legoset_id)
+        await self._parse_item(
+            legoset=legoset,
+            website_interface=self.website_interface,
+            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            website_id=self.website_id
+        )
+
+    @log_decorator()
+    async def parse_legosets_prices(self):
+        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
+        system_logger.info(f"Count of legosets for parse: {len(legosets)}")
+        await self._parse_items(
+            legosets=legosets,
+            website_interface=self.website_interface,
+            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
+            website_id=self.website_id
+        )
+
+    @log_decorator()
     async def parse_legosets_url(self, legoset_id: str):
+        # TODO переделать под более нормальную версию
         legoset_url = await self.website_interface.parse_legosets_url(legoset_id=legoset_id)
         if legoset_url:
             await self.legosets_repository.update_url_name(lego_set_id=legoset_id, url_name=legoset_url)
 
     @log_decorator()
     async def parse_legosets_urls(self):
+        # TODO переделать под более нормальную версию
         # legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.year > 2018)]
         legosets = [legoset for legoset in await self.legosets_repository.get_all() if (legoset.rating != 0 and legoset.extendedData.get('cz_url_name') != "None")]
         print(len(legosets))
@@ -73,60 +96,6 @@ class WebsiteMuseumOfBricksParserUseCase(WebsiteParserUseCase):
                 # await self.legosets_repository.update_url_name(
                 #     lego_set_id=lego_set["id"], url_name=lego_set['url']
                 # )
-
-    @log_decorator()
-    async def parse_legosets_price(self, legoset_id: str):
-        legoset = await self.legosets_repository.get_set(set_id=legoset_id)
-        if legoset.extendedData.get('cz_url_name') == "None":
-            await self.parse_legosets_url(legoset_id=legoset_id)
-        await self._parse_item(
-            legoset=legoset,
-            website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
-            website_id=self.website_id
-        )
-
-    @log_decorator()
-    async def parse_legosets_prices(self):
-        legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
-
-        await self._parse_items(
-            legosets=legosets,
-            website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
-            legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
-            website_id=self.website_id
-        )
-
-    # async def parse_lego_sets_price(self, lego_set_id: str):
-    #     lego_set = await self.lego_sets_repository.get_set(set_id=lego_set_id)
-    #     result = await self.website_interface.parse_lego_sets_price(lego_set=lego_set)
-    #     system_logger.info(f"Lego set {lego_set.lego_set_id} - {result}")
-    #     await self.lego_sets_prices_save_use_case.save_lego_sets_price(
-    #         LegoSetsPrice(
-    #             lego_set_id=lego_set.lego_set_id,
-    #             price=result.get('price'),
-    #             website_id=self.website_id
-    #         )
-    #     )
-    #     return result
-    #
-    # async def parse_lego_sets_prices(self):
-    #     lego_sets = await self.lego_sets_repository.get_all()
-    #     for i in range(1, len(lego_sets), 100):
-    #         results = await self.website_interface.parse_lego_sets_prices(lego_sets=lego_sets[i:i+100])
-    #         system_logger.info(f"Result: {results}")
-    #
-    #         for result in results:
-    #             if result is not None:
-    #                 await self.lego_sets_prices_save_use_case.save_lego_sets_price(
-    #                     LegoSetsPrice(
-    #                         lego_set_id=result.get('lego_set_id'),
-    #                         price=result.get('price'),
-    #                         website_id=self.website_id
-    #                     )
-    #                 )
 
 
 

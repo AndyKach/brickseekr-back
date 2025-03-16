@@ -32,17 +32,16 @@ class WebsiteSparkysParserUseCase(WebsiteParserUseCase):
         await self._parse_item(
             legoset=legoset,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )
 
     async def parse_legosets_prices(self):
         legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
+        system_logger.info(f"Count of legosets for parse: {len(legosets)}")
         await self._parse_items(
             legosets=legosets,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.lego_sets_prices_save_use_case,
             website_id=self.website_id
         )

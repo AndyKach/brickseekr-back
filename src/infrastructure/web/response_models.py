@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Any, Dict, List
 
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 
 class Meta(BaseModel):
@@ -18,7 +18,7 @@ class Price(BaseModel):
     price: str
 
 class LegosetsAllInfoResult(BaseModel):
-    legoset: LegoSet
+    legoset: Legoset
     prices: Dict[str, Price]
 
 
@@ -28,7 +28,7 @@ class GetDataResponseModel(ResponseModel):
 
 class GetLegosetsTopRatingResponseModel(ResponseModel):
     meta: Meta
-    result: List[LegoSet]
+    result: List[Legoset]
 
 class ValidationErrorResponseModel(BaseModel):
     meta: Meta

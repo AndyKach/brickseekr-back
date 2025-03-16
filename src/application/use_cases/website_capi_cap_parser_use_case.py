@@ -10,7 +10,7 @@ from application.repositories.legosets_repository import LegoSetsRepository
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from domain.legosets_prices import LegoSetsPrices
 import logging
 
@@ -37,7 +37,6 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
         await self._parse_item(
             legoset=legoset,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )
@@ -45,12 +44,10 @@ class WebsiteCapiCapParserUseCase(WebsiteParserUseCase):
 
     async def parse_legosets_prices(self):
         legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.year > 2020]
-        print(len(legosets))
-        # return None
+        system_logger.info(f"Count of legosets for parse: {len(legosets)}")
         await self._parse_items(
             legosets=legosets,
             website_interface=self.website_interface,
-            legosets_repository=self.legosets_repository,
             legosets_prices_save_use_case=self.legosets_prices_save_use_case,
             website_id=self.website_id
         )

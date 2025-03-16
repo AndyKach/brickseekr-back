@@ -10,7 +10,7 @@ from application.interfaces.website_interface import WebsiteInterface
 from application.repositories.prices_repository import LegoSetsPricesRepository
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.use_cases.lego_sets_prices_save_use_case import LegoSetsPricesSaveUseCase
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from domain.legosets_price import LegoSetsPrice
 from domain.legosets_prices import LegoSetsPrices
 
@@ -26,13 +26,13 @@ class WebsiteParserUseCase(ABC):
     def parse_legosets_prices(self):
         pass
 
-    @staticmethod
     async def _parse_items(
-            legosets: list[LegoSet],
-            website_interface: WebsiteInterface,
-            legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
-            legosets_repository: LegoSetsRepository,
-            website_id: str):
+        self, legosets: list[Legoset], website_id: str,
+        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
+        ):
+        """
+        Функция парсит цены для всех переданных наборов с шагом 50 наборов в 15 секунд, чтобы сайт не заблокировал за DDOS
+        """
         time_start=datetime.now()
         count_valuable = 0
         system_logger.info(f'Count Lego sets: {len(legosets)}')
@@ -41,20 +41,12 @@ class WebsiteParserUseCase(ABC):
             try:
                 results = await website_interface.parse_legosets_prices(legosets=legosets[i:i + 50])
                 if results:
-                    # ic(results)
                     for result in results:
                         if result:
                             count_valuable += 1
-                            if result.get('available') == "Retired product":
-                                await legosets_prices_save_use_case.delete_legosets_price(legoset_id=result.get('legoset_id'), website_id=website_id)
-                            if result.get('price'):
-                                await legosets_prices_save_use_case.save_legosets_price(
-                                    LegoSetsPrice(
-                                        legoset_id=result.get('legoset_id'),
-                                        price=result.get('price'),
-                                        website_id=website_id
-                                            )
-                                        )
+                            await self.__save_new_price(result=result, website_id=website_id,
+                                                        legosets_prices_save_use_case=legosets_prices_save_use_case)
+
             except Exception as e:
                 system_logger.error(e)
 
@@ -63,28 +55,33 @@ class WebsiteParserUseCase(ABC):
         system_logger.info(f"Number of successful ones: {count_valuable}")
         system_logger.info(f'Parse is end in {datetime.now()-time_start}')
 
-    @staticmethod
     async def _parse_item(
-                          legoset: LegoSet,
-                          website_interface: WebsiteInterface,
-                          legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
-                          legosets_repository: LegoSetsRepository,
-                          website_id: str
-                          ):
-
+        self, legoset: Legoset, website_id: str,
+        website_interface: WebsiteInterface, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase,
+        ):
+        """
+        Функция парсит цены для конкретного переданного набора
+        """
         result = await website_interface.parse_legosets_price(legoset=legoset)
         system_logger.info(f"Lego set {legoset.id} - {result}")
         if result:
-            if result.get('available') == "Retired product":
-                await legosets_prices_save_use_case.delete_legosets_price(legoset_id=legoset.id, website_id=website_id)
-            if result.get('price'):
-                await legosets_prices_save_use_case.save_legosets_price(
-                    LegoSetsPrice(
-                        legoset_id=legoset.id,
-                        price=result.get('price'),
-                        website_id=website_id
-                    )
-                )
+            await self.__save_new_price(result=result, website_id=website_id,
+                                        legosets_prices_save_use_case=legosets_prices_save_use_case)
         return result
 
 
+    @staticmethod
+    async def __save_new_price(result: dict, website_id: str, legosets_prices_save_use_case: LegoSetsPricesSaveUseCase):
+        """
+        Функция смотрит доступен ли набор еще в магазине или нет, и если не доступен, то удаляет его цену из ДБ
+        """
+        if result.get('available') == "Retired product":
+            await legosets_prices_save_use_case.delete_legosets_price(legoset_id=result.get('legoset_id'), website_id=website_id)
+        if result.get('price'):
+            await legosets_prices_save_use_case.save_legosets_price(
+                LegoSetsPrice(
+                    legoset_id=result.get('legoset_id'),
+                    price=result.get('price'),
+                    website_id=website_id
+                )
+            )

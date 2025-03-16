@@ -14,6 +14,10 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 @log_decorator(print_args=False, print_kwargs=False)
 async def get_selenium_driver() -> webdriver.Firefox:
+    """
+    Это функция настройки драйвера браузера для обычного устройства и для сервера в зависимости от
+    DEVICE в котором была запущена программа
+    """
     FF_OPTIONS = [
         # '--headless',         # удалить чтобы появилась картинка
         '--no-sandbox',
@@ -49,7 +53,7 @@ async def get_selenium_driver() -> webdriver.Firefox:
         FF_OPTIONS.append('--headless')
 
     else:
-        raise ValueError("Неправильный ENV DEVICE")
+        raise ValueError("WRONG ENV DEVICE")
 
     [options.add_argument(opt) for opt in FF_OPTIONS]
     [options.set_preference(key, value) for key, value in SET_PREF.items()]
@@ -60,6 +64,6 @@ async def get_selenium_driver() -> webdriver.Firefox:
     )
     return driver
 
-if __name__ == '__main__':
-    driver = get_selenium_driver()
-    driver.get('http://www.python.org')
+# if __name__ == '__main__':
+#     driver = get_selenium_driver()
+#     driver.get('http://www.python.org')

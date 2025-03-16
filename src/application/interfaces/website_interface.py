@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import time
 
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 
 class WebsiteInterface(ABC):
@@ -9,13 +9,13 @@ class WebsiteInterface(ABC):
         self.headers = None
 
     @abstractmethod
-    async def parse_legosets_price(self, legoset: LegoSet) -> dict:
+    async def parse_legosets_price(self, legoset: Legoset) -> dict:
         pass
 
     @abstractmethod
-    async def parse_legosets_prices(self, legosets: list[LegoSet]):
+    async def parse_legosets_prices(self, legosets: list[Legoset]):
         pass
 
-    async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
+    async def fetch_page(self, session, url):
         async with session.get(url, headers=self.headers) as response:
             return await response.text()

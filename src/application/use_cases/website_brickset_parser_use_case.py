@@ -1,7 +1,7 @@
 from application.interfaces.website_data_source_interface import WebsiteDataSourceInterface
 from application.repositories.legosets_repository import LegoSetsRepository
 from application.use_cases.website_parser_use_case import WebsiteParserUseCase
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 
 class WebsiteBricksetParserUseCase(WebsiteParserUseCase):
@@ -19,8 +19,8 @@ class WebsiteBricksetParserUseCase(WebsiteParserUseCase):
         pass
 
     #TODO доделать нормально
-    async def parse_legoset(self, legoset: LegoSet):
-        legoset = await self.website_interface.parse_legoset(legoset_id=legoset.id)
+    async def parse_legoset(self, legoset_id: str):
+        legoset = await self.website_interface.parse_legoset(legoset_id=legoset_id)
 
     async def parse_legosets(self):
         legosets = await self.website_interface.parse_legosets(legosets_repository=self.legosets_repository)

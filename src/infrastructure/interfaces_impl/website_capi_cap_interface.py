@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import logging
 import requests
 import asyncio
 import aiohttp
@@ -12,12 +12,13 @@ from lxml import etree
 
 from application.interfaces.parser_interface import ParserInterface
 from application.interfaces.website_interface import WebsiteInterface
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from domain.strings_tool_kit import StringsToolKit
-from infrastructure.config.logs_config import log_decorator, system_logger
+from infrastructure.config.logs_config import log_decorator
 from infrastructure.config.selenium_config import get_selenium_driver
 from infrastructure.db.base import session_factory
 
+system_logger = logging.getLogger('system_logger')
 
 class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
     def __init__(self):
@@ -31,52 +32,53 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
         }
         self.response = None
 
-    async def format_lego_set_url(self, legoset: LegoSet):
-        legoset_theme = legoset.extendedData.get('cz_category_name')
-        if legoset_theme == "None":
-            legoset_theme = legoset.theme.lower().replace(' ', '-')
-        legoset_url_name = legoset.extendedData.get('cz_url_name')
-        if legoset_url_name == "None":
-            legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
 
-        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
-        yield f"{self.url}/lego-{legoset_theme}--{legoset.id}-{legoset_url_name}"
-        yield f"{self.url}/lego---{legoset_theme}-{legoset.id}-{legoset_url_name}"
-        yield f"{self.url}/lego---{legoset_theme}--{legoset.id}-{legoset_url_name}"
-        yield f"{self.url}/lego-{legoset_theme}-{legoset_url_name}"
-        yield f"{self.url}/lego-{legoset_theme}--{legoset_url_name}"
+    @log_decorator()
+    async def parse_legosets_price(self, legoset: Legoset) -> dict | None:
+        """
+        Функция создает новую сессию в браузере и передает ее в парсер
 
-    @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_price(self, legoset: LegoSet):
+        После чего возвращает полученную новую цену если она есть
+
+        :return: {"legoset_id": str, "price": str} or None
+        """
         async with aiohttp.ClientSession() as session:
-            return await self.__get_lego_sets_price(session=session, legoset=legoset)
+            return await self.__get_legosets_price(session=session, legoset=legoset)
 
-    @log_decorator(print_args=False, print_kwargs=False)
-    async def parse_legosets_prices(self, legosets: list[LegoSet]):
+    @log_decorator()
+    async def parse_legosets_prices(self, legosets: list[Legoset]) -> list[dict] | None:
+        """
+        Функция создает новую сессию в браузере и передает ее в парсер с дополнительным ограничением в 60 штук,
+        чтобы сайт не заподозрил скрипт в DDOS
+
+        После чего возвращает полученные новые цены если они есть в формате списка
+
+        :return: list[{"legoset_id": str, "price": str}] or None
+        """
         async with aiohttp.ClientSession() as session:
             rate_limiter = AsyncLimiter(60, 60)
             try:
                 async with rate_limiter:
                     tasks = [
-                        self.__get_lego_sets_price(
-                            session=session,
-                            legoset=legoset
-                        ) for legoset in legosets
+                        self.__get_legosets_price(session=session, legoset=legoset) for legoset in legosets
                     ]
-                    # Параллельное выполнение всех задач
                     results = await asyncio.gather(*tasks)
                     return results
 
             except TooManyRedirects as e:
-                print(e)
-
-            return None
+                system_logger.error(e)
 
 
     @log_decorator(print_args=False, print_kwargs=False)
-    async def __get_lego_sets_price(self, session, legoset: LegoSet):
+    async def __get_legosets_price(self, session, legoset: Legoset) -> dict | None:
+        """
+        Функция запрашивает у сессии html код определенной страницы, после чего ищет на ней цену,
+        сохраняет ее в словарь и возвращает
+
+        :return: {"legoset_id": str, "price": str} or None
+        """
         start_time = datetime.now()
-        urls = self.format_lego_set_url(legoset=legoset)
+        urls = self.__format_legoset_url(legoset=legoset)
 
         try:
             async for url in urls:
@@ -98,11 +100,27 @@ class WebsiteCapiCapInterface(WebsiteInterface, StringsToolKit):
                         system_logger.info(f'Legoset {url[url.rfind("/") + 1:]} exists, price: {price}')
                         return {"legoset_id": legoset.id,
                                 "price": price.replace('\xa0', ' ')}
-                    else:
-                        system_logger.info(f'Legoset price not found')
+                system_logger.info(f'Legoset {legoset.id} price not found')
         except Exception as e:
             system_logger.error(e)
 
-    async def fetch_page(self, session, url, limiter_max_rate: int = 60, limiter_time_period: int = 60):
-        async with session.get(url, headers=self.headers) as response:
-            return await response.text()
+
+    async def __format_legoset_url(self, legoset: Legoset):
+        """
+        Функция возвращает всевозможные комбинации темы, ID и имени наборов для сайта
+
+        yield нужен для того, чтобы при каждом новом запросе к функции возвращалось следующее значение
+        """
+        legoset_theme = legoset.extendedData.get('cz_category_name')
+        if legoset_theme == "None":
+            legoset_theme = legoset.theme.lower().replace(' ', '-')
+        legoset_url_name = legoset.extendedData.get('cz_url_name')
+        if legoset_url_name == "None":
+            legoset_url_name = legoset.name.lower().replace(' ', '-').replace('.', '-').replace(':', '-').replace("'", "-")
+
+        yield f"{self.url}/lego-{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}--{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego---{legoset_theme}-{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego---{legoset_theme}--{legoset.id}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}-{legoset_url_name}"
+        yield f"{self.url}/lego-{legoset_theme}--{legoset_url_name}"

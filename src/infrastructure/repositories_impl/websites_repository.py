@@ -12,10 +12,12 @@ from infrastructure.db.models.websites_orm import WebsitesOrm
 system_logger = logging.getLogger("system_logger")
 
 class WebsitesRepositoryImpl(WebsitesRepository):
-    def get_session(self) :
+    @staticmethod
+    def get_session() :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
 
-    def orm_to_pydantic(self, website_orm: WebsitesOrm):
+    @staticmethod
+    def orm_to_pydantic(website_orm: WebsitesOrm):
         return Website(
             id=website_orm.id,
             name=website_orm.name,
@@ -34,4 +36,3 @@ class WebsitesRepositoryImpl(WebsitesRepository):
             website_orm = result.scalars().first()
             if website_orm:
                 return self.orm_to_pydantic(website_orm)
-            return None

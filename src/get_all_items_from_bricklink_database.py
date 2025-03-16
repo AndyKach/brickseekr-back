@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 from infrastructure.config.gateways_config import bricklink_gateway
 from infrastructure.config.repositories_config import lego_sets_repository
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 
 async def get_category_name(category_id: int):
     try:
@@ -46,7 +46,7 @@ async def get_set_items():
                     lego_set_json_info = result.get('data')
                     year_released = lego_set_json_info.get('year_released')
                     if year_released >= 2010:
-                        lego_set = LegoSet(
+                        lego_set = Legoset(
                             lego_set_id=lego_set_json_info.get('no')[:-2],
                             # images=lego_set_json_info.get(''),
                             images={'1': lego_set_json_info.get('image_url')},

@@ -15,6 +15,10 @@ class SearchAPIInterfaceImpl(SearchAPIInterface):
 
     @log_decorator()
     async def get_rating(self, legoset_id: str):
+        """
+        Функция используя API SearchAPI возвращает гугл рейтинг набора если он есть
+        :return: str || None
+        """
         params = {
             "engine": "google",
             "q": f"Lego {legoset_id}",
@@ -22,6 +26,5 @@ class SearchAPIInterfaceImpl(SearchAPIInterface):
         }
         search = self.client.search(params=params)
         result = search.as_dict()
-        # ic(result.keys())
         return result.get('product_result').get('reviews_results').get('user_reviews').get('rating')
         # ic(result.get('organic_results')[0].get('source').keys())

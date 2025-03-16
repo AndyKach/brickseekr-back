@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from application.services.legosets_service import LegoSetsService
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from domain.legosets_price import LegoSetsPrice
 from domain.legosets_prices import LegoSetsPrices
 # from application.services.scheduler_service import SchedulerService
@@ -109,7 +109,7 @@ async def get_rating_top_list(
         raise HTTPException(500)
 
 @log_api_decorator()
-@app.post('/sets/calculateRating', tags=['Experimental'])
+@app.post('/sets/calculateRating', tags=['Sets'])
 async def calculate_rating(
         response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service)
@@ -127,41 +127,29 @@ async def calculate_rating(
         return await get_success_json_response(data={"result": data})
 
 
-# @app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
-# @log_api_decorator
-# async def get_sets_prices(
-#         set_id: str, response: Response, background_tasks: BackgroundTasks,
-#         legosets_service: LegoSetsService = Depends(get_legosets_service)
-#     ):
-#     data = await legosets_service.get_sets_prices(set_id=set_id)
-#     if data is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Item not found"
-#         )
-#     else:
-#         return await get_success_json_response(data=data)
-#
-# @app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
-# @log_api_decorator
-# async def get_sets_prices_from_website(
-#         set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
-#         legosets_service: LegoSetsService = Depends(get_legosets_service)
-#     ):
-#     data = await legosets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
-#     if data is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Item not found"
-#         )
-#     else:
-#         return await get_success_json_response(data=data)
+@log_api_decorator()
+@app.get("/sets/{set_id}/getPrices", tags=['Sets'], response_model=LegoSetsPrices)
+async def get_sets_prices(
+        set_id: str, response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
+    ):
+    data = await legosets_service.get_sets_prices(set_id=set_id)
+    if data is None:
+        await raise_item_not_found()
+    else:
+        return await get_success_json_response(data=data)
 
-
-
-
-
-
+@log_api_decorator()
+@app.get('/sets/{set_id}/stores/{store_id}/getPrice', tags=['Sets'], response_model=LegoSetsPrice)
+async def get_sets_prices_from_website(
+        set_id: str, website_id: str, response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service)
+    ):
+    data = await legosets_service.get_sets_prices_from_website(set_id=set_id, website_id=website_id)
+    if data is None:
+        await raise_item_not_found()
+    else:
+        return await get_success_json_response(data=data)
 
 @log_api_decorator()
 @app.post('/sets/{set_id}/parseImages', tags=['Experimental'])
@@ -172,10 +160,7 @@ async def parse_legoset_images(
     ):
     data = await legosets_service.parse_legoset_images(legoset_id=set_id)
     if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
+        await raise_item_not_found()
     else:
         return await get_success_json_response(data={"result": data})
 
@@ -187,112 +172,68 @@ async def parse_legosets_images(
     ):
     data = await legosets_service.parse_legosets_images()
     if data is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found"
-        )
+        await raise_item_not_found()
     else:
         return await get_success_json_response(data={"result": data})
 
 
-
-# @app.post("/sets/parseKnownSets", tags=['Experimental'])
-# @log_api_decorator
-# async def parse_sets(
-#         response: Response, background_tasks: BackgroundTasks,
-#         response_model=ResponseModel,
-#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-# ):
-#     background_tasks.add_task(lego_sets_service.async_parse_all_known_sets)
-#     # data = await lego_sets_service.parse_all_sets()
-#     return await get_success_json_response(data={'status': 'parse start'})
-#
-#
-# @app.post("/sets/parseUnknownSets", tags=['Experimental'])
-# @log_api_decorator
-# async def parse_sets(
-#         response: Response, background_tasks: BackgroundTasks,
-#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-# ):
-#     background_tasks.add_task(lego_sets_service.async_parse_all_unknown_sets)
-#     # data = await lego_sets_service.parse_all_sets()
-#     return await get_success_json_response(data={'status': 'parse start'})
 @log_api_decorator()
 @app.post("/parseSetsFromBrickSet", tags=['Experimental'])
 async def parse_sets_from_brickset(
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
-    background_tasks.add_task(lego_sets_service.parse_sets_from_brickset)
-    # data = await lego_sets_service.parse_all_sets()
+    background_tasks.add_task(legosets_service.parse_sets_from_brickset)
     return await get_success_json_response(data={'status': 'parse start'})
 
 @log_api_decorator()
 @app.post("/parseLegoSetFromLego", tags=['Experimental'])
 async def parse_sets_from_lego(
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
-    background_tasks.add_task(lego_sets_service.parse_legosets_from_lego)
-    # data = await lego_sets_service.parse_all_sets()
+    background_tasks.add_task(legosets_service.parse_legosets_from_lego)
     return await get_success_json_response(data={'status': 'parse start'})
 
 
-
-
-# @app.post("/sets/{set_id}/parse")
-# @log_api_decorator
-# async def parse_sets(
-#         set_id: str,
-#         response: Response, background_tasks: BackgroundTasks,
-#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-# ):
-#     background_tasks.add_task(lego_sets_service.async_parse_set, set_id)
-#
-#     # data = await lego_sets_service.parse_all_sets()
-#     return await get_success_json_response(data={'status': 'parse start'})
-#
-# @app.get("/{store}/sets/parseSets")
-# @log_api_decorator
-# async def parse_sets(
-#         store: str,
-#         response: Response, background_tasks: BackgroundTasks,
-#         lego_sets_service: LegoSetsService = Depends(get_lego_sets_service),
-# ):
-#     background_tasks.add_task(lego_sets_service.async_parse_sets, store=store)
-#     # data = await lego_sets_service.parse_all_sets()
-#     return await get_success_json_response(data={'status': 'parse start'})
 @log_api_decorator()
-@app.post("/sets/{set_id}/stores/{store_id}/parseSet", tags=['Experimental'])
-async def parse_set_in_store(
-        set_id: str, store_id: str,
+@app.post("/sets/parseSetsUrl", tags=['Experimental'])
+async def parse_sets_url(
         response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
-    result = await legosets_service.parse_set_in_store(set_id=set_id, store_id=store_id)
-    return await get_success_json_response(data={'lego_set_id': set_id, 'price': result})
-
+    background_tasks.add_task(legosets_service.parse_lego_sets_url)
+    return await get_success_json_response(data={'status': 'parse start'})
 
 @log_api_decorator()
 @app.post("/sets/parseSetsUrls", tags=['Experimental'])
-async def parse_sets(
+async def parse_sets_urls(
         response: Response, background_tasks: BackgroundTasks,
         legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
     background_tasks.add_task(legosets_service.parse_lego_sets_urls)
-    # data = await lego_sets_service.parse_all_sets()
-
     return await get_success_json_response(data={'status': 'parse start'})
 
+
 @log_api_decorator()
-@app.post("/stores/{store_id}/parseAllSets", tags=['Experimental'])
-async def parse_all_sets_in_store(
+@app.post("/sets/{set_id}/stores/{store_id}/parseSetsPrice", tags=['Experimental'])
+async def parse_sets_price_in_store(
+        set_id: str, store_id: str,
+        response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
+):
+    result = await legosets_service.parse_legosets_price_in_store(set_id=set_id, store_id=store_id)
+    return await get_success_json_response(data={'status': 'parse start'})
+
+
+@log_api_decorator()
+@app.post("/stores/{store_id}/parseAllSetsPrices", tags=['Experimental'])
+async def parse_all_sets_prices_in_store(
         store_id: str,
         response: Response, background_tasks: BackgroundTasks,
-        lego_sets_service: LegoSetsService = Depends(get_legosets_service),
+        legosets_service: LegoSetsService = Depends(get_legosets_service),
 ):
-    background_tasks.add_task(lego_sets_service.parse_all_sets_in_store, store_id=store_id)
-    # data = await lego_sets_service.parse_all_sets()
+    background_tasks.add_task(legosets_service.parse_all_legosets_in_store, store_id=store_id)
     return await get_success_json_response(data={'status': 'parse start'})
 
 

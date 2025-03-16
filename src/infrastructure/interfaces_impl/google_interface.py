@@ -32,7 +32,9 @@ class GoogleInterfaceImpl(GoogleInterface):
         self.driver.close()
 
     async def get_legosets_rating(self, legoset_id: str):
-        last_datetime = datetime.now()
+        """
+        Эта функция будет позже изменена на корректную с использованием SearchAPI
+        """
         url = f"{self.url}/product/{legoset_id}"
         rating = None
 

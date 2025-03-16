@@ -5,7 +5,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from infrastructure.db.models.legosets_orm import LegoSetsOrm
 from application.repositories.legosets_repository import LegoSetsRepository
-from domain.legoset import LegoSet
+from domain.legoset import Legoset
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, text, update
 
@@ -14,12 +14,13 @@ from infrastructure.db.base import async_engine
 system_logger = logging.getLogger("system_logger")
 
 class LegoSetsRepositoryImpl(LegoSetsRepository):
-    def get_session(self) :
+    @staticmethod
+    def get_session() :
         return AsyncSession(bind=async_engine, expire_on_commit=False)
 
     @staticmethod
     async def orm_to_pydantic(legoset_orm: LegoSetsOrm):
-        return LegoSet(
+        return Legoset(
             id=legoset_orm.id,
             name=legoset_orm.name,
             year=legoset_orm.year,
@@ -44,7 +45,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
         )
 
     @staticmethod
-    async def pydantic_to_orm(legoset_pydantic: LegoSet):
+    async def pydantic_to_orm(legoset_pydantic: Legoset):
         return LegoSetsOrm(
             id=legoset_pydantic.id,
             name=legoset_pydantic.name,
@@ -69,7 +70,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             created_at=legoset_pydantic.created_at,
         )
 
-    async def get_set(self, set_id: str) -> LegoSet | None:
+    async def get_set(self, set_id: str) -> Legoset | None:
         session = self.get_session()
         async with session.begin():
             query = (
@@ -83,14 +84,14 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
                 return await self.orm_to_pydantic(legoset_orm=legoset_orm)
             return None
 
-    async def set_set(self, legoset: LegoSet):
+    async def set_set(self, legoset: Legoset):
         session = self.get_session()
         async with session.begin():
             legoset_orm = await self.pydantic_to_orm(legoset_pydantic=legoset)
             session.add(legoset_orm)
             await session.commit()
 
-    async def get_all(self) -> [LegoSet]:
+    async def get_all(self) -> [Legoset]:
         session = self.get_session()
         async with session.begin():
             query = await session.execute(select(LegoSetsOrm))
@@ -125,7 +126,7 @@ class LegoSetsRepositoryImpl(LegoSetsRepository):
             await session.execute(query)
             await session.commit()
 
-    async def update_set(self, legoset: LegoSet) -> None:
+    async def update_set(self, legoset: Legoset) -> None:
         session = self.get_session()
         async with session.begin():
             query = select(LegoSetsOrm).where(LegoSetsOrm.id==legoset.id)

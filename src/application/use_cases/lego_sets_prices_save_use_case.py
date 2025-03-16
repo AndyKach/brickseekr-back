@@ -12,6 +12,10 @@ class LegoSetsPricesSaveUseCase:
         self.legosets_prices_repository = legosets_prices_repository
 
     async def save_legosets_price(self, legosets_price: LegoSetsPrice):
+        """
+        Функция сохраняет новую цену на лего набор и в зависимости от того, существует ли на набор уже другие цены
+        или нет, сохраняет новую цену или создает новый объект в бд
+        """
         log_text = f"\n==================\n"\
                    f"ID: {legosets_price.legoset_id} \n"\
                    f"Price: {legosets_price.price}\n"
@@ -43,6 +47,9 @@ class LegoSetsPricesSaveUseCase:
         system_logger.info(log_text)
 
     async def delete_legosets_price(self, legoset_id: str, website_id: str):
+        """
+        Функция удаляет цену в БД на конкретный магазин если например цена больше не доступна
+        """
         log_text = f"\n==================\n"\
                    f"ID: {legoset_id} \n"\
                    f"Not more available"
