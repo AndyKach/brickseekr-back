@@ -84,7 +84,7 @@ class LegosetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
-            return self.get_error_code(legoset_id=legoset.id)
+            return await self.get_error_code(legoset_id=legoset.id)
             # await self.google_interface.open_driver()
             # google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
             # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
