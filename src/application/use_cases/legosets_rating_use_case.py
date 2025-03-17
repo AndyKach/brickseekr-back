@@ -84,18 +84,19 @@ class LegosetsRatingUseCase:
 
         # -------------------------------------------------------------------------------------------------------------
         if legoset.google_rating is None:
-            await self.google_interface.open_driver()
-            google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
+            return self.get_error_code(legoset_id=legoset.id)
+            # await self.google_interface.open_driver()
+            # google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
             # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
 
-            await self.google_interface.close_driver()
+            # await self.google_interface.close_driver()
 
-            if google_rating is None:
-                system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
-                return await self.get_error_code(legoset_id=legoset.id)
-            else:
-                legoset.google_rating = google_rating
-                await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
+            # if google_rating is None:
+            #     system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
+            #     return await self.get_error_code(legoset_id=legoset.id)
+            # else:
+            #     legoset.google_rating = google_rating
+            #     await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
         else:
             google_rating = legoset.google_rating
 

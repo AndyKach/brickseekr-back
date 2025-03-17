@@ -77,16 +77,16 @@ class GetLegosetUseCase:
         """
         result = {}
         legoset_prices = await self.get_legosets_prices_use_case.get_all_prices(legoset_id=legoset_id)
+        if legoset_prices:
+            for website_id in legoset_prices.prices.keys():
+                result[website_id] = {}
+                price = self.refactor_price_from_str_to_float(legoset_prices.prices.get(website_id))
+                result[website_id]['price'] = price
 
-        for website_id in legoset_prices.prices.keys():
-            result[website_id] = {}
-            price = self.refactor_price_from_str_to_float(legoset_prices.prices.get(website_id))
-            result[website_id]['price'] = price
-
-            website_link = (await self.get_website_use_case.get_website(website_id=website_id)).link
-            if website_id == "1":
-                website_link += f'products/{legoset_id}'
-            result[website_id]['link'] = website_link
+                website_link = (await self.get_website_use_case.get_website(website_id=website_id)).link
+                if website_id == "1":
+                    website_link += f'products/{legoset_id}'
+                result[website_id]['link'] = website_link
 
         return result
 
