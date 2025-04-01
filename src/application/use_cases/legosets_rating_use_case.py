@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from xml.dom.expatbuilder import theDOMImplementation
 from statistics import median
@@ -69,7 +70,7 @@ class LegosetsRatingUseCase:
                 system_logger.info(result.get('message'))
                 await self.legosets_repository.update_rating(legoset_id=result.get("legoset_id"), rating=0.0)
 
-
+    @log_decorator()
     async def execute(self, legoset: Legoset):
         """
         Функция расчитывает особые параметры для расчета рейтинга, сохраняет их в отельные переменные
@@ -83,8 +84,18 @@ class LegosetsRatingUseCase:
         legosets_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
 
         # -------------------------------------------------------------------------------------------------------------
-        if legoset.google_rating is None:
-            return await self.get_error_code(legoset_id=legoset.id)
+        if legoset.google_rating is None or legoset.rating > 5:
+            if os.getenv("RATING_MODE") == "LEGO":
+                return await self.get_error_code(legoset_id=legoset.id)
+            elif os.getenv("RATING_MODE") == "GOOGLE":
+                google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
+                if google_rating is None:
+                    system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
+                    return await self.get_error_code(legoset_id=legoset.id)
+                else:
+                    legoset.google_rating = google_rating
+                    await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
+
             # await self.google_interface.open_driver()
             # google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
             # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)

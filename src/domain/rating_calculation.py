@@ -167,7 +167,7 @@ class RatingCalculation:
         }
         score = themes_score.get(theme  , 0)
         system_logger.info(f"Themes score: {score}")
-        rating_values["theme_popularity"] = (score/49.40) * self.theme_popularity_weight
+        rating_values["theme_popularity"] = (score/26.66) * self.theme_popularity_weight
 
     async def calculate_price_to_piece_ratio(self, rating_values: dict, initial_price: float, pieces_count: int):
         PPR = initial_price / pieces_count

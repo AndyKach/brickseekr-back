@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from statistics import median
 
@@ -61,7 +62,7 @@ class GetLegosetUseCase:
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
-            if legoset.rating is None or legoset.rating <= 5:
+            if legoset.rating is None or legoset.rating <= 5 or os.getenv("RATING_MODE") == "GOOGLE":
                 await self.__recalculate_legosets_rating(legoset=legoset)
             else:
                 system_logger.info(f"Legoset {legoset_id} has rating: {legoset.rating}")
