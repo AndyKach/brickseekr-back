@@ -186,6 +186,8 @@ class RatingCalculation:
 
     async def calculate_price_to_piece_ratio(self, rating_values: dict, initial_price: float, pieces_count: int, second_initial_price: float):
         price = 0.0
+        PPR = -1
+        score = 0
         if initial_price != 0.0:
             price = initial_price
         elif second_initial_price != 0.0:
@@ -193,7 +195,6 @@ class RatingCalculation:
 
         if price != 0.0:
             PPR = price / pieces_count
-            score = 0
             match PPR:
                 case PPR if PPR <= 1.38:
                     score = 100
@@ -203,10 +204,8 @@ class RatingCalculation:
                     score = 50
                 case PPR if 4.38 <= PPR:
                     score = 25
-        else:
-            score = 0
+            system_logger.info(f"PPR: {PPR} score: {score}")
 
-        system_logger.info(f"PPR: {PPR} score: {score}")
         rating_values["price_to_piece_ratio"] = score * self.price_to_piece_ratio_weight
 
     async def calculate_google_rating(self, rating_values: dict, google_rating: float):
