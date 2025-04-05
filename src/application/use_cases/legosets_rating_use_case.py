@@ -37,10 +37,15 @@ class LegosetsRatingUseCase:
         Функция пересчитывает все лего наборы
         """
         legosets = [legoset for legoset in await self.legosets_repository.get_all() if legoset.google_rating is not None and legoset.google_rating > 0 and legoset.year > 2022]
-        # legosets = [legoset for legoset in await self.legosets_repository.get_all()]
         system_logger.info(f"Legosets count to recalculate: {len(legosets)}")
+        successful_count = 0
         for legoset in legosets:
-            await self.recalculate_legoset(legoset=legoset)
+            result = await self.recalculate_legoset(legoset=legoset)
+            if result:
+                successful_count += 1
+
+        system_logger.info(f"Legosets count that was successfully recalculated: {successful_count}")
+
 
     @log_decorator()
     async def recalculate_legoset(self, legoset: Legoset):
@@ -51,6 +56,7 @@ class LegosetsRatingUseCase:
         result = await self.execute(legoset=legoset)
         if result:
             await self.__save_new_rating(result=result)
+            return True
 
     @log_decorator()
     async def __save_new_rating(self, result: dict):
@@ -84,7 +90,8 @@ class LegosetsRatingUseCase:
         legosets_prices = await self.legosets_prices_repository.get_item_all_prices(legoset_id=legoset.id)
 
         # -------------------------------------------------------------------------------------------------------------
-        if legoset.google_rating is None or legoset.rating > 5:
+        google_rating = None
+        if legoset.google_rating is None or legoset.google_rating == 0:
             if os.getenv("RATING_MODE") == "LEGO":
                 return await self.get_error_code(legoset_id=legoset.id)
             elif os.getenv("RATING_MODE") == "GOOGLE":
@@ -95,53 +102,49 @@ class LegosetsRatingUseCase:
                 else:
                     legoset.google_rating = google_rating
                     await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
-
-            # await self.google_interface.open_driver()
-            # google_rating = await self.google_interface.get_legosets_rating(legoset_id=legoset.id)
-            # google_rating = await self.search_api_interface.get_rating(legoset_id=legoset.id)
-
-            # await self.google_interface.close_driver()
-
-            # if google_rating is None:
-            #     system_logger.error(f"Legoset: {legoset.id} has no GOOGLE RATING. Rating calculation is not possible")
-            #     return await self.get_error_code(legoset_id=legoset.id)
-            # else:
-            #     legoset.google_rating = google_rating
-            #     await self.legosets_repository.update_google_rating(legoset_id=legoset.id, google_rating=google_rating)
         else:
             google_rating = legoset.google_rating
-
 
         system_logger.info(f"Legoset: {legoset.id} has a google rating: {google_rating}")
 
         # -------------------------------------------------------------------------------------------------------------
 
         if (legoset.theme is not None and legoset.pieces is not None and
-                legosets_prices is not None and legosets_prices.prices.get("1") and len(legosets_prices.prices) > 1 ):
+            legosets_prices is not None
+            # and legosets_prices.prices.get("1") and len(legosets_prices.prices) > 1
+        ):
             initial_price_str = legosets_prices.prices.get("1")
             if initial_price_str: # legoset have price
                 initial_price = await self.refactor_price_from_str_to_float(initial_price_str)
             else: # legoset has no price
-                return await self.get_error_code(legoset_id=legoset.id)
+                initial_price = 0.0
+                # return await self.get_error_code(legoset_id=legoset.id)
 
             system_logger.debug(f"Legoset: {legoset.id} has a initial price: {initial_price}")
 
-            # -------------------------------------------------------------------------------------------------------------
-
+            # ---------------------------------------------------------------------------------------------------------
+            is_legoset_in_few_stores = False
+            second_initial_price = 0.0
+            final_price = 0.0
             prices_list = []
             for website_id in legosets_prices.prices.keys():
                 if website_id != "1":
                     prices_list.append(await self.refactor_price_from_str_to_float(legosets_prices.prices.get(website_id)))
 
+            if len(prices_list) > 0:
+                final_price = median(prices_list)
+
+            if len(prices_list) > 1:
+                is_legoset_in_few_stores = True
+                second_initial_price = min(prices_list)
+
             system_logger.debug(f"Legoset: {legoset.id} has a prices_list: {prices_list}")
-            system_logger.debug(f"Legoset: {legoset.id} has a median(prices_list): {median(prices_list)}")
+            system_logger.debug(f"Legoset: {legoset.id} has a final_price: {final_price}")
 
-            final_price = median(prices_list)
-            if final_price == 0.0:
-                system_logger.error(f"Legoset: {legoset.id} has no PRICES. Rating calculation is not possible")
-                return await self.get_error_code(legoset_id=legoset.id)
 
-            system_logger.debug(f"Legoset: {legoset.id} has a final price: {final_price}")
+            # if final_price == 0.0:
+                # system_logger.error(f"Legoset: {legoset.id} has no PRICES. Rating calculation is not possible")
+                # return await self.get_error_code(legoset_id=legoset.id)
 
             # -------------------------------------------------------------------------------------------------------------
 
@@ -171,6 +174,9 @@ class LegosetsRatingUseCase:
                 theme=theme,
                 pieces_count=pieces_count,
                 google_rating=google_rating,
+                second_initial_price=second_initial_price,
+                is_legoset_in_few_stores=is_legoset_in_few_stores
+
             )
             result = await self.get_rating_success_code(legoset_id=legoset.id, rating=rating)
         else:

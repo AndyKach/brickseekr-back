@@ -237,6 +237,16 @@ async def parse_all_sets_prices_in_store(
     background_tasks.add_task(legosets_service.parse_all_legosets_in_store, store_id=store_id)
     return await get_success_json_response(data={'status': 'parse start'})
 
+@log_api_decorator()
+@app.post("/webhook", tags=['Experimental'])
+async def parse_sets_price_in_store(
+        set_id: str, store_id: str,
+        response: Response, background_tasks: BackgroundTasks,
+        legosets_service: LegosetsService = Depends(get_legosets_service),
+):
+    return await get_success_json_response(data={})
+
+
 
 async def validate_legoset_id(legoset_id: str) -> bool:
     pattern = r'^(?!0{5})\d{5}$'
@@ -260,3 +270,4 @@ async def raise_validation_error(detail: str = "") -> None:
         status_code=422,
         detail="Validation error" + ("" if detail == "" else f": {detail}")
     )
+

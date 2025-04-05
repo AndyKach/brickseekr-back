@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: brickseekr_ngrok
+    restart: unless-stopped
+    command:
+      - "http"
+      - "--domain"
+      - "ibex-smart-smoothly.ngrok-free.app"
+      - "backend:8000"
+      - "--log=stdout"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    environment:
+      NGROK_AUTHTOKEN: <TOKEN>
+    ports:
+      - "4040:4040"
+    networks:
+      brickseekr_network:
+        ipv4_address: 172.20.0.11
+
+  backend:
+    image: brickseekr_backend:latest
+    container_name: brickseekr_backend
+    restart: unless-stopped
+    build:
+      context: ./parser-service
+    working_dir: /src
+    env_file:
+      - parser-service/.env
+    command:
+      - "uvicorn"
+      - "main:app"
+      - "--host"
+      - "172.20.0.2"
+      - "--port"
+      - "8000"
+      - "--reload"
+
+    depends_on:
+      - ngrok
+    ports:
+      - "8000:8000"
+    networks:
+      brickseekr_network:
+        ipv4_address: 172.20.0.2
+
+networks:
+  brickseekr_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

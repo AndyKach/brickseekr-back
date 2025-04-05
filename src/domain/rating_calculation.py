@@ -25,7 +25,7 @@ class RatingCalculation:
 
     @log_decorator(print_args=False, print_kwargs=True)
     async def calculate_rating(
-        self, final_price: float, initial_price: float, theme: str, pieces_count: int, google_rating: float,
+        self, final_price: float, initial_price: float, second_initial_price: float, theme: str, pieces_count: int, google_rating: float, is_legoset_in_few_stores: bool,
         ):
         """
         Основная функция подсчета рейтинга, котоая получает всю нужную информацию о наборе и вызывает все подфункции
@@ -35,9 +35,12 @@ class RatingCalculation:
         # для каждого набора создается временная переменная, которая хранит значения для вычисления общего рейтинг
         rating_values = copy.deepcopy(self.rating_values)
 
-        await self.calculate_buying_opportunity_score(rating_values=rating_values, final_price=final_price, initial_price=initial_price)
+        if initial_price == 0.0 and second_initial_price == 0.0 and final_price == 0.0:
+            return 0.0
+
+        await self.calculate_buying_opportunity_score(rating_values=rating_values, final_price=final_price, initial_price=initial_price, second_initial_price=second_initial_price, is_legoset_in_few_stores=is_legoset_in_few_stores)
         await self.calculate_theme_price_annually_growth(rating_values=rating_values, theme=theme)
-        await self.calculate_price_to_piece_ratio(rating_values=rating_values, initial_price=initial_price, pieces_count=pieces_count)
+        await self.calculate_price_to_piece_ratio(rating_values=rating_values, initial_price=initial_price, pieces_count=pieces_count, second_initial_price=second_initial_price)
         await self.calculate_google_rating(rating_values=rating_values, google_rating=google_rating)
 
         system_logger.info(f"rating values: {rating_values}")
@@ -49,15 +52,27 @@ class RatingCalculation:
         result = result if result <= 100 else 100
         return result
 
-    async def calculate_buying_opportunity_score(self, rating_values: dict, final_price: float, initial_price: float):
-        buying_opportunity_score = final_price/initial_price * 100
-        if buying_opportunity_score <= 0:
-            rating_values["investment_potential"] = 0
-            system_logger.info(f"Investment potential score: 0")
+    async def calculate_buying_opportunity_score(self, rating_values: dict, final_price: float, initial_price: float, second_initial_price: float, is_legoset_in_few_stores: bool):
+        buying_opportunity_score = 0
+        if initial_price == 0.0 and final_price == 0.0:
+            buying_opportunity_score = self.buying_opportunity_weight
+        elif initial_price != 0.0 and final_price == 0.0:
+            buying_opportunity_score = 0.833 * self.buying_opportunity_weight
+        elif initial_price == 0.0 and final_price != 0.0 and is_legoset_in_few_stores is False:
+            buying_opportunity_score = 0.633 * self.buying_opportunity_weight
         else:
-            system_logger.info(f"Investment potential score: {(buying_opportunity_score/100) * self.buying_opportunity_weight}")
-            rating_values["investment_potential"] = (buying_opportunity_score/100) * self.buying_opportunity_weight
+            if initial_price == 0.0 and final_price != 0.0 and is_legoset_in_few_stores is True:
+                initial_price = second_initial_price
 
+            buying_opportunity_score = final_price/initial_price * 100
+            if buying_opportunity_score <= 0:
+                buying_opportunity_score = 0
+                system_logger.info(f"Investment potential score: 0")
+            else:
+                buying_opportunity_score = (buying_opportunity_score/100) * self.buying_opportunity_weight
+                system_logger.info(f"Investment potential score: {buying_opportunity_score}")
+
+        rating_values["investment_potential"] = buying_opportunity_score
 
     async def calculate_theme_price_annually_growth(self, rating_values: dict, theme: str):
         themes_score = {
@@ -169,18 +184,27 @@ class RatingCalculation:
         system_logger.info(f"Themes score: {score}")
         rating_values["theme_popularity"] = (score/26.66) * self.theme_popularity_weight
 
-    async def calculate_price_to_piece_ratio(self, rating_values: dict, initial_price: float, pieces_count: int):
-        PPR = initial_price / pieces_count
-        score = 0
-        match PPR:
-            case PPR if PPR <= 1.38:
-                score = 100
-            case PPR if 1.39 <= PPR <= 3.22:
-                score = 75
-            case PPR if 3.23 <= PPR <= 4.37:
-                score = 50
-            case PPR if 4.38 <= PPR:
-                score = 25
+    async def calculate_price_to_piece_ratio(self, rating_values: dict, initial_price: float, pieces_count: int, second_initial_price: float):
+        price = 0.0
+        if initial_price != 0.0:
+            price = initial_price
+        elif second_initial_price != 0.0:
+            price = second_initial_price
+
+        if price != 0.0:
+            PPR = price / pieces_count
+            score = 0
+            match PPR:
+                case PPR if PPR <= 1.38:
+                    score = 100
+                case PPR if 1.39 <= PPR <= 3.22:
+                    score = 75
+                case PPR if 3.23 <= PPR <= 4.37:
+                    score = 50
+                case PPR if 4.38 <= PPR:
+                    score = 25
+        else:
+            score = 0
 
         system_logger.info(f"PPR: {PPR} score: {score}")
         rating_values["price_to_piece_ratio"] = score * self.price_to_piece_ratio_weight

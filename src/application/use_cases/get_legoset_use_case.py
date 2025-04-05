@@ -55,14 +55,14 @@ class GetLegosetUseCase:
         else:
             return None
 
-    async def get_legoset(self, legoset_id: str):
+    async def get_legoset(self, legoset_id: str, is_needed_parse: bool = False):
         """
         Функция ищет легонабор в БД и проверяет нужно ли пересчитать рейтинг
         """
         legoset = await self.legosets_repository.get_set(set_id=legoset_id)
         if legoset:
             legoset = await self.validate_datetime_values(legoset)
-            if legoset.rating is None or legoset.rating <= 5 or os.getenv("RATING_MODE") == "GOOGLE":
+            if is_needed_parse and os.getenv("RATING_MODE") == "GOOGLE":
                 await self.__recalculate_legosets_rating(legoset=legoset)
             else:
                 system_logger.info(f"Legoset {legoset_id} has rating: {legoset.rating}")
@@ -97,10 +97,8 @@ class GetLegosetUseCase:
         Функция запрашивает у ДБ рейтинг легонаборов по убывания
         """
         legosets = await self.legosets_repository.get_top_rating(legosets_count=legosets_count)
-        # ic(legosets)
         for legoset in legosets:
             await self.validate_datetime_values(legoset)
-            # system_logger.info(f"Legoset {legoset.id} has {legoset.rating} rating")
         return legosets
 
     @staticmethod
@@ -130,7 +128,7 @@ class GetLegosetUseCase:
         """
         try:
             result = await self.get_legosets_rating_use_case.execute(legoset=legoset)
-            ic(result)
+            system_logger.info(result)
             match result.get('status_code'):
                 case 200:
                     legoset.rating = result.get('rating')
@@ -139,8 +137,8 @@ class GetLegosetUseCase:
                     system_logger.info(result.get('message'))
                 case 500:
                     system_logger.error(f"Legoset {legoset.id} rating can't be calculated")
-
-            await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
+            if os.getenv("RATING_MODE") == "LEGO":
+                await self.legosets_repository.update_rating(legoset_id=legoset.id, rating=legoset.rating)
 
         except Exception as e:
             system_logger.error(f"Legoset {legoset.id} has an error: {e}")
