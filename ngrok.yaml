@@ -1,0 +1,7 @@
+version: "3"
+
+tunnels:
+  brickseekr_backend:
+    proto: http
+    addr: backend:8000
+    domain: ibex-smart-smoothly.ngrok-free.app

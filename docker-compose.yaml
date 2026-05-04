@@ -14,38 +14,69 @@ services:
     volumes:
       - ./ngrok.yml:/etc/ngrok.yml
     environment:
-      NGROK_AUTHTOKEN: <TOKEN>
+      NGROK_AUTHTOKEN: <Token>
     ports:
       - "4040:4040"
+    depends_on:
+      - backend
     networks:
       brickseekr_network:
         ipv4_address: 172.20.0.11
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: brickseekr_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: brickseekr
+      POSTGRES_PASSWORD: brickseekr_password
+      POSTGRES_DB: brickseekr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - brickseekr_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brickseekr -d brickseekr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      brickseekr_network:
+        ipv4_address: 172.20.0.3
 
   backend:
     image: brickseekr_backend:latest
     container_name: brickseekr_backend
     restart: unless-stopped
     build:
-      context: ./parser-service
+      context: ./
+      dockerfile: Dockerfile
     working_dir: /src
-    env_file:
-      - parser-service/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: brickseekr
+      DB_PASSWORD: brickseekr_password
+      DB_NAME: brickseekr_db
+      MODE: production
     command:
       - "uvicorn"
       - "main:app"
       - "--host"
-      - "172.20.0.2"
+      - "0.0.0.0"
       - "--port"
       - "8000"
       - "--reload"
-
     depends_on:
-      - ngrok
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     networks:
       brickseekr_network:
         ipv4_address: 172.20.0.2
+volumes:
+  brickseekr_postgres_data:
 
 networks:
   brickseekr_network:
@@ -53,3 +84,4 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+
