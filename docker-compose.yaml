@@ -14,7 +14,7 @@ services:
     volumes:
       - ./ngrok.yml:/etc/ngrok.yml
     environment:
-      NGROK_AUTHTOKEN: 2jwJP1lzjnmQBtfXhWWe0s6cqxk_44bXjBnFZXYKbke39Rjss
+      NGROK_AUTHTOKEN: <Token>
     ports:
       - "4040:4040"
     depends_on:
